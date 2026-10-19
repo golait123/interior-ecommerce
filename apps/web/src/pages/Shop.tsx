@@ -287,7 +287,7 @@ export default function Shop() {
               className={`shop-domain-tab ${activeDomain === 'indoor' ? 'active' : ''}`}
             >
               <span>🏠 Indoor</span>
-              <span className="shop-filter-count">{indoorDomain?.count || 30}</span>
+              <span className="shop-filter-count">{indoorDomain?.count ?? 0}</span>
             </button>
 
             <button
@@ -296,7 +296,7 @@ export default function Shop() {
               className={`shop-domain-tab ${activeDomain === 'outdoor' ? 'active' : ''}`}
             >
               <span>🌿 Outdoor</span>
-              <span className="shop-filter-count">{outdoorDomain?.count || 14}</span>
+              <span className="shop-filter-count">{outdoorDomain?.count ?? 0}</span>
             </button>
           </div>
         </div>
@@ -320,7 +320,7 @@ export default function Shop() {
                 >
                   <span>All {activeDomain === 'indoor' ? 'Indoor Rooms' : 'Outdoor Zones'}</span>
                   <span className="shop-filter-count">
-                    {activeDomain === 'indoor' ? (indoorDomain?.count || 30) : (outdoorDomain?.count || 14)}
+                    {activeDomain === 'indoor' ? (indoorDomain?.count ?? 0) : (outdoorDomain?.count ?? 0)}
                   </span>
                 </button>
 
