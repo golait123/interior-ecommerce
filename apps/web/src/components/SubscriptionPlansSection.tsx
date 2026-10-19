@@ -55,7 +55,7 @@ const PLANS: Plan[] = [
       '1 Hand-selected, NASA-rated indoor plant every month',
       'Artisanal unglazed terracotta planter (self-breathing)',
       'Organic cold-pressed neem shield & slow-release nutrients',
-      '24/7 AI Plant Doctor camera consultation via Gemini AI',
+      '24/7 Botanical Plant Doctor & Care Concierge Consultation',
       '10% Flat Member Discount on all nursery & garden pieces'
     ],
     exclusivePerk: 'Complimentary ceramic water mister on 1st delivery'
@@ -106,7 +106,7 @@ const PLANS: Plan[] = [
     accentColor: '#1b3a6b',
     features: [
       'Dedicated Senior Interior Architect for 1-on-1 consultations',
-      '2 Full-room 3D Gemini spatial visualizer renders & custom wall murals',
+      '2 Full-room 3D 360° Studio spatial visualizer renders & custom wall murals',
       '20% Flat Lifetime Discount on solid Sheesham & Teakwood consoles',
       'Annual hardwood restoration & brass buffing maintenance kit',
       'Private VIP preview invitations to rare one-off antique acquisitions',

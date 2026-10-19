@@ -51,7 +51,7 @@ const AiChatSessionSchema = new Schema<IAiChatSession>(
         timestamp: { type: Date, default: Date.now }
       }
     ],
-    activeModel: { type: String, default: 'gemini-3.7-flash' },
+    activeModel: { type: String, default: 'studio-assistant' },
     totalTokensUsed: { type: Number, default: 0 }
   },
   {

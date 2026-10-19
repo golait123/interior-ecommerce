@@ -5,12 +5,14 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/**/*.test.ts",
     "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@google/genai": "^2.22.0",
     "@prisma/client": "^6.15.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",

@@ -34,30 +34,27 @@ import { Footer } from '../components/Footer';
 import { visualizerApi, RoomAnalysisResponse, Hotspot } from '../api/visualizer';
 import { productsApi, Product } from '../api/products';
 import { Panorama360Viewer, PlacedItem } from '../components/Panorama360Viewer';
-import { GeminiAgentChat } from '../components/GeminiAgentChat';
-import { GeminiImageStudioModal } from '../components/GeminiImageStudioModal';
-import { GeminiLiveVideoModal } from '../components/GeminiLiveVideoModal';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-// Demo Presets with high-definition equirectangular room panoramas
+// Studio Presets with high-definition equirectangular room panoramas
 const PRESETS = [
   {
-    id: 'gemini-living',
-    name: '✨ Gemini AI 360° Living Room',
+    id: 'preset-living',
+    name: 'Panoramic Minimalist Living Suite',
     type: 'PANORAMA' as const,
-    subtitle: 'Generated with Gemini Image Model',
-    previewUrl: '/gemini-360-living.jpg',
+    subtitle: 'Equirectangular 360° Living Room Studio',
+    previewUrl: '/panorama-living.jpg',
     dimensions: { width: 16, height: 10, length: 20 }
   },
   {
-    id: 'gemini-bedroom',
-    name: '✨ Gemini AI 360° Master Suite',
+    id: 'preset-bedroom',
+    name: 'Panoramic Master Bedroom Suite',
     type: 'PANORAMA' as const,
-    subtitle: 'Generated with Gemini Image Model',
-    previewUrl: '/gemini-360-bedroom.jpg',
+    subtitle: 'Equirectangular 360° Master Suite',
+    previewUrl: '/panorama-bedroom.jpg',
     dimensions: { width: 14, height: 9.5, length: 16 }
   },
   {
@@ -75,23 +72,12 @@ export default function RoomStudio() {
   const { user } = useAuth();
   const { cart, addItem } = useCart();
 
-  // Convert cart items for Gemini AI Agent
-  const cartItemsForAgent = (cart?.items || []).map(ci => ({
-    id: ci.id,
-    productId: ci.product.id,
-    name: ci.product.name,
-    category: (ci.product as any).category?.name || 'Decor',
-    price: Number(ci.product.discountPrice || ci.product.price),
-    imageUrl: ci.product.images?.[0] || ''
-  }));
-
   // Mode & Upload State
   const [analysisMode, setAnalysisMode] = useState<'AUTO' | 'MANUAL'>('AUTO');
-  const [activePreset, setActivePreset] = useState<string>('gemini-living');
+  const [activePreset, setActivePreset] = useState<string>('preset-living');
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isGeneratingGemini, setIsGeneratingGemini] = useState(false);
 
   // Dynamic Real Room Dimensions State (auto-adjustable)
   const [wallWidth, setWallWidth] = useState<number>(16);
@@ -111,34 +97,6 @@ export default function RoomStudio() {
   const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
   const [isAddingBundle, setIsAddingBundle] = useState(false);
 
-  // Gemini Image Studio & Live Video Modal States
-  const [isImageStudioOpen, setIsImageStudioOpen] = useState<boolean>(false);
-  const [isLiveVideoOpen, setIsLiveVideoOpen] = useState<boolean>(false);
-
-  const handleLoadGeminiImageIntoStudio = (newImageUrl: string) => {
-    setUploadedFileUrl(newImageUrl);
-    toast.success('🎉 Loaded Gemini AI image into 360° Studio!');
-  };
-
-  const handleCaptureForRestyle = (_frameBase64: string) => {
-    setIsImageStudioOpen(true);
-  };
-
-  const handlePlaceLiveSuggestion = (name: string, price: number) => {
-    const newItem: PlacedItem = {
-      id: `live-placed-${Date.now()}`,
-      productId: `live-${Date.now()}`,
-      name,
-      category: 'Decor',
-      price,
-      imageUrl: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300',
-      yaw: -15,
-      pitch: 0,
-      scale: 1.0,
-    };
-    setPlacedItems(prev => [...prev, newItem]);
-  };
-
   // Fetch full store catalog for placement and manual selection
   const { data: catalogData } = useQuery({
     queryKey: ['visualizer-all-products'],
@@ -150,7 +108,7 @@ export default function RoomStudio() {
 
   // Auto-detect & calibrate dimensions
   const handleAutoAdjustDimensions = () => {
-    if (activePreset === 'gemini-bedroom') {
+    if (activePreset === 'preset-bedroom') {
       setWallWidth(14);
       setWallHeight(9.5);
       setRoomLength(16);
@@ -242,44 +200,6 @@ export default function RoomStudio() {
     }
   };
 
-  // Gemini AI 360 Generator Modal State
-  const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
-  const [geminiRoomType, setGeminiRoomType] = useState('Living Room');
-  const [geminiStyle, setGeminiStyle] = useState('Modern Indian Bohemian');
-  const [geminiWallpaper, setGeminiWallpaper] = useState('Rajasthani Heritage Floral Mural');
-  const [geminiCustomPrompt, setGeminiCustomPrompt] = useState('');
-  const [activeGeminiModel, setActiveGeminiModel] = useState('gemini-3.1-flash-image');
-
-  // Generate 360° Room using Gemini Image Model
-  const handleGenerateGemini360 = async (overrides?: { roomType?: string; style?: string; wallpaper?: string; prompt?: string }) => {
-    setIsGeneratingGemini(true);
-    try {
-      const roomType = overrides?.roomType || geminiRoomType;
-      const style = overrides?.style || geminiStyle;
-      const wallpaper = overrides?.wallpaper || geminiWallpaper;
-      const customPrompt = overrides?.prompt ?? geminiCustomPrompt;
-
-      toast.loading('Synthesizing 360° room with Gemini Image Model (gemini-3.1-flash-image)...', { id: 'gemini-gen' });
-      const res = await visualizerApi.generate360({
-        roomType,
-        style,
-        wallpaper,
-        customPrompt: customPrompt.trim() || undefined,
-        dimensions: { width: wallWidth, height: wallHeight, length: roomLength }
-      });
-      toast.dismiss('gemini-gen');
-      setUploadedFileUrl(res.imageUrl);
-      if (res.model) setActiveGeminiModel(res.model);
-      toast.success(`✨ Synthesized 360° room using ${res.model || 'Gemini Image Model'}!`);
-      setIsGeminiModalOpen(false);
-      triggerAnalysis(analysisMode, selectedProductIds);
-    } catch (err: any) {
-      toast.dismiss('gemini-gen');
-      toast.error(err.response?.data?.message || 'Failed to generate 360° image with Gemini');
-    } finally {
-      setIsGeneratingGemini(false);
-    }
-  };
 
   // Handle Preset Change
   const handleSelectPreset = (preset: typeof PRESETS[0]) => {
@@ -489,7 +409,7 @@ export default function RoomStudio() {
             </div>
             <h1 className="text-3xl md:text-4xl m-0 font-normal">Interior Design Studio</h1>
             <p className="text-muted mt-1.5 max-w-2xl text-sm leading-relaxed">
-              Explore room designs in 360° spherical view, place handcrafted decor directly into your space, and restyle with Google Gemini AI.
+              Explore room designs in 360° spherical view, place handcrafted decor directly into your space, and customize finishes in real time.
             </p>
           </div>
 
@@ -555,37 +475,9 @@ export default function RoomStudio() {
             </label>
           </div>
 
-          {/* Right: AI Creative Studio Suite */}
+          {/* Right: Studio Controls */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setIsImageStudioOpen(true)}
-              className="btn btn-sm flex items-center gap-2 shadow-sm font-semibold cursor-pointer text-xs"
-              style={{ background: '#8c6f52', color: '#ffffff', borderColor: '#8c6f52' }}
-              title="Restyle your room picture or panorama with Gemini Image Model (gemini-3.1-flash-image)"
-            >
-              <Sparkles size={14} />
-              <span>✨ Gemini Image Studio</span>
-            </button>
-
-            <button
-              onClick={() => setIsLiveVideoOpen(true)}
-              className="btn btn-sm flex items-center gap-2 shadow-sm font-semibold cursor-pointer text-xs"
-              style={{ background: '#2d2a27', color: '#ffffff', borderColor: '#2d2a27' }}
-              title="Real-time webcam interior consultant with Gemini Live & Spoken Voice"
-            >
-              <Video size={14} className="text-red-400 animate-pulse" />
-              <span>🎥 Gemini Live Video</span>
-            </button>
-
-            <button
-              onClick={() => setIsGeminiModalOpen(true)}
-              disabled={isGeneratingGemini}
-              className="btn btn-secondary btn-sm flex items-center gap-1.5 shadow-sm cursor-pointer text-xs"
-              title="Synthesize 360° Equirectangular Panorama with Gemini Image Model"
-            >
-              <Sparkles size={13} className={isGeneratingGemini ? 'animate-spin' : 'text-accent'} />
-              <span>{isGeneratingGemini ? 'Synthesizing...' : '✨ Generate 360°'}</span>
-            </button>
+            <span className="text-xs text-muted font-medium">360° Studio Panoramic Visualizer</span>
           </div>
         </div>
 
@@ -748,24 +640,6 @@ export default function RoomStudio() {
               )}
             </div>
 
-            {/* Gemini AI Image Agent Chat with Automatic Cart Placement */}
-            <GeminiAgentChat
-              cartItems={cartItemsForAgent}
-              placedItems={placedItems}
-              onPlacedItemsChange={setPlacedItems}
-              onImageUrlChange={(newUrl) => {
-                setUploadedFileUrl(newUrl);
-                triggerAnalysis(analysisMode, selectedProductIds);
-              }}
-              roomContext={{
-                roomType: activePreset === 'gemini-bedroom' ? 'Master Bedroom' : 'Living Room',
-                style: analysis?.detectedStyle || 'Modern Indian Bohemian',
-                width: wallWidth,
-                height: wallHeight,
-                length: roomLength,
-                currentImageUrl: uploadedFileUrl || PRESETS.find(p => p.id === activePreset)?.previewUrl
-              }}
-            />
           </div>
 
           {/* Right Column: Dynamic Multi-Tab Studio Assistant */}
@@ -1292,158 +1166,6 @@ export default function RoomStudio() {
           </div>
         )}
 
-        {/* Gemini AI 360 Studio Synthesis Modal */}
-        {isGeminiModalOpen && (
-          <div className="modal-overlay">
-            <div className="modal-box" style={{ maxWidth: '640px', maxHeight: '90vh' }}>
-              <div className="flex justify-between items-start mb-4 pb-3 border-b">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="badge badge-blue flex items-center gap-1 text-xs">
-                      <Sparkles size={12} /> Gemini AI Image Skill
-                    </span>
-                    <span className="badge badge-purple text-xs">Model: gemini-3.1-flash-image</span>
-                  </div>
-                  <h3 className="text-xl font-bold m-0">Generate 360° Real Room with Gemini</h3>
-                  <p className="text-xs text-muted mt-1">
-                    Uses Google Gemini image model to synthesize a seamless 2:1 equirectangular spherical room panorama with Banjara Market decor.
-                  </p>
-                </div>
-                <button onClick={() => setIsGeminiModalOpen(false)} className="btn btn-ghost p-1 cursor-pointer">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="space-y-4 overflow-y-auto max-h-[60vh] pr-1">
-                {/* Room Type Selector */}
-                <div>
-                  <label className="form-label text-xs font-semibold block mb-1.5">1. Room Type:</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {['Living Room', 'Master Bedroom', 'Dining Hall', 'Foyer & Lounge'].map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => setGeminiRoomType(type)}
-                        className={`text-xs py-2 px-2 border text-center font-medium cursor-pointer transition-all rounded ${
-                          geminiRoomType === type ? 'bg-dark text-white border-dark' : 'bg-white text-dark hover:border-dark'
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Decor Style Selector */}
-                <div>
-                  <label className="form-label text-xs font-semibold block mb-1.5">2. Interior Decor Style:</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {[
-                      { id: 'Modern Indian Bohemian', desc: 'Banjara Market Sheesham wood, sunburst brass mirror, rattan pendant' },
-                      { id: 'Heritage Rajasthani', desc: 'Jaipur block-print floral mural wallpaper, antique carved wood' },
-                      { id: 'Terracotta Japandi', desc: 'Warm terracotta arches, fluted ceramic vases, ribbed minimalism' },
-                      { id: 'Moroccan Luxury', desc: 'Brass filigree lanterns, mosaic arched niches, warm ambient glow' },
-                    ].map((style) => (
-                      <div
-                        key={style.id}
-                        onClick={() => setGeminiStyle(style.id)}
-                        className={`p-2.5 border cursor-pointer rounded transition-all ${
-                          geminiStyle === style.id ? 'border-accent bg-secondary/50' : 'hover:border-dark'
-                        }`}
-                      >
-                        <span className="text-xs font-bold block">{style.id}</span>
-                        <span className="text-[11px] text-muted">{style.desc}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Calibrated Dimensions Info */}
-                <div className="p-3 bg-secondary/70 border rounded flex justify-between items-center text-xs">
-                  <div>
-                    <span className="font-bold text-dark flex items-center gap-1.5">
-                      <Ruler size={14} className="text-accent" />
-                      Calibrated Dimensions:
-                    </span>
-                    <span className="text-muted text-[11px]">Will scale the 360° perspective ratio</span>
-                  </div>
-                  <span className="font-bold text-accent">{wallWidth}ft W × {wallHeight}ft H × {roomLength}ft L</span>
-                </div>
-
-                {/* Custom Prompt Input */}
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="form-label text-xs font-semibold block m-0">3. Custom Design Prompt (Optional):</label>
-                    <span className="text-[11px] text-muted">Natural Language AI</span>
-                  </div>
-                  <textarea
-                    value={geminiCustomPrompt}
-                    onChange={(e) => setGeminiCustomPrompt(e.target.value)}
-                    placeholder="e.g. Luxurious high-rise living room with floor-to-ceiling balcony windows, brass arched mirrors, warm Jaipuri heritage wallpaper, and handwoven cane chandeliers..."
-                    className="input w-full text-xs"
-                    rows={3}
-                  />
-                  <div className="flex gap-2 mt-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setGeminiCustomPrompt('Luxury Indian living hall with antique sunburst brass wall mirror, solid Sheesham wood credenza, Rajasthani floral mural, and warm rattan ceiling pendant.')}
-                      className="text-[11px] text-accent hover:underline bg-transparent border-none p-0 cursor-pointer"
-                    >
-                      + Use Bohemian Living Prompt
-                    </button>
-                    <span className="text-muted text-[11px]">|</span>
-                    <button
-                      type="button"
-                      onClick={() => setGeminiCustomPrompt('Master suite bedroom with terracotta arch feature wall, carved Sheesham side tables, Moroccan brass filigree pendant lamps, and fluted pastel vases.')}
-                      className="text-[11px] text-accent hover:underline bg-transparent border-none p-0 cursor-pointer"
-                    >
-                      + Use Bedroom Suite Prompt
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 mt-4 border-t">
-                <button
-                  type="button"
-                  onClick={() => setIsGeminiModalOpen(false)}
-                  className="btn btn-ghost btn-sm text-xs cursor-pointer w-full sm:w-auto"
-                >
-                  Cancel
-                </button>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => handleGenerateGemini360()}
-                    disabled={isGeneratingGemini}
-                    className="btn btn-primary btn-sm flex items-center justify-center gap-2 text-xs py-2 px-4 cursor-pointer w-full sm:w-auto shadow-sm"
-                  >
-                    <Sparkles size={14} className={isGeneratingGemini ? 'animate-spin' : ''} />
-                    <span>{isGeneratingGemini ? 'Synthesizing with Gemini...' : '✨ Generate 360° Panorama'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Gemini Image Restyle & Design Studio Modal */}
-        <GeminiImageStudioModal
-          isOpen={isImageStudioOpen}
-          onClose={() => setIsImageStudioOpen(false)}
-          currentRoomImageUrl={uploadedFileUrl || PRESETS.find(p => p.id === activePreset)?.previewUrl || PRESETS[0].previewUrl}
-          onLoadIntoStudio={handleLoadGeminiImageIntoStudio}
-        />
-
-        {/* Gemini Live Video AR Consultant Modal */}
-        <GeminiLiveVideoModal
-          isOpen={isLiveVideoOpen}
-          onClose={() => setIsLiveVideoOpen(false)}
-          onCaptureForRestyle={handleCaptureForRestyle}
-          onPlaceSuggestionInRoom={handlePlaceLiveSuggestion}
-        />
 
       </main>
 

@@ -1,1 +1,21 @@
-{"name":"interior-ecommerce","private":true,"workspaces":["apps/api","apps/web"],"scripts":{"dev":"concurrently \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"","build":"npm run build -w apps/api && npm run build -w apps/web","db:generate":"npm run prisma:generate -w apps/api","db:migrate":"npm run prisma:migrate -w apps/api","db:seed":"npm run prisma:seed -w apps/api"},"devDependencies":{"concurrently":"^9.1.2"}}
+{
+  "name": "interior-ecommerce",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
+    "build": "npm run build -w apps/api && npm run build -w apps/web",
+    "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/web",
+    "test": "npm run test -w apps/api && npm run test -w apps/web",
+    "db:generate": "npm run prisma:generate -w apps/api",
+    "db:push": "npm run prisma:push -w apps/api",
+    "db:migrate": "npm run prisma:migrate -w apps/api",
+    "db:seed": "npm run prisma:seed -w apps/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

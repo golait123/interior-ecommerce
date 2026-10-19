@@ -4,14 +4,6 @@ import path from 'path';
 import fs from 'fs';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
-import { 
-  generateRoomPanoramaWithGemini, 
-  analyzeRoomWithGeminiVision, 
-  runGeminiImageAgent,
-  restyleUploadedImageWithGemini,
-  createGeminiLiveEphemeralToken,
-  analyzeLiveVideoFrame
-} from '../lib/gemini';
 
 const router = Router();
 
@@ -61,148 +53,25 @@ router.post('/upload', upload.single('designFile'), (req, res) => {
   });
 });
 
-// 2. Gemini AI 360-Degree Panoramic Room Generation
-router.post('/generate-360', async (req, res, next) => {
-  try {
-    const { roomType, style, wallpaper, dimensions, customPrompt } = req.body || {};
-    const host = req.get('host');
-    const protocol = req.protocol;
-    const baseUrl = `${protocol}://${host}`;
+// 2. Curated Studio 360-Degree Panoramic Room Generation / Selector
+router.post('/generate-360', async (req, res) => {
+  const { roomType } = req.body || {};
+  const isBedroom = (roomType || '').toLowerCase().includes('bed');
+  const imageUrl = isBedroom ? '/panorama-bedroom.jpg' : '/panorama-living.jpg';
 
-    const result = await generateRoomPanoramaWithGemini(
-      { roomType, style, wallpaper, dimensions, customPrompt },
-      baseUrl
-    );
-
-    return res.json({
-      success: true,
-      message: '360° Real room panorama synthesized with Gemini AI image model',
-      data: {
-        imageUrl: result.imageUrl,
-        prompt: result.prompt,
-        model: result.model,
-        source: result.source,
-        aspectRatio: result.aspectRatio,
-        resolution: result.resolution,
-        timestamp: new Date()
-      }
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// 3. Gemini AI Image Agent Chat Endpoint
-router.post('/agent-chat', async (req, res, next) => {
-  try {
-    const { message, cartItems, placedItems, roomContext, conversationHistory } = req.body || {};
-    if (!message) {
-      return res.status(400).json({ success: false, message: 'Message is required' });
+  return res.json({
+    success: true,
+    message: 'Studio 360° panoramic room scene loaded',
+    data: {
+      imageUrl,
+      prompt: `${roomType || 'Living Room'} Studio Suite`,
+      model: 'InteriorG Architectural Studio Presets',
+      source: 'preset',
+      aspectRatio: '2:1',
+      resolution: '4096x2048',
+      timestamp: new Date()
     }
-
-    const host = req.get('host');
-    const protocol = req.protocol;
-    const baseUrl = `${protocol}://${host}`;
-
-    const result = await runGeminiImageAgent(
-      {
-        message,
-        cartItems: cartItems || [],
-        placedItems: placedItems || [],
-        roomContext: roomContext || {},
-        conversationHistory: conversationHistory || []
-      },
-      baseUrl
-    );
-
-    return res.json({
-      success: true,
-      message: 'Agent response generated successfully',
-      data: result
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// 4. Gemini Image Generation & Restyling for Uploaded Room Pictures
-router.post('/restyle-image', async (req, res, next) => {
-  try {
-    const { imageBase64, imageFilePath, mimeType, prompt, style, apiKey } = req.body || {};
-    if (!imageBase64 && !imageFilePath) {
-      return res.status(400).json({ success: false, message: 'Image base64 or file path is required for restyling' });
-    }
-
-    const host = req.get('host');
-    const protocol = req.protocol;
-    const baseUrl = `${protocol}://${host}`;
-
-    const result = await restyleUploadedImageWithGemini({
-      imageBase64,
-      imageFilePath,
-      mimeType: mimeType || 'image/jpeg',
-      prompt,
-      style,
-      apiKey,
-      baseUrl
-    });
-
-    return res.json({
-      success: true,
-      message: 'Room image redesigned and restyled with Gemini Image Model',
-      data: result
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// 5. Gemini Live API Ephemeral Token Generation
-router.post('/live-token', async (req, res, next) => {
-  try {
-    const { apiKey } = req.body || {};
-    const tokenResult = await createGeminiLiveEphemeralToken(apiKey);
-
-    if (!tokenResult) {
-      return res.status(503).json({
-        success: false,
-        message: 'Unable to provision ephemeral token. Please verify GEMINI_API_KEY or provide one in the request.'
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: 'Gemini Live ephemeral token generated successfully',
-      data: tokenResult
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// 6. Gemini Live Video Real-Time Frame Multimodal Analysis
-router.post('/live-frame-analysis', async (req, res, next) => {
-  try {
-    const { frameBase64, prompt, roomContext, apiKey } = req.body || {};
-    if (!frameBase64) {
-      return res.status(400).json({ success: false, message: 'Video frame base64 is required' });
-    }
-
-    const result = await analyzeLiveVideoFrame({
-      frameBase64,
-      prompt,
-      roomContext,
-      apiKey
-    });
-
-    return res.json({
-      success: true,
-      message: 'Live video frame analyzed successfully',
-      data: result
-    });
-  } catch (err) {
-    next(err);
-  }
+  });
 });
 
 // Validation schema for room analysis
@@ -221,7 +90,7 @@ const analyzeSchema = z.object({
   }).optional(),
 });
 
-// 2. Room Intelligence & Color Harmony Analysis Endpoint
+// 3. Room Intelligence & Color Harmony Analysis Endpoint
 router.post('/analyze', async (req, res, next) => {
   try {
     const input = analyzeSchema.parse(req.body);
@@ -244,36 +113,14 @@ router.post('/analyze', async (req, res, next) => {
     const totalWallArea = Math.round(2 * (width + length) * height * 0.85); // minus door/window allowances
 
     // Room color palette & mood definition
-    let detectedStyle = 'Heritage Indian Bohemian';
-    let roomPalette = [
+    const detectedStyle = 'Heritage Indian Bohemian & Botanical Minimalist';
+    const roomPalette = [
       { name: 'Warm Terracotta / Sand', hex: '#D27D56', role: 'Dominant Accent' },
       { name: 'Linen Oat Cream', hex: '#EDE8DF', role: 'Primary Wall Base' },
       { name: 'Dark Sheesham Walnut', hex: '#3B2F2F', role: 'Wood Furniture Base' },
       { name: 'Antiqued Brass / Gold', hex: '#C4A462', role: 'Metallic Fixtures' },
       { name: 'Olive Desert Sage', hex: '#7A8B7B', role: 'Subtle Contrast' }
     ];
-
-    // Attempt multimodal room understanding with Gemini Vision (gemini-3.7-flash)
-    if (input.fileUrl && input.fileUrl.includes('/uploads/designs/')) {
-      try {
-        const localFileName = path.basename(input.fileUrl);
-        const localFilePath = path.resolve(designsUploadDir, localFileName);
-        if (fs.existsSync(localFilePath)) {
-          const fileBuf = fs.readFileSync(localFilePath);
-          const ext = path.extname(localFileName).toLowerCase();
-          const mime = ext === '.png' ? 'image/png' : 'image/jpeg';
-          const visionAnalysis = await analyzeRoomWithGeminiVision(fileBuf.toString('base64'), mime);
-          if (visionAnalysis) {
-            if (visionAnalysis.detectedStyle) detectedStyle = visionAnalysis.detectedStyle;
-            if (visionAnalysis.colorPalette && visionAnalysis.colorPalette.length > 0) {
-              roomPalette = visionAnalysis.colorPalette;
-            }
-          }
-        }
-      } catch (visionErr) {
-        console.warn('Gemini vision analysis skipped:', visionErr);
-      }
-    }
 
     let recommendedProducts: any[] = [];
     let wallpaperItem: any = null;
@@ -283,8 +130,7 @@ router.post('/analyze', async (req, res, next) => {
       recommendedProducts = allProducts.filter(p => input.selectedProductIds!.includes(p.id));
       wallpaperItem = recommendedProducts.find(p => p.isCustomizable || p.category?.slug === 'wallpapers');
     } else {
-      // AUTO mode: intelligent AI recommendation engine
-      // Categorize products by characteristics
+      // AUTO mode: architectural room recommendation engine
       const wallpapers = allProducts.filter(p => p.category?.slug === 'wallpapers' || p.isCustomizable);
       const lighting = allProducts.filter(p => p.category?.slug === 'artistic-lighting-chandeliers');
       const mirrors = allProducts.filter(p => p.category?.slug === 'mirrors-wall-decor');
