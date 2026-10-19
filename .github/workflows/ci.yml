@@ -1,0 +1,113 @@
+name: InteriorG CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-build:
+    name: Build, Test & Validate (Monorepo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Database Service Containers for real integration verification
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: interiorg_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U postgres
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "echo 'db.runCommand({serverStatus:1}).ok' | mongosh --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # Step 1: Checkout Monorepo
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js runtime with npm caching
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      # Step 3: Install all dependencies deterministically
+      - name: 📦 Install monorepo dependencies
+        run: npm ci
+
+      # Step 4: Validate Prisma Schema
+      - name: 🔍 Validate Prisma schema
+        run: npx prisma validate --schema=apps/api/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
+
+      # Step 5: Generate Prisma Client
+      - name: ⚙️ Generate Prisma client
+        run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+      # Step 6: Test Database Push / Migration against PostgreSQL service container
+      - name: 🗄️ Test Database push & sync
+        run: npx prisma db push --schema=apps/api/prisma/schema.prisma --skip-generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
+
+      # Step 7: Monorepo Typecheck (API & Web)
+      - name: 🛡️ Typecheck Monorepo (apps/api & apps/web)
+        run: npm run typecheck
+
+      # Step 8: Run Automated Test Suites (API & Web)
+      - name: 🧪 Execute automated unit & integration tests
+        run: npm test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
+          MONGODB_URI: mongodb://localhost:27017/interiorg_test_db
+          JWT_SECRET: ci-test-secret-key-32-chars-long-minimum!
+
+      # Step 9: Build Backend API
+      - name: 🏗️ Compile Backend API
+        run: npm run build -w apps/api
+
+      # Step 10: Build Web Storefront Production Bundle
+      - name: 🎨 Build Frontend Web Application
+        run: npm run build -w apps/web
+        env:
+          VITE_API_URL: https://api.interiorg.com/api/v1
+
+      # Step 11: Upload Frontend Build Artifact
+      - name: 📤 Archive Web Production Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: interiorg-web-dist
+          path: apps/web/dist
+          retention-days: 7
+
+      # Step 12: Security audit report
+      - name: 🔒 Dependency Security Audit
+        run: npm audit --audit-level=critical
+        continue-on-error: true
