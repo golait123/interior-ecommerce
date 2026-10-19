@@ -27,11 +27,6 @@ jobs:
           POSTGRES_DB: interiorg_test_db
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
       mongodb:
         image: mongo:7.0
@@ -67,7 +62,17 @@ jobs:
 
       # Step 6: Test Database Push / Migration against PostgreSQL service container
       - name: 🗄️ Test Database push & sync
-        run: npx prisma db push --schema=apps/api/prisma/schema.prisma --skip-generate
+        run: |
+          for i in $(seq 1 30); do
+            if npx prisma db push --schema=apps/api/prisma/schema.prisma --skip-generate; then
+              echo "✅ Database connected and synchronized successfully"
+              exit 0
+            fi
+            echo "Waiting for postgres to accept connections ($i/30)..."
+            sleep 2
+          done
+          echo "❌ Failed to connect to PostgreSQL after 60s"
+          exit 1
         env:
           DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
 

@@ -20,9 +20,16 @@ const addresses_1 = __importDefault(require("./routes/addresses"));
 const customizations_1 = __importDefault(require("./routes/customizations"));
 const upload_1 = __importDefault(require("./routes/upload"));
 const visualizer_1 = __importDefault(require("./routes/visualizer"));
+const customizerDesigns_1 = __importDefault(require("./routes/customizerDesigns"));
+const reviews_1 = __importDefault(require("./routes/reviews"));
+const aiChat_1 = __importDefault(require("./routes/aiChat"));
+const activityLogs_1 = __importDefault(require("./routes/activityLogs"));
+const mongodb_1 = require("./lib/mongodb");
 const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT || 4000);
+// Initialize MongoDB service for custom designs, reviews, AI chats & activity logs
+(0, mongodb_1.connectMongoDB)().catch(err => console.warn('MongoDB connection notice:', err?.message || err));
 app.use((0, helmet_1.default)({
     crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
@@ -32,7 +39,22 @@ app.use(express_1.default.json({ limit: '10mb' }));
 app.use((0, express_rate_limit_1.default)({ windowMs: 60_000, max: 200, standardHeaders: true }));
 // Serve static uploaded files
 app.use('/uploads', express_1.default.static(path_1.default.resolve(process.cwd(), 'uploads')));
-app.get('/api/v1/health', (_, res) => res.json({ success: true, message: 'Success', data: { status: 'healthy', service: 'interiorg-api', timestamp: new Date() } }));
+app.get('/api/v1/health', (_, res) => {
+    const mongo = (0, mongodb_1.getMongoStatus)();
+    res.json({
+        success: true,
+        message: 'Success',
+        data: {
+            status: 'healthy',
+            service: 'interiorg-api',
+            databases: {
+                postgres: 'connected',
+                mongodb: mongo
+            },
+            timestamp: new Date()
+        }
+    });
+});
 // Return host network IP for mobile QR code connectivity
 app.get('/api/v1/network-info', (_, res) => {
     const interfaces = os_1.default.networkInterfaces();
@@ -241,7 +263,11 @@ app.get('/', (req, res) => {
             inventory: '/api/v1/inventory',
             customizations: '/api/v1/customizations',
             upload: '/api/v1/upload',
-            visualizer: '/api/v1/visualizer'
+            visualizer: '/api/v1/visualizer',
+            customizerDesigns: '/api/v1/customizer-designs',
+            reviews: '/api/v1/reviews',
+            aiChat: '/api/v1/ai-chat',
+            activityLogs: '/api/v1/activity-logs'
         }
     });
 });
@@ -255,6 +281,10 @@ app.use('/api/v1/addresses', addresses_1.default);
 app.use('/api/v1/customizations', customizations_1.default);
 app.use('/api/v1/upload', upload_1.default);
 app.use('/api/v1/visualizer', visualizer_1.default);
+app.use('/api/v1/customizer-designs', customizerDesigns_1.default);
+app.use('/api/v1/reviews', reviews_1.default);
+app.use('/api/v1/ai-chat', aiChat_1.default);
+app.use('/api/v1/activity-logs', activityLogs_1.default);
 // 404 Catch-All Handler
 app.use((req, res) => {
     res.status(404).json({
