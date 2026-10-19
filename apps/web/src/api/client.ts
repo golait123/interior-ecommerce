@@ -16,7 +16,10 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       localStorage.removeItem('cc_token');
       localStorage.removeItem('cc_user');
-      window.location.href = '/login';
+      const path = window.location.pathname;
+      if (path.startsWith('/admin') || path.startsWith('/stock') || path.startsWith('/checkout') || path.startsWith('/orders') || path.startsWith('/customer')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(err);
   }

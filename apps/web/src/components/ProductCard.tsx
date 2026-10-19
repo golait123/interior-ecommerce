@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../api/products';
-import { ShoppingBag, Eye, Sparkles } from 'lucide-react';
+import { ShoppingBag, Eye, Sliders } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -13,139 +13,193 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
   const isDiscounted = product.discountPrice !== null;
   const curPrice = Number(product.discountPrice || product.price);
   const origPrice = Number(product.price);
-  const discountPct = isDiscounted && origPrice > curPrice ? Math.round(((origPrice - curPrice) / origPrice) * 100) : null;
+  const discountPct = isDiscounted && origPrice > curPrice 
+    ? Math.round(((origPrice - curPrice) / origPrice) * 100) 
+    : null;
+
+  // Safe Image handling with fallback to avoid broken icons & alt text leak
+  const fallbackImg = '/images/outdoor-garden.jpg';
+  const initialImg = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : fallbackImg;
+  const [imgSrc, setImgSrc] = useState(initialImg);
+
+  useEffect(() => {
+    setImgSrc((product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : fallbackImg);
+  }, [product.images]);
+
+  // Space / Room information
+  const spaceItem = product.spaces && product.spaces.length > 0 ? product.spaces[0] : null;
+  const roomName = product.rooms && product.rooms.length > 0 ? product.rooms[0] : null;
+  const spaceLabel = spaceItem ? `${spaceItem.icon} ${spaceItem.name}` : roomName ? roomName : null;
 
   return (
-    <div className="product-card group relative">
-      <div className="product-card-image-wrapper relative">
+    <div className="product-card group">
+      {/* 1. Studio Image Box */}
+      <div className="product-card-image-wrapper">
         <Link to={`/products/${product.id}`} className="block w-full h-full">
           <div className="product-image-placeholder">
-            {product.images?.[0] ? (
-              <img src={product.images[0]} alt={product.name} />
-            ) : (
-              <div className={`gradient-bg gradient-${product.type.toLowerCase()}`}></div>
-            )}
+            <img 
+              src={imgSrc} 
+              alt={product.name} 
+              loading="lazy" 
+              onError={() => {
+                if (imgSrc !== fallbackImg) setImgSrc(fallbackImg);
+              }}
+            />
           </div>
         </Link>
 
-        {/* Badges */}
-        <div className="product-badges">
-          <span className={`badge ${product.isCustomizable ? 'badge-blue' : 'badge-yellow'}`}>
-            {product.isCustomizable ? 'CUSTOM' : 'CURATED'}
-          </span>
-          {product.primaryDomain && (
-            <span className={`badge ${product.primaryDomain === 'outdoor' ? 'badge-green' : product.primaryDomain === 'both' ? 'badge-purple' : 'badge-orange'} font-semibold text-[10px]`}>
-              {product.primaryDomain === 'outdoor' ? '🌿 OUTDOOR' : product.primaryDomain === 'both' ? '🏠🌿 ALL-SPACE' : '🏠 INDOOR'}
-            </span>
-          )}
-          {isDiscounted && discountPct && (
-            <span className="badge badge-red font-bold">
+        {/* Top-Left Badge: Single clean, non-overlapping pill */}
+        <div className="product-badge-corner">
+          {discountPct ? (
+            <span className="product-badge-pill product-badge-discount">
               {discountPct}% OFF
+            </span>
+          ) : product.isCustomizable ? (
+            <span className="product-badge-pill product-badge-custom">
+              CUSTOM
+            </span>
+          ) : (
+            <span className="product-badge-pill product-badge-curated">
+              CURATED
             </span>
           )}
         </div>
 
-        {/* Floating Quick View Overlay Button */}
-        {onQuickView && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onQuickView(product);
-            }}
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-white/95 hover:bg-white text-dark text-xs font-semibold py-1.5 px-3 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1.5 border border-[#ded9d0] cursor-pointer"
-            title="Quick view product details"
-          >
-            <Eye size={13} className="text-accent" />
-            <span>Quick View</span>
-          </button>
-        )}
+        {/* Top-Right Badge: Frosted Space/Domain Pill */}
+        {product.primaryDomain === 'outdoor' ? (
+          <div className="product-badge-domain">
+            <span>🌿 Outdoor</span>
+          </div>
+        ) : product.primaryDomain === 'indoor' ? (
+          <div className="product-badge-domain">
+            <span>🏠 Indoor</span>
+          </div>
+        ) : spaceLabel ? (
+          <div className="product-badge-domain">
+            <span>{spaceLabel}</span>
+          </div>
+        ) : null}
+
+        {/* Hover Action Bar: Centered slide up */}
+        <div className="product-card-actions">
+          {onQuickView && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onQuickView(product);
+              }}
+              className="product-btn-quickview"
+              title="Quick preview product"
+            >
+              <Eye size={13} />
+              <span>Quick View</span>
+            </button>
+          )}
+
+          {onAddToCart ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddToCart(product);
+              }}
+              className="product-btn-addtocart"
+              title="Add to cart"
+            >
+              <ShoppingBag size={13} />
+              <span>Add</span>
+            </button>
+          ) : product.isCustomizable ? (
+            <Link
+              to={`/products/${product.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="product-btn-addtocart"
+            >
+              <Sliders size={13} />
+              <span>Customize</span>
+            </Link>
+          ) : null}
+        </div>
       </div>
       
+      {/* 2. Organized Content & Clean Typography */}
       <div className="product-card-content">
         <div>
-          <div className="flex justify-between items-center mb-1">
-            <p className="product-category m-0">{product.category?.name}</p>
-            {product.spaces && product.spaces.length > 0 ? (
-              <span className="text-[11px] text-accent font-medium flex items-center gap-1">
-                <span>{product.spaces[0].icon}</span>
-                <span>{product.spaces[0].name}</span>
+          {/* Metadata Row: Category & Space */}
+          <div className="product-meta-row">
+            <span className="product-category-text" title={product.category?.name || 'Collection'}>
+              {product.category?.name || 'Collection'}
+            </span>
+            {spaceLabel && !product.primaryDomain && (
+              <span className="product-space-text" title={spaceLabel}>
+                {spaceLabel}
               </span>
-            ) : product.rooms && product.rooms.length > 0 ? (
-              <span className="text-[11px] text-accent font-medium">
-                {product.rooms[0]}
-              </span>
-            ) : null}
+            )}
           </div>
-          <Link to={`/products/${product.id}`}>
-            <h3 className="product-name">{product.name}</h3>
+
+          {/* Product Title (Clean, 2-line clamped modern sans-serif) */}
+          <Link 
+            to={`/products/${product.id}`} 
+            className="product-title-link"
+            title={product.name}
+          >
+            {product.name}
           </Link>
-          {product.botanicalBenefits && product.botanicalBenefits.length > 0 && (
-            <div className="mb-1.5">
-              <span className="text-[10px] bg-[#edf6ec] text-[#2e5926] px-1.5 py-0.5 rounded font-semibold truncate block border border-[#d2e7cf]">
-                {product.botanicalBenefits[0]}
-              </span>
-            </div>
-          )}
-          {product.spaces && product.spaces.length > 1 ? (
-            <p className="text-[11px] text-muted m-0 mb-2 truncate">
-              Spaces: {product.spaces.map(s => `${s.icon} ${s.name}`).slice(0, 3).join(' • ')}
-            </p>
-          ) : product.rooms && product.rooms.length > 1 ? (
-            <p className="text-[11px] text-muted m-0 mb-2 truncate">
-              Ideal for: {product.rooms.join(' • ')}
-            </p>
+
+          {/* Botanical / Craft Highlight (if available) */}
+          {product.botanicalBenefits && product.botanicalBenefits.length > 0 ? (
+            <span className="product-highlight-pill" title={product.botanicalBenefits[0]}>
+              🌱 {product.botanicalBenefits[0]}
+            </span>
+          ) : product.material ? (
+            <span className="product-highlight-pill" title={product.material}>
+              ✨ {product.material}
+            </span>
           ) : null}
         </div>
 
+        {/* 3. Price & Action Footer */}
         <div className="product-card-footer">
-          <div className="product-price-container">
-            {isDiscounted ? (
-              <>
-                <span className="price-original">₹{product.price}</span>
-                <span className="price">₹{product.discountPrice}</span>
-              </>
-            ) : (
-              <span className="price">₹{product.price}</span>
+          <div className="product-price-wrapper">
+            <span className="product-price-current">
+              {product.priceRange || `₹${curPrice.toLocaleString()}`}
+            </span>
+            {isDiscounted && (
+              <span className="product-price-original">
+                ₹{origPrice.toLocaleString()}
+              </span>
             )}
-            <span className="unit-label">/{product.unit}</span>
+            <span className="product-price-unit">
+              /{product.unit || 'piece'}
+            </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {onQuickView && (
-              <button 
-                type="button"
-                className="btn btn-ghost p-1.5 text-muted hover:text-dark md:hidden cursor-pointer" 
-                onClick={() => onQuickView(product)}
-                aria-label="Quick View"
-                title="Quick View"
-              >
-                <Eye size={18} />
-              </button>
-            )}
-
-            {product.isCustomizable ? (
-              <a
-                href="#custom"
-                className="btn btn-sm py-1 px-2.5 text-xs font-semibold rounded bg-[#f5efe6] text-accent hover:bg-[#8c6f52] hover:text-white transition-colors"
-                title="Customize this wallpaper with your room dimensions"
-              >
-                <Sparkles size={13} className="inline mr-1" />
-                <span>Customize</span>
-              </a>
-            ) : onAddToCart ? (
-              <button 
-                type="button"
-                className="btn btn-ghost add-to-cart-btn" 
-                onClick={() => onAddToCart(product)}
-                aria-label="Add to cart"
-                title="Add to cart"
-              >
-                <ShoppingBag size={20} />
-              </button>
-            ) : null}
-          </div>
+          {/* Quick Footer Action Button */}
+          {onAddToCart ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddToCart(product);
+              }}
+              className="product-footer-action-btn"
+              title="Add to cart"
+            >
+              <ShoppingBag size={14} />
+            </button>
+          ) : product.isCustomizable ? (
+            <Link
+              to={`/products/${product.id}`}
+              className="product-footer-action-btn"
+              title="Customize product"
+            >
+              <Sliders size={14} />
+            </Link>
+          ) : null}
         </div>
       </div>
     </div>

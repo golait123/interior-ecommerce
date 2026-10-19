@@ -74,29 +74,12 @@ router.get('/users', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.patch('/users/:id/role', async (req: AuthReq, res, next) => {
-  try {
-    const schema = z.object({ role: z.nativeEnum(Role) });
-    const { role } = schema.parse(req.body);
-    const id = String(req.params.id);
-
-    const user = await prisma.user.update({
-      where: { id },
-      data: { role }
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        userId: req.user!.id,
-        action: 'UPDATE_USER_ROLE',
-        entityType: 'USER',
-        entityId: user.id,
-        newValue: { newRole: role }
-      }
-    });
-
-    res.json({ success: true, message: 'Role updated', data: user });
-  } catch (error) { next(error); }
+// SECURITY: Role modification via API is strictly disabled to prevent privilege escalation
+router.patch('/users/:id/role', async (_req: AuthReq, res) => {
+  return res.status(403).json({ 
+    success: false, 
+    message: 'Role modification via admin panel is disabled for security reasons.' 
+  });
 });
 
 router.get('/audit-log', async (req, res, next) => {

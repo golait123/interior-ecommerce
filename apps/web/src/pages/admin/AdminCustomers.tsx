@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '../../api/admin';
 import { AdminLayout } from './AdminLayout';
 import { Users, Search, ShoppingBag } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 export function AdminCustomers() {
-  const queryClient = useQueryClient();
   const [q, setQ] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
 
@@ -19,16 +17,7 @@ export function AdminCustomers() {
     })
   });
 
-  const updateRole = useMutation({
-    mutationFn: ({ id, role }: { id: string; role: string }) => adminApi.updateUserRole(id, role),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('User role updated successfully');
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || 'Failed to update role');
-    }
-  });
+// User role modification is permanently locked in admin panel for platform security reasons.
 
   // Support both data.users (backend response) and fallback data.items
   const users: any[] = data?.users || data?.items || [];
@@ -87,7 +76,7 @@ export function AdminCustomers() {
               <th>Orders Placed</th>
               <th>Registered On</th>
               <th>Role</th>
-              <th>Change Role</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -145,17 +134,10 @@ export function AdminCustomers() {
                     </span>
                   </td>
                   <td>
-                    <select 
-                      className="select select-sm" 
-                      value={u.role}
-                      disabled={updateRole.isPending}
-                      onChange={(e) => updateRole.mutate({ id: u.id, role: e.target.value })}
-                      style={{ padding: '4px 8px', fontSize: '13px' }}
-                    >
-                      <option value="CUSTOMER">Customer</option>
-                      <option value="STOCK_MANAGER">Stock Manager</option>
-                      <option value="ADMIN">Admin</option>
-                    </select>
+                    <span className="text-xs text-muted flex items-center gap-1">
+                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                      Verified
+                    </span>
                   </td>
                 </tr>
               ))

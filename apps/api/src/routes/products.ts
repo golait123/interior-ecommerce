@@ -311,6 +311,14 @@ export const getBotanicalBenefits = (p: any): string[] => {
 
 export const ALL_SPACES_LEAVES: SpaceLeafNode[] = [...INDOOR_LEAVES, ...OUTDOOR_LEAVES];
 
+export const matchLeafNode = (leaf: SpaceLeafNode, p: any): boolean => {
+  const text = `${p.name} ${p.description || ''} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+  if (text.includes(leaf.slug.toLowerCase()) || text.includes(leaf.name.toLowerCase())) {
+    return true;
+  }
+  return leaf.matches(p);
+};
+
 export const SPACES_DOMAINS: SpaceDomainNode[] = [
   {
     id: 'indoor',
@@ -342,9 +350,9 @@ router.get('/spaces-tree', async (_req, res, next) => {
       include: { category: true }
     });
 
-    const matchLeaf = (leaf: SpaceLeafNode, p: any) => leaf.matches(p);
-    const matchIndoor = (p: any) => INDOOR_LEAVES.some(l => l.matches(p));
-    const matchOutdoor = (p: any) => OUTDOOR_LEAVES.some(l => l.matches(p));
+    const matchLeaf = (leaf: SpaceLeafNode, p: any) => matchLeafNode(leaf, p);
+    const matchIndoor = (p: any) => INDOOR_LEAVES.some(l => matchLeafNode(l, p));
+    const matchOutdoor = (p: any) => OUTDOOR_LEAVES.some(l => matchLeafNode(l, p));
 
     const treeData = [
       {
@@ -435,9 +443,9 @@ router.get('/', async (req, res, next) => {
 
     // Map matching spaces and rooms to each product
     let enrichedItems = items.map(p => {
-      const matchingLeaves = ALL_SPACES_LEAVES.filter(leaf => leaf.matches(p));
-      const isIndoor = INDOOR_LEAVES.some(leaf => leaf.matches(p));
-      const isOutdoor = OUTDOOR_LEAVES.some(leaf => leaf.matches(p));
+      const matchingLeaves = ALL_SPACES_LEAVES.filter(leaf => matchLeafNode(leaf, p));
+      const isIndoor = INDOOR_LEAVES.some(leaf => matchLeafNode(leaf, p));
+      const isOutdoor = OUTDOOR_LEAVES.some(leaf => matchLeafNode(leaf, p));
       const primaryDomain: 'indoor' | 'outdoor' | 'both' = isIndoor && isOutdoor ? 'both' : isIndoor ? 'indoor' : isOutdoor ? 'outdoor' : 'indoor';
 
       return {
@@ -463,13 +471,13 @@ router.get('/', async (req, res, next) => {
     // Filter by space or domain if specified
     if (space && space !== 'all' && space !== '') {
       if (space === 'indoor') {
-        enrichedItems = enrichedItems.filter(p => INDOOR_LEAVES.some(leaf => leaf.matches(p)));
+        enrichedItems = enrichedItems.filter(p => INDOOR_LEAVES.some(leaf => matchLeafNode(leaf, p)));
       } else if (space === 'outdoor') {
-        enrichedItems = enrichedItems.filter(p => OUTDOOR_LEAVES.some(leaf => leaf.matches(p)));
+        enrichedItems = enrichedItems.filter(p => OUTDOOR_LEAVES.some(leaf => matchLeafNode(leaf, p)));
       } else {
         const leafDef = ALL_SPACES_LEAVES.find(l => l.slug === space || l.id === space);
         if (leafDef) {
-          enrichedItems = enrichedItems.filter(p => leafDef.matches(p));
+          enrichedItems = enrichedItems.filter(p => matchLeafNode(leafDef, p));
         }
       }
     }
@@ -511,7 +519,7 @@ router.get('/room-categories', async (_req, res, next) => {
         name: leaf.name,
         icon: leaf.icon,
         description: leaf.description,
-        count: allProducts.filter(p => leaf.matches(p)).length
+        count: allProducts.filter(p => matchLeafNode(leaf, p)).length
       }))
     ];
 
@@ -548,9 +556,9 @@ router.get('/:id', async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    const matchingLeaves = ALL_SPACES_LEAVES.filter(leaf => leaf.matches(product));
-    const isIndoor = INDOOR_LEAVES.some(leaf => leaf.matches(product));
-    const isOutdoor = OUTDOOR_LEAVES.some(leaf => leaf.matches(product));
+    const matchingLeaves = ALL_SPACES_LEAVES.filter(leaf => matchLeafNode(leaf, product));
+    const isIndoor = INDOOR_LEAVES.some(leaf => matchLeafNode(leaf, product));
+    const isOutdoor = OUTDOOR_LEAVES.some(leaf => matchLeafNode(leaf, product));
     const primaryDomain: 'indoor' | 'outdoor' | 'both' = isIndoor && isOutdoor ? 'both' : isIndoor ? 'indoor' : isOutdoor ? 'outdoor' : 'indoor';
 
     const enriched = {
@@ -576,7 +584,7 @@ router.get('/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/', auth, roles(Role.ADMIN), async (req: AuthReq, res, next) => {
+router.post('/', auth, roles(Role.ADMIN, Role.STOCK_MANAGER), async (req: AuthReq, res, next) => {
   try {
     const schema = z.object({
       name: z.string().min(2),
@@ -595,10 +603,16 @@ router.post('/', auth, roles(Role.ADMIN), async (req: AuthReq, res, next) => {
       finish: z.string().optional(),
       images: z.array(z.string()).optional(),
       initialStock: z.number().int().min(0).optional(),
+      reorderLevel: z.number().int().min(0).optional(),
+      warehouseLocation: z.string().optional(),
+      spaces: z.array(z.string()).optional(),
+      primaryDomain: z.enum(['indoor', 'outdoor', 'both']).optional(),
+      botanicalBenefits: z.array(z.string()).optional(),
+      craftHighlights: z.array(z.string()).optional(),
     });
 
     const parsed = schema.parse(req.body);
-    const { initialStock, ...productData } = parsed;
+    const { initialStock, reorderLevel, warehouseLocation, spaces, primaryDomain, botanicalBenefits, craftHighlights, ...productData } = parsed;
 
     const baseSlug = (productData.slug || productData.name)
       .toLowerCase()
@@ -607,14 +621,42 @@ router.post('/', auth, roles(Role.ADMIN), async (req: AuthReq, res, next) => {
     const slug = productData.slug || `${baseSlug}-${Date.now().toString().slice(-4)}`;
     const sku = productData.sku || `IG-${Date.now().toString().slice(-6)}`;
 
+    // Build enriched description incorporating spaces and botanical metadata
+    let finalDescription = productData.description.trim();
+    const metaTags: string[] = [];
+    if (spaces && spaces.length > 0) {
+      metaTags.push(`Spaces: ${spaces.join(', ')}`);
+    }
+    if (primaryDomain) {
+      metaTags.push(`Domain: ${primaryDomain}`);
+    }
+    if (botanicalBenefits && botanicalBenefits.length > 0) {
+      metaTags.push(`Botanical Benefits: ${botanicalBenefits.join(' | ')}`);
+    }
+    if (craftHighlights && craftHighlights.length > 0) {
+      metaTags.push(`Craft Highlights: ${craftHighlights.join(', ')}`);
+    }
+    if (metaTags.length > 0 && !finalDescription.includes('--- Specifications & Living Spaces ---')) {
+      finalDescription += `\n\n--- Specifications & Living Spaces ---\n${metaTags.join('\n')}`;
+    }
+
     const product = await prisma.$transaction(async (tx) => {
       const p = await tx.product.create({
         data: {
-          ...productData,
+          name: productData.name,
+          description: finalDescription,
+          type: productData.type,
+          categoryId: productData.categoryId,
+          price: productData.price,
+          discountPrice: productData.discountPrice,
+          unit: productData.unit || (productData.type === ProductType.CUSTOM_WALLPAPER ? 'sq ft' : 'piece'),
+          pricePerSqFt: productData.pricePerSqFt,
+          coverageSqFt: productData.coverageSqFt,
+          material: productData.material,
+          finish: productData.finish,
           slug,
           sku,
           images: productData.images || [],
-          unit: productData.unit || (productData.type === ProductType.CUSTOM_WALLPAPER ? 'sq ft' : 'piece'),
           isCustomizable: productData.isCustomizable ?? (productData.type === ProductType.CUSTOM_WALLPAPER),
         }
       });
@@ -625,8 +667,8 @@ router.post('/', auth, roles(Role.ADMIN), async (req: AuthReq, res, next) => {
           totalQuantity: initialStock || 0,
           reservedQuantity: 0,
           damagedQuantity: 0,
-          reorderLevel: 10,
-          warehouseLocation: 'Main Warehouse',
+          reorderLevel: reorderLevel !== undefined ? reorderLevel : 10,
+          warehouseLocation: warehouseLocation || 'Main Warehouse',
           unit: p.unit
         }
       });
@@ -652,7 +694,7 @@ router.post('/', auth, roles(Role.ADMIN), async (req: AuthReq, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.put('/:id', auth, roles(Role.ADMIN), async (req: AuthReq, res, next) => {
+router.put('/:id', auth, roles(Role.ADMIN, Role.STOCK_MANAGER), async (req: AuthReq, res, next) => {
   try {
     const id = String(req.params.id);
     const schema = z.object({
@@ -662,12 +704,14 @@ router.put('/:id', auth, roles(Role.ADMIN), async (req: AuthReq, res, next) => {
       type: z.nativeEnum(ProductType).optional(),
       sku: z.string().optional(),
       price: z.number().positive().optional(),
+      discountPrice: z.number().positive().optional(),
       categoryId: z.string().optional(),
       unit: z.string().optional(),
       pricePerSqFt: z.number().optional(),
       isCustomizable: z.boolean().optional(),
       material: z.string().optional(),
       finish: z.string().optional(),
+      images: z.array(z.string()).optional(),
     });
 
     const data = schema.parse(req.body);

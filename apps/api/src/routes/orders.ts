@@ -54,8 +54,16 @@ router.post('/', roles(Role.CUSTOMER), async (req: AuthReq, res, next) => {
           }
         });
 
-        const price = product.discountPrice ?? product.price;
-        subtotal += Number(price) * item.quantity;
+        const cust = item.customization;
+        let price = Number(product.discountPrice ?? product.price);
+        if (cust) {
+          if (typeof cust.unitPrice === 'number' && cust.unitPrice > 0) price = cust.unitPrice;
+          else if (typeof cust.customPrice === 'number' && cust.customPrice > 0) price = cust.customPrice;
+          else if (typeof cust.materialCost === 'number' && cust.materialCost > 0) price = cust.materialCost;
+          else if (typeof cust.materialSubtotal === 'number' && cust.materialSubtotal > 0) price = cust.materialSubtotal;
+          else if (typeof cust.subtotal === 'number' && cust.subtotal > 0 && item.quantity > 0) price = Math.round(cust.subtotal / item.quantity);
+        }
+        subtotal += price * item.quantity;
 
         orderItemsData.push({
           productId: item.productId,
@@ -65,7 +73,7 @@ router.post('/', roles(Role.CUSTOMER), async (req: AuthReq, res, next) => {
         });
       }
 
-      const tax = subtotal * 0.18;
+      const tax = Math.round(subtotal * 0.18);
       const total = subtotal + tax;
 
       const newOrder = await tx.order.create({
@@ -187,6 +195,66 @@ router.patch('/:id/status', roles(Role.ADMIN, Role.STOCK_MANAGER), async (req: A
     });
 
     res.json({ success: true, message: 'Order status updated', data: order });
+  } catch (error) { next(error); }
+});
+
+router.patch('/:id/items/:itemId/customization', roles(Role.ADMIN, Role.STOCK_MANAGER), async (req: AuthReq, res, next) => {
+  try {
+    const id = String(req.params.id);
+    const itemId = String(req.params.itemId);
+    const schema = z.object({
+      customization: z.record(z.string(), z.any())
+    });
+    const { customization } = schema.parse(req.body);
+
+    const orderItem = await prisma.orderItem.findUnique({
+      where: { id: itemId }
+    });
+
+    if (!orderItem || orderItem.orderId !== id) {
+      return res.status(404).json({ success: false, message: 'Order item not found' });
+    }
+
+    const currentCust = (typeof orderItem.customization === 'object' && orderItem.customization !== null)
+      ? (orderItem.customization as Record<string, any>)
+      : {};
+
+    const mergedCustomization = {
+      ...currentCust,
+      ...customization,
+      lastUpdatedBy: {
+        userId: req.user!.id,
+        role: req.user!.role,
+        updatedAt: new Date().toISOString()
+      }
+    };
+
+    await prisma.orderItem.update({
+      where: { id: itemId },
+      data: { customization: mergedCustomization }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user!.id,
+        action: 'UPDATE_ORDER_ITEM_CUSTOMIZATION',
+        entityType: 'ORDER_ITEM',
+        entityId: itemId,
+        newValue: customization
+      }
+    });
+
+    const fullOrder = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: { include: { product: true } },
+        payment: true,
+        address: true,
+        user: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    res.json({ success: true, message: 'Order item customization & tracking updated', data: fullOrder });
   } catch (error) { next(error); }
 });
 

@@ -16,6 +16,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useLocationContext } from '../contexts/LocationContext';
 
 interface HomeNurserySectionProps {
   onSelectSpace: (spaceSlug: string) => void;
@@ -29,6 +30,7 @@ export const HomeNurserySection: React.FC<HomeNurserySectionProps> = ({
   onAddToCart
 }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'balcony' | 'lawn' | 'tools'>('all');
+  const { formatPrice } = useLocationContext();
 
   // Fetch products under home-nursery
   const { data: nurseryProductsData, isLoading } = useQuery({
@@ -277,11 +279,11 @@ export const HomeNurserySection: React.FC<HomeNurserySectionProps> = ({
                   <div className="p-4 pt-0 border-t border-[#f7f4ee] flex items-center justify-between mt-auto">
                     <div>
                       <div className="text-sm font-bold text-dark font-playfair">
-                        ₹{curPrice.toLocaleString('en-IN')}
+                        {formatPrice(curPrice)}
                       </div>
                       {hasDiscount && (
                         <div className="text-[10px] text-muted line-through">
-                          ₹{origPrice.toLocaleString('en-IN')}
+                          {formatPrice(origPrice)}
                         </div>
                       )}
                     </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Package, Activity, AlertTriangle, LogOut, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, Package, Activity, AlertTriangle, LogOut, ExternalLink, ShoppingBag } from 'lucide-react';
 
 export function StockLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -9,6 +9,7 @@ export function StockLayout({ children }: { children: React.ReactNode }) {
 
   const links = [
     { to: '/stock', icon: <LayoutDashboard size={20} />, label: 'Overview' },
+    { to: '/stock/orders', icon: <ShoppingBag size={20} />, label: 'Orders & Tracking' },
     { to: '/stock/inventory', icon: <Package size={20} />, label: 'Inventory' },
     { to: '/stock/movements', icon: <Activity size={20} />, label: 'Movements' },
   ];
@@ -17,8 +18,9 @@ export function StockLayout({ children }: { children: React.ReactNode }) {
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
-          <Link to="/" className="logo text-xl">
-            <span className="logo-casa">Interior</span><span className="logo-canvas">G</span> <span className="text-sm font-normal text-muted">STOCK</span>
+          <Link to="/" className="logo text-xl flex items-center gap-2.5">
+            <img src="/interiorg-mark-transparent.png" alt="InteriorG" className="w-7 h-7 object-contain" />
+            <span>Interior<span className="logo-g">G</span></span> <span className="text-xs font-semibold uppercase tracking-wider text-muted ml-1">Stock</span>
           </Link>
         </div>
         <nav className="admin-sidebar-nav">

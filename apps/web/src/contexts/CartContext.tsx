@@ -17,6 +17,20 @@ interface CartCtx {
 const Ctx = createContext<CartCtx>(null!);
 export const useCart = () => useContext(Ctx);
 
+export const getItemUnitPrice = (item: { product: { price: any; discountPrice?: any }; customization?: any }): number => {
+  const cust = item.customization;
+  if (cust) {
+    if (typeof cust.unitPrice === 'number' && cust.unitPrice > 0) return cust.unitPrice;
+    if (typeof cust.customPrice === 'number' && cust.customPrice > 0) return cust.customPrice;
+    if (typeof cust.materialCost === 'number' && cust.materialCost > 0) return cust.materialCost;
+    if (typeof cust.materialSubtotal === 'number' && cust.materialSubtotal > 0) return cust.materialSubtotal;
+    if (typeof cust.subtotal === 'number' && cust.subtotal > 0 && (item as any).quantity > 0) {
+      return Math.round(cust.subtotal / (item as any).quantity);
+    }
+  }
+  return Number(item.product.discountPrice ?? item.product.price ?? 0);
+};
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [cart, setCart] = useState<Cart | null>(null);
@@ -42,7 +56,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const items: CartItem[] = cart?.items || [];
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
-  const subtotal = items.reduce((s, i) => s + i.quantity * Number(i.product.discountPrice ?? i.product.price), 0);
+  const subtotal = items.reduce((s, i) => s + i.quantity * getItemUnitPrice(i), 0);
 
   return <Ctx.Provider value={{ cart, itemCount, subtotal, loading, addItem, removeItem, updateItem, clearCart, refetch: fetch }}>{children}</Ctx.Provider>;
 }

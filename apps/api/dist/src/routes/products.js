@@ -1,75 +1,384 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ROOM_MAPPINGS = void 0;
+exports.ROOM_MAPPINGS = exports.SPACES_DOMAINS = exports.matchLeafNode = exports.ALL_SPACES_LEAVES = exports.getBotanicalBenefits = exports.OUTDOOR_LEAVES = exports.INDOOR_LEAVES = void 0;
 const express_1 = require("express");
 const zod_1 = require("zod");
 const prisma_1 = require("../lib/prisma");
 const auth_1 = require("../middleware/auth");
 const client_1 = require("@prisma/client");
 const router = (0, express_1.Router)();
-exports.ROOM_MAPPINGS = [
+exports.INDOOR_LEAVES = [
     {
+        id: 'living-room',
         slug: 'living-room',
         name: 'Living Room',
         icon: '🛋️',
+        domain: 'indoor',
+        parentId: 'indoor',
         description: 'Bespoke wallpapers, Sheesham consoles, rattan chandeliers & artisan mirrors',
+        craftHighlights: ['Wall Murals', 'Wood Furniture', 'Artisan Mirrors', 'Chandeliers'],
         matches: (p) => {
-            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''}`.toLowerCase();
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
             return text.includes('living') || text.includes('console') || text.includes('mirror') || text.includes('rattan') ||
                 text.includes('chandelier') || text.includes('wallpaper') || text.includes('floral') || text.includes('botanical') ||
                 text.includes('vase') || text.includes('sculpture') || text.includes('stool') || text.includes('marble');
         }
     },
     {
-        slug: 'dining',
-        name: 'Dining',
-        icon: '🍽️',
-        description: 'Artisan ceramic bowls, tapas tableware, dining consoles & candelabras',
-        matches: (p) => {
-            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''}`.toLowerCase();
-            return text.includes('dining') || text.includes('crockery') || text.includes('bowl') || text.includes('tapas') ||
-                text.includes('tableware') || text.includes('dish') || text.includes('candelabra') || text.includes('table') ||
-                text.includes('pendant') || text.includes('urn') || text.includes('serving');
-        }
-    },
-    {
-        slug: 'kitchen',
-        name: 'Kitchen',
-        icon: '🍳',
-        description: 'Handcrafted ceramic serving dishes, speckled glaze sets & bar stools',
-        matches: (p) => {
-            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''}`.toLowerCase();
-            return text.includes('kitchen') || text.includes('crockery') || text.includes('bowl') || text.includes('tapas') ||
-                text.includes('serving') || text.includes('dish') || text.includes('stool') || text.includes('fluted') ||
-                text.includes('botanical') || text.includes('counter');
-        }
-    },
-    {
-        slug: 'drawing-room',
-        name: 'Drawing Room',
-        icon: '🪴',
-        description: 'Ornate sunburst brass mirrors, heritage Rajasthani murals & antique filigree accents',
-        matches: (p) => {
-            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''}`.toLowerCase();
-            return text.includes('drawing') || text.includes('sunburst') || text.includes('antique') || text.includes('mirror') ||
-                text.includes('arch') || text.includes('jaipuri') || text.includes('heritage') || text.includes('filigree') ||
-                text.includes('candelabra') || text.includes('sculpture') || text.includes('console') || text.includes('wall art') ||
-                text.includes('minimal arch');
-        }
-    },
-    {
+        id: 'hall',
         slug: 'hall',
-        name: 'Hall',
+        name: 'Hall & Entryway',
         icon: '🚪',
-        description: 'Grand foyer mirrors, hallway statement consoles, floor urns & luxury murals',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Grand foyer mirrors, entryway consoles, floor urns & luxury statement murals',
+        craftHighlights: ['Foyer Mirrors', 'Carved Consoles', 'Brass Urns', 'Statement Urli'],
         matches: (p) => {
-            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''}`.toLowerCase();
-            return text.includes('hall') || text.includes('foyer') || text.includes('corridor') || text.includes('entryway') ||
-                text.includes('antique brass') || text.includes('mirror') || text.includes('console') || text.includes('marble') ||
-                text.includes('filigree') || text.includes('urn') || text.includes('sculpture') || text.includes('arch');
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('hall') || text.includes('foyer') || text.includes('entryway') || text.includes('corridor') ||
+                text.includes('console') || text.includes('mirror') || text.includes('sculpture') || text.includes('urn') ||
+                text.includes('urli') || text.includes('antique brass');
+        }
+    },
+    {
+        id: 'bedroom',
+        slug: 'bedroom',
+        name: 'Bedroom & Suite',
+        icon: '🛏️',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Gold leaf botanical murals, bedside lighting, soft textiles & vanity mirrors',
+        craftHighlights: ['Suite Murals', 'Bedside Sconces', 'Wood Nightstands', 'Vanity Mirrors'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('bedroom') || text.includes('suite') || text.includes('bedside') || text.includes('mural') ||
+                text.includes('wallpaper') || text.includes('botanical') || text.includes('lamp') || text.includes('headboard') ||
+                text.includes('nightstand') || text.includes('quilt');
+        }
+    },
+    {
+        id: 'kitchen',
+        slug: 'kitchen',
+        name: 'Kitchen & Pantry',
+        icon: '🍳',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Handcrafted ceramic serving dishes, speckled glaze sets & counter stools',
+        craftHighlights: ['Ceramic Crockery', 'Tapas Sets', 'Serving Bowls', 'Counter Stools'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('kitchen') || text.includes('pantry') || text.includes('crockery') || text.includes('bowl') ||
+                text.includes('tapas') || text.includes('serving') || text.includes('dish') || text.includes('tableware') ||
+                text.includes('counter') || text.includes('dipping');
+        }
+    },
+    {
+        id: 'dining',
+        slug: 'dining',
+        name: 'Dining Room',
+        icon: '🍽️',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Artisan ceramic bowls, tapas tableware, dining consoles & candelabras',
+        craftHighlights: ['Tableware', 'Dining Pendants', 'Candelabras', 'Sheesham Dining'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('dining') || text.includes('dinner') || text.includes('tableware') || text.includes('bowl') ||
+                text.includes('tapas') || text.includes('candelabra') || text.includes('table') || text.includes('pendant') ||
+                text.includes('serving');
+        }
+    },
+    {
+        id: 'study-room',
+        slug: 'study-room',
+        name: 'Study & Home Office',
+        icon: '📚',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Solid Sheesham secretary desks, brass armillary globes & study lamps',
+        craftHighlights: ['Writing Desks', 'Brass Showpieces', 'Desk Lamps', 'Study Decor'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('study') || text.includes('office') || text.includes('desk') || text.includes('secretary') ||
+                text.includes('armillary') || text.includes('globe') || text.includes('bureau') || text.includes('bookshelf') ||
+                text.includes('reading') || text.includes('sheesham');
+        }
+    },
+    {
+        id: 'mini-theatre',
+        slug: 'mini-theatre',
+        name: 'Mini-Theatres & Media Lounge',
+        icon: '🎬',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Acoustic velvet wall murals, ambient cinema sconces & low-glare dark decor',
+        craftHighlights: ['Acoustic Murals', 'Cinema Lighting', 'Dark Walnut Consoles', 'Ambient Glow'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('theatre') || text.includes('theater') || text.includes('cinema') || text.includes('media') ||
+                text.includes('acoustic') || text.includes('sound') || text.includes('screening') || text.includes('sconce');
+        }
+    },
+    {
+        id: 'bathroom',
+        slug: 'bathroom',
+        name: 'Bathrooms & Powder Room',
+        icon: '🛁',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Handcrafted ceramic dispensers, anti-fog brass mirrors & vanity suites',
+        craftHighlights: ['Ceramic Dispensers', 'Backlit Vanity Mirrors', 'Ribbed Trays', 'Brass Hardware'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('bathroom') || text.includes('bath') || text.includes('powder') || text.includes('vanity') ||
+                text.includes('dispenser') || text.includes('tray') || text.includes('capsule') || text.includes('anti-fog') ||
+                text.includes('washroom') || text.includes('soap');
+        }
+    },
+    {
+        id: 'pooja-room',
+        slug: 'pooja-room',
+        name: 'Pooja Room & Mandir',
+        icon: '🪔',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Hand-hammered brass urlis, temple bells, diya stands & auspicious repousse',
+        craftHighlights: ['Brass Urlis', 'Diya Stands', 'Temple Bells', 'Spiritual Decor'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('pooja') || text.includes('puja') || text.includes('mandir') || text.includes('temple') ||
+                text.includes('urli') || text.includes('diya') || text.includes('floating') || text.includes('auspicious') ||
+                text.includes('windchime') || text.includes('bells');
+        }
+    },
+    {
+        id: 'kids-room',
+        slug: 'kids-room',
+        name: 'Kids Room & Nursery',
+        icon: '🧸',
+        domain: 'indoor',
+        parentId: 'indoor',
+        description: 'Whimsical pastel watercolor murals, eco non-woven wall art & nursery accents',
+        craftHighlights: ['Eco Murals', 'Whimsical Safari', 'Pastel Decor', 'Playroom Accents'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('kids') || text.includes('nursery') || text.includes('child') || text.includes('safari') ||
+                text.includes('whimsical') || text.includes('animal') || text.includes('playroom') || text.includes('pastel');
         }
     }
 ];
+exports.OUTDOOR_LEAVES = [
+    {
+        id: 'parking',
+        slug: 'parking',
+        name: 'Parking & Porch',
+        icon: '🚗',
+        domain: 'outdoor',
+        parentId: 'outdoor',
+        description: 'Heritage cast brass carriage sconces, wrought iron bollards & portico illumination',
+        craftHighlights: ['Porch Sconces', 'Iron Bollards', 'Weatherproof Lanterns', 'Driveway Fixtures'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('parking') || text.includes('carport') || text.includes('driveway') || text.includes('porch') ||
+                text.includes('bollard') || text.includes('pathway post') || text.includes('garage') || text.includes('carriage');
+        }
+    },
+    {
+        id: 'lawn',
+        slug: 'lawn',
+        name: 'Lawn & Garden',
+        icon: '🌳',
+        domain: 'outdoor',
+        parentId: 'outdoor',
+        description: 'Chiseled sandstone garden urn planters, garden sculptures & manicured greens decor',
+        craftHighlights: ['Sandstone Planters', 'Stone Urns', 'Garden Statues', 'Landscape Accents'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('lawn') || text.includes('garden') || text.includes('landscaping') || text.includes('planter') ||
+                text.includes('urn') || text.includes('sandstone') || text.includes('pedestal') || text.includes('birdbath') ||
+                text.includes('plant stand') || text.includes('watering can') || text.includes('trowel');
+        }
+    },
+    {
+        id: 'balcony',
+        slug: 'balcony',
+        name: 'Balcony & Verandah',
+        icon: '🪴',
+        domain: 'outdoor',
+        parentId: 'outdoor',
+        description: 'Weatherproof teak & cane stools, temple brass windchimes, hanging bells & planters',
+        craftHighlights: ['Cane Stools', 'Brass Windchimes', 'Verandah Seating', 'Hanging Bells'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('balcony') || text.includes('verandah') || text.includes('veranda') || text.includes('cane') ||
+                text.includes('windchimes') || text.includes('bells') || text.includes('rattan') || text.includes('planter') ||
+                text.includes('watering can') || text.includes('plant stand') || text.includes('pothos') || text.includes('ivy') ||
+                text.includes('herb');
+        }
+    },
+    {
+        id: 'home-nursery',
+        slug: 'home-nursery',
+        name: 'Home Nursery & Botanical Living',
+        icon: '🌱',
+        domain: 'outdoor',
+        parentId: 'outdoor',
+        description: 'Terracotta seedling planters, live air-purifying greens, botanical murals & artisan garden tools',
+        craftHighlights: ['Terracotta Planters', 'Decorative Brass Can', 'Air-Purifying Greens', 'Plant Stands'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('nursery') || text.includes('plant') || text.includes('botanical') || text.includes('gardening') ||
+                text.includes('watering can') || text.includes('planter') || text.includes('trowel') || text.includes('pot') ||
+                text.includes('herb') || text.includes('ivy') || text.includes('pothos') || text.includes('birdbath') ||
+                text.includes('lily') || text.includes('terracotta');
+        }
+    },
+    {
+        id: 'patio',
+        slug: 'patio',
+        name: 'Patio & Courtyard',
+        icon: '☀️',
+        domain: 'outdoor',
+        parentId: 'outdoor',
+        description: 'Hammered copper fire bowls, outdoor candelabras, daybed seating & open courtyards',
+        craftHighlights: ['Copper Fire Bowls', 'Patio Candelabras', 'Courtyard Tables', 'Brass Lanterns'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('patio') || text.includes('courtyard') || text.includes('fire bowl') || text.includes('fire pit') ||
+                (text.includes('outdoor') && text.includes('candelabra')) || (text.includes('outdoor') && text.includes('teak'));
+        }
+    },
+    {
+        id: 'terrace',
+        slug: 'terrace',
+        name: 'Rooftop Terrace',
+        icon: '🏙️',
+        domain: 'outdoor',
+        parentId: 'outdoor',
+        description: 'Weatherproof woven rattan pergola lanterns, rooftop lounge accents & sky deck lighting',
+        craftHighlights: ['Pergola Lanterns', 'Sky Deck Lighting', 'Terrace Planters', 'Outdoor Rattan'],
+        matches: (p) => {
+            const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+            return text.includes('terrace') || text.includes('rooftop') || text.includes('pergola') || text.includes('sky deck') || text.includes('solar');
+        }
+    }
+];
+const getBotanicalBenefits = (p) => {
+    const text = `${p.name} ${p.description} ${p.category?.name || ''} ${p.material || ''}`.toLowerCase();
+    const benefits = [];
+    if (text.includes('air-purifying') || text.includes('ivy') || text.includes('pothos') || text.includes('fern') || text.includes('palm') || text.includes('oxygen')) {
+        benefits.push('🌬️ Air Purification & Oxygen (Traps VOCs & Formaldehyde)');
+    }
+    if (text.includes('terracotta') || text.includes('clay') || text.includes('breathable') || text.includes('cooling') || text.includes('birdbath') || text.includes('lily') || text.includes('basin')) {
+        benefits.push('💧 Evaporative Cooling & Microclimate Humidity (2-4°C cooler)');
+    }
+    if (text.includes('biophilic') || text.includes('botanical') || text.includes('green') || text.includes('stand') || text.includes('planter')) {
+        benefits.push('🌿 Biophilic Calm (Lowers Cortisol & Visual Stress)');
+    }
+    if (text.includes('herb') || text.includes('lemongrass') || text.includes('vetiver') || text.includes('copper') || text.includes('aromatic')) {
+        benefits.push('🍋 Natural Aromatherapy & Mosquito Repellent');
+    }
+    if (text.includes('watering can') || text.includes('mister') || text.includes('trowel') || text.includes('gardening') || text.includes('pruner')) {
+        benefits.push('✨ Mindful Plant Hydration & Aesthetic Living Decor');
+    }
+    return benefits;
+};
+exports.getBotanicalBenefits = getBotanicalBenefits;
+exports.ALL_SPACES_LEAVES = [...exports.INDOOR_LEAVES, ...exports.OUTDOOR_LEAVES];
+const matchLeafNode = (leaf, p) => {
+    const text = `${p.name} ${p.description || ''} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+    if (text.includes(leaf.slug.toLowerCase()) || text.includes(leaf.name.toLowerCase())) {
+        return true;
+    }
+    return leaf.matches(p);
+};
+exports.matchLeafNode = matchLeafNode;
+exports.SPACES_DOMAINS = [
+    {
+        id: 'indoor',
+        slug: 'indoor',
+        name: 'Indoor Spaces',
+        icon: '🏠',
+        domain: 'indoor',
+        description: 'Living room, hall, bedroom, kitchen, dining, study, mini-theatres, bathrooms, pooja & kids rooms',
+        children: exports.INDOOR_LEAVES
+    },
+    {
+        id: 'outdoor',
+        slug: 'outdoor',
+        name: 'Outdoor Spaces',
+        icon: '🌿',
+        domain: 'outdoor',
+        description: 'Balconies, landscaped lawns, parking porch, patio lounges & rooftop terraces',
+        children: exports.OUTDOOR_LEAVES
+    }
+];
+// Retain legacy ROOM_MAPPINGS for backward compatibility
+exports.ROOM_MAPPINGS = exports.ALL_SPACES_LEAVES;
+router.get('/spaces-tree', async (_req, res, next) => {
+    try {
+        const allProducts = await prisma_1.prisma.product.findMany({
+            where: { isActive: true },
+            include: { category: true }
+        });
+        const matchLeaf = (leaf, p) => (0, exports.matchLeafNode)(leaf, p);
+        const matchIndoor = (p) => exports.INDOOR_LEAVES.some(l => (0, exports.matchLeafNode)(l, p));
+        const matchOutdoor = (p) => exports.OUTDOOR_LEAVES.some(l => (0, exports.matchLeafNode)(l, p));
+        const treeData = [
+            {
+                id: 'indoor',
+                slug: 'indoor',
+                name: 'Indoor Spaces',
+                icon: '🏠',
+                domain: 'indoor',
+                description: 'Living room, hall, bedroom, kitchen, dining, study, mini-theatres, bathrooms, pooja & kids rooms',
+                count: allProducts.filter(matchIndoor).length,
+                children: exports.INDOOR_LEAVES.map(leaf => ({
+                    id: leaf.id,
+                    slug: leaf.slug,
+                    name: leaf.name,
+                    icon: leaf.icon,
+                    domain: leaf.domain,
+                    parentId: leaf.parentId,
+                    description: leaf.description,
+                    craftHighlights: leaf.craftHighlights,
+                    count: allProducts.filter(p => matchLeaf(leaf, p)).length
+                }))
+            },
+            {
+                id: 'outdoor',
+                slug: 'outdoor',
+                name: 'Outdoor Spaces',
+                icon: '🌿',
+                domain: 'outdoor',
+                description: 'Balconies, landscaped lawns, parking porch, patio lounges & rooftop terraces',
+                count: allProducts.filter(matchOutdoor).length,
+                children: exports.OUTDOOR_LEAVES.map(leaf => ({
+                    id: leaf.id,
+                    slug: leaf.slug,
+                    name: leaf.name,
+                    icon: leaf.icon,
+                    domain: leaf.domain,
+                    parentId: leaf.parentId,
+                    description: leaf.description,
+                    craftHighlights: leaf.craftHighlights,
+                    count: allProducts.filter(p => matchLeaf(leaf, p)).length
+                }))
+            }
+        ];
+        res.json({
+            success: true,
+            message: 'Spaces tree retrieved successfully',
+            data: {
+                totalProducts: allProducts.length,
+                domains: treeData
+            }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
 router.get('/', async (req, res, next) => {
     try {
         const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -77,7 +386,7 @@ router.get('/', async (req, res, next) => {
         const skip = (page - 1) * limit;
         const q = req.query.q;
         const category = req.query.category;
-        const room = req.query.room;
+        const space = req.query.space || req.query.room;
         const type = req.query.type;
         const where = { isActive: true };
         if (q) {
@@ -98,16 +407,44 @@ router.get('/', async (req, res, next) => {
             orderBy: { createdAt: 'desc' },
             include: { category: true, inventory: true }
         });
-        // Map matching rooms to each product
-        let enrichedItems = items.map(p => ({
-            ...p,
-            rooms: exports.ROOM_MAPPINGS.filter(rm => rm.matches(p)).map(rm => rm.name)
-        }));
-        // Filter by room if specified
-        if (room && room !== 'all') {
-            const roomDef = exports.ROOM_MAPPINGS.find(r => r.slug === room);
-            if (roomDef) {
-                enrichedItems = enrichedItems.filter(p => roomDef.matches(p));
+        // Map matching spaces and rooms to each product
+        let enrichedItems = items.map(p => {
+            const matchingLeaves = exports.ALL_SPACES_LEAVES.filter(leaf => (0, exports.matchLeafNode)(leaf, p));
+            const isIndoor = exports.INDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, p));
+            const isOutdoor = exports.OUTDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, p));
+            const primaryDomain = isIndoor && isOutdoor ? 'both' : isIndoor ? 'indoor' : isOutdoor ? 'outdoor' : 'indoor';
+            return {
+                ...p,
+                rooms: matchingLeaves.map(rm => rm.name), // legacy field
+                spaces: matchingLeaves.map(leaf => ({
+                    id: leaf.id,
+                    slug: leaf.slug,
+                    name: leaf.name,
+                    icon: leaf.icon,
+                    domain: leaf.domain
+                })),
+                spaceSlugs: [
+                    ...matchingLeaves.map(l => l.slug),
+                    isIndoor ? 'indoor' : '',
+                    isOutdoor ? 'outdoor' : ''
+                ].filter(Boolean),
+                primaryDomain,
+                botanicalBenefits: (0, exports.getBotanicalBenefits)(p)
+            };
+        });
+        // Filter by space or domain if specified
+        if (space && space !== 'all' && space !== '') {
+            if (space === 'indoor') {
+                enrichedItems = enrichedItems.filter(p => exports.INDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, p)));
+            }
+            else if (space === 'outdoor') {
+                enrichedItems = enrichedItems.filter(p => exports.OUTDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, p)));
+            }
+            else {
+                const leafDef = exports.ALL_SPACES_LEAVES.find(l => l.slug === space || l.id === space);
+                if (leafDef) {
+                    enrichedItems = enrichedItems.filter(p => (0, exports.matchLeafNode)(leafDef, p));
+                }
             }
         }
         const total = enrichedItems.length;
@@ -137,17 +474,17 @@ router.get('/room-categories', async (_req, res, next) => {
         const roomCategories = [
             {
                 slug: '',
-                name: 'All Collection',
+                name: 'All Spaces',
                 icon: '✨',
-                description: 'Explore full catalog across all rooms',
+                description: 'Explore full catalog across indoor and outdoor spaces',
                 count: allProducts.length
             },
-            ...exports.ROOM_MAPPINGS.map(rm => ({
-                slug: rm.slug,
-                name: rm.name,
-                icon: rm.icon,
-                description: rm.description,
-                count: allProducts.filter(p => rm.matches(p)).length
+            ...exports.ALL_SPACES_LEAVES.map(leaf => ({
+                slug: leaf.slug,
+                name: leaf.name,
+                icon: leaf.icon,
+                description: leaf.description,
+                count: allProducts.filter(p => (0, exports.matchLeafNode)(leaf, p)).length
             }))
         ];
         res.json({
@@ -185,13 +522,35 @@ router.get('/:id', async (req, res, next) => {
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
-        res.json({ success: true, message: 'Product retrieved', data: product });
+        const matchingLeaves = exports.ALL_SPACES_LEAVES.filter(leaf => (0, exports.matchLeafNode)(leaf, product));
+        const isIndoor = exports.INDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, product));
+        const isOutdoor = exports.OUTDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, product));
+        const primaryDomain = isIndoor && isOutdoor ? 'both' : isIndoor ? 'indoor' : isOutdoor ? 'outdoor' : 'indoor';
+        const enriched = {
+            ...product,
+            rooms: matchingLeaves.map(rm => rm.name),
+            spaces: matchingLeaves.map(leaf => ({
+                id: leaf.id,
+                slug: leaf.slug,
+                name: leaf.name,
+                icon: leaf.icon,
+                domain: leaf.domain
+            })),
+            spaceSlugs: [
+                ...matchingLeaves.map(l => l.slug),
+                isIndoor ? 'indoor' : '',
+                isOutdoor ? 'outdoor' : ''
+            ].filter(Boolean),
+            primaryDomain,
+            botanicalBenefits: (0, exports.getBotanicalBenefits)(product)
+        };
+        res.json({ success: true, message: 'Product retrieved', data: enriched });
     }
     catch (error) {
         next(error);
     }
 });
-router.post('/', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN), async (req, res, next) => {
+router.post('/', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN, client_1.Role.STOCK_MANAGER), async (req, res, next) => {
     try {
         const schema = zod_1.z.object({
             name: zod_1.z.string().min(2),
@@ -210,23 +569,56 @@ router.post('/', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN), async (req
             finish: zod_1.z.string().optional(),
             images: zod_1.z.array(zod_1.z.string()).optional(),
             initialStock: zod_1.z.number().int().min(0).optional(),
+            reorderLevel: zod_1.z.number().int().min(0).optional(),
+            warehouseLocation: zod_1.z.string().optional(),
+            spaces: zod_1.z.array(zod_1.z.string()).optional(),
+            primaryDomain: zod_1.z.enum(['indoor', 'outdoor', 'both']).optional(),
+            botanicalBenefits: zod_1.z.array(zod_1.z.string()).optional(),
+            craftHighlights: zod_1.z.array(zod_1.z.string()).optional(),
         });
         const parsed = schema.parse(req.body);
-        const { initialStock, ...productData } = parsed;
+        const { initialStock, reorderLevel, warehouseLocation, spaces, primaryDomain, botanicalBenefits, craftHighlights, ...productData } = parsed;
         const baseSlug = (productData.slug || productData.name)
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '');
         const slug = productData.slug || `${baseSlug}-${Date.now().toString().slice(-4)}`;
         const sku = productData.sku || `IG-${Date.now().toString().slice(-6)}`;
+        // Build enriched description incorporating spaces and botanical metadata
+        let finalDescription = productData.description.trim();
+        const metaTags = [];
+        if (spaces && spaces.length > 0) {
+            metaTags.push(`Spaces: ${spaces.join(', ')}`);
+        }
+        if (primaryDomain) {
+            metaTags.push(`Domain: ${primaryDomain}`);
+        }
+        if (botanicalBenefits && botanicalBenefits.length > 0) {
+            metaTags.push(`Botanical Benefits: ${botanicalBenefits.join(' | ')}`);
+        }
+        if (craftHighlights && craftHighlights.length > 0) {
+            metaTags.push(`Craft Highlights: ${craftHighlights.join(', ')}`);
+        }
+        if (metaTags.length > 0 && !finalDescription.includes('--- Specifications & Living Spaces ---')) {
+            finalDescription += `\n\n--- Specifications & Living Spaces ---\n${metaTags.join('\n')}`;
+        }
         const product = await prisma_1.prisma.$transaction(async (tx) => {
             const p = await tx.product.create({
                 data: {
-                    ...productData,
+                    name: productData.name,
+                    description: finalDescription,
+                    type: productData.type,
+                    categoryId: productData.categoryId,
+                    price: productData.price,
+                    discountPrice: productData.discountPrice,
+                    unit: productData.unit || (productData.type === client_1.ProductType.CUSTOM_WALLPAPER ? 'sq ft' : 'piece'),
+                    pricePerSqFt: productData.pricePerSqFt,
+                    coverageSqFt: productData.coverageSqFt,
+                    material: productData.material,
+                    finish: productData.finish,
                     slug,
                     sku,
                     images: productData.images || [],
-                    unit: productData.unit || (productData.type === client_1.ProductType.CUSTOM_WALLPAPER ? 'sq ft' : 'piece'),
                     isCustomizable: productData.isCustomizable ?? (productData.type === client_1.ProductType.CUSTOM_WALLPAPER),
                 }
             });
@@ -236,8 +628,8 @@ router.post('/', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN), async (req
                     totalQuantity: initialStock || 0,
                     reservedQuantity: 0,
                     damagedQuantity: 0,
-                    reorderLevel: 10,
-                    warehouseLocation: 'Main Warehouse',
+                    reorderLevel: reorderLevel !== undefined ? reorderLevel : 10,
+                    warehouseLocation: warehouseLocation || 'Main Warehouse',
                     unit: p.unit
                 }
             });
@@ -262,7 +654,7 @@ router.post('/', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN), async (req
         next(error);
     }
 });
-router.put('/:id', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN), async (req, res, next) => {
+router.put('/:id', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN, client_1.Role.STOCK_MANAGER), async (req, res, next) => {
     try {
         const id = String(req.params.id);
         const schema = zod_1.z.object({
@@ -272,12 +664,14 @@ router.put('/:id', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN), async (r
             type: zod_1.z.nativeEnum(client_1.ProductType).optional(),
             sku: zod_1.z.string().optional(),
             price: zod_1.z.number().positive().optional(),
+            discountPrice: zod_1.z.number().positive().optional(),
             categoryId: zod_1.z.string().optional(),
             unit: zod_1.z.string().optional(),
             pricePerSqFt: zod_1.z.number().optional(),
             isCustomizable: zod_1.z.boolean().optional(),
             material: zod_1.z.string().optional(),
             finish: zod_1.z.string().optional(),
+            images: zod_1.z.array(zod_1.z.string()).optional(),
         });
         const data = schema.parse(req.body);
         const product = await prisma_1.prisma.product.update({

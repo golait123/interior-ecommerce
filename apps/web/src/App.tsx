@@ -1,12 +1,15 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { LocationProvider } from './contexts/LocationContext';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import Gardening from './pages/Gardening';
+import NurseryDesignCustomizer from './pages/NurseryDesignCustomizer';
+import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProductDetail from './pages/ProductDetail';
@@ -22,9 +25,19 @@ import { AdminLocations } from './pages/admin/AdminLocations';
 import { StockDashboard } from './pages/stock/StockDashboard';
 import { StockInventory } from './pages/stock/StockInventory';
 import { StockMovements } from './pages/stock/StockMovements';
+import { StockOrders } from './pages/stock/StockOrders';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
+  return null;
+}
 
 function RoleRedirect() {
   const { user } = useAuth();
@@ -38,20 +51,31 @@ export default function App() {
   return (
     <QueryClientProvider client={qc}>
       <AuthProvider>
-        <CartProvider>
-          <BrowserRouter>
-            <Toaster position="top-right" toastOptions={{ style: { fontFamily: 'DM Sans, sans-serif', borderRadius: 0 } }} />
-            <Routes>
+        <LocationProvider>
+          <CartProvider>
+            <BrowserRouter>
+              <ScrollToTop />
+              <Toaster position="top-right" toastOptions={{ style: { fontFamily: 'DM Sans, sans-serif', borderRadius: 0 } }} />
+              <PwaInstallPrompt />
+              <Routes>
               {/* Public */}
               <Route path="/" element={<Home />} />
               <Route path="/shop" element={<Shop />} />
+              <Route path="/paintings" element={<Navigate to="/shop" replace />} />
+              <Route path="/room-visualizer" element={<Navigate to="/shop" replace />} />
+              <Route path="/ar-view" element={<Navigate to="/shop" replace />} />
+              <Route path="/studio" element={<Navigate to="/shop" replace />} />
+              <Route path="/visualizer" element={<Navigate to="/shop" replace />} />
+              <Route path="/masterclasses" element={<Navigate to="/shop" replace />} />
+              <Route path="/workshops" element={<Navigate to="/shop" replace />} />
               <Route path="/gardening" element={<Gardening />} />
+              <Route path="/gardening/customize" element={<NurseryDesignCustomizer />} />
+              <Route path="/nursery-customizer" element={<NurseryDesignCustomizer />} />
               <Route path="/nursery" element={<Navigate to="/gardening" replace />} />
+              <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/studio" element={<Navigate to="/" replace />} />
-              <Route path="/visualizer" element={<Navigate to="/" replace />} />
               {/* Customer */}
               <Route path="/customer/dashboard" element={<ProtectedRoute roles={['CUSTOMER']}><CustomerDashboard /></ProtectedRoute>} />
               <Route path="/cart" element={<ProtectedRoute roles={['CUSTOMER']}><Cart /></ProtectedRoute>} />
@@ -65,6 +89,7 @@ export default function App() {
               <Route path="/admin/locations" element={<ProtectedRoute roles={['ADMIN']}><AdminLocations /></ProtectedRoute>} />
               {/* Stock Manager */}
               <Route path="/stock" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockDashboard /></ProtectedRoute>} />
+              <Route path="/stock/orders" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockOrders /></ProtectedRoute>} />
               <Route path="/stock/inventory" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockInventory /></ProtectedRoute>} />
               <Route path="/stock/movements" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockMovements /></ProtectedRoute>} />
               {/* Role redirect */}
@@ -73,7 +98,8 @@ export default function App() {
             </Routes>
           </BrowserRouter>
         </CartProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+      </LocationProvider>
+    </AuthProvider>
+  </QueryClientProvider>
   );
 }

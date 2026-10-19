@@ -6,5 +6,18 @@ export const cartApi = {
   removeItem: (itemId: string) => api.delete(`/cart/items/${itemId}`).then(unwrap<Cart>),
   clear: () => api.delete('/cart').then(unwrap<Cart>),
 };
-export type CartItem = { id: string; quantity: number; customization: any; product: { id: string; name: string; price: string; discountPrice: string | null; images: string[]; unit: string } };
+export type CartItem = { 
+  id: string; 
+  quantity: number; 
+  customization: any; 
+  product: { 
+    id: string; 
+    name: string; 
+    price: string; 
+    discountPrice: string | null; 
+    images: string[]; 
+    unit: string;
+    category?: { id: string; name: string; slug: string };
+  } 
+};
 export type Cart = { id: string; items: CartItem[]; subtotal?: number };

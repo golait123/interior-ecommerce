@@ -72,6 +72,12 @@ export type Product = {
   spaceSlugs?: string[];
   primaryDomain?: 'indoor' | 'outdoor' | 'both';
   botanicalBenefits?: string[];
+  rating?: number;
+  reviewCount?: number;
+  offerText?: string;
+  priceRange?: string;
+  productType?: string;
+  inStock?: boolean;
 };
 
 export type Category = { id: string; name: string; slug: string };

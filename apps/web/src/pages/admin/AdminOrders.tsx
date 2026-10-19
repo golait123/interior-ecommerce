@@ -34,6 +34,7 @@ export function AdminOrders() {
             orders={orders || []} 
             showActions 
             onStatusChange={(id, status) => updateStatus.mutate({ id, status })}
+            onOrderUpdated={() => queryClient.invalidateQueries({ queryKey: ['admin-all-orders'] })}
           />
         )}
       </div>

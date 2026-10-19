@@ -38,6 +38,8 @@ import { GeminiAgentChat } from '../components/GeminiAgentChat';
 import { GeminiImageStudioModal } from '../components/GeminiImageStudioModal';
 import { GeminiLiveVideoModal } from '../components/GeminiLiveVideoModal';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 // Demo Presets with high-definition equirectangular room panoramas
@@ -69,6 +71,8 @@ const PRESETS = [
 ];
 
 export default function RoomStudio() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { cart, addItem } = useCart();
 
   // Convert cart items for Gemini AI Agent
@@ -304,6 +308,10 @@ export default function RoomStudio() {
 
   // Add Entire Room Bundle to Cart
   const handleAddBundleToCart = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     const itemsToAdd = placedItems.length > 0 
       ? placedItems 
       : (analysis?.products || []).map(p => ({ productId: p.id, name: p.name }));
@@ -317,8 +325,8 @@ export default function RoomStudio() {
         count++;
       }
       toast.success(`Added all ${count} room items to your cart!`);
-    } catch (e) {
-      toast.error('Please login as a customer to add room bundle to cart.');
+    } catch {
+      toast.error('Unable to add room bundle to cart.');
     } finally {
       setIsAddingBundle(false);
     }
@@ -453,11 +461,15 @@ export default function RoomStudio() {
 
   // Add individual product to cart
   const handleAddToCart = async (productId: string, name: string) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     try {
       await addItem(productId, 1);
       toast.success(`Added ${name} to cart!`);
     } catch {
-      toast.error('Please login as customer to add to cart');
+      toast.error('Unable to add item to cart.');
     }
   };
 
@@ -588,12 +600,16 @@ export default function RoomStudio() {
               activeHotspot={activeHotspot}
               onSelectHotspot={(h) => setActiveHotspot(h)}
               onAddToCart={async (productId) => {
+                if (!user) {
+                  navigate('/login');
+                  return;
+                }
                 try {
                   await addItem(productId, 1);
                   const prod = catalogData?.items.find(p => p.id === productId) || analysis?.products.find(p => p.id === productId);
                   toast.success(`Added ${prod?.name || 'item'} to cart!`);
                 } catch {
-                  toast.error('Please login as a customer to add items to cart');
+                  toast.error('Unable to add item to cart.');
                 }
               }}
               showStaged={showStaged}

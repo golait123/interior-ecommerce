@@ -3,6 +3,8 @@ import { Calculator } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useLocationContext } from '../contexts/LocationContext';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -18,6 +20,8 @@ export function WallpaperCalculator({ pricePerSqFt = '5.00', product }: Props) {
   const [walls, setWalls] = useState(1);
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { user } = useAuth();
+  const { currentCountry, formatPrice } = useLocationContext();
 
   const calculateArea = () => {
     let w = width;
@@ -29,7 +33,7 @@ export function WallpaperCalculator({ pricePerSqFt = '5.00', product }: Props) {
     const baseArea = w * h * walls;
     const withWastage = baseArea * (1 + wastage / 100);
     const materialCost = withWastage * Number(pricePerSqFt || 0);
-    const tax = materialCost * 0.18;
+    const tax = materialCost * currentCountry.tax.rate;
     return {
       baseArea: baseArea.toFixed(2),
       billableArea: withWastage.toFixed(2),
@@ -46,11 +50,15 @@ export function WallpaperCalculator({ pricePerSqFt = '5.00', product }: Props) {
       navigate('/#shop'); // or somewhere to select product
       return;
     }
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     try {
       await addItem(product.id, 1, { width, height, unit, walls, wastage, ...results });
       toast.success('Custom dimensions added to cart!');
-    } catch (e) {
-      toast.error('Failed to add to cart. Please log in.');
+    } catch {
+      toast.error('Unable to add custom dimensions to cart.');
     }
   };
 
@@ -104,15 +112,15 @@ export function WallpaperCalculator({ pricePerSqFt = '5.00', product }: Props) {
         </div>
         <div className="result-row">
           <span>Material Cost</span>
-          <span>₹{results.materialCost}</span>
+          <span>{formatPrice(Number(results.materialCost))}</span>
         </div>
         <div className="result-row">
-          <span>Tax (18%)</span>
-          <span>₹{results.tax}</span>
+          <span>{currentCountry.tax.name} ({(currentCountry.tax.rate * 100).toFixed(0)}%)</span>
+          <span>{formatPrice(Number(results.tax))}</span>
         </div>
         <div className="result-row total-row">
           <span>Estimated Total</span>
-          <span className="price">₹{results.total}</span>
+          <span className="price">{formatPrice(Number(results.total))}</span>
         </div>
       </div>
 

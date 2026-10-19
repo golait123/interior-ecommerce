@@ -8,10 +8,24 @@ const router = Router();
 router.use(auth);
 router.use(roles(Role.CUSTOMER));
 
+export const getItemUnitPrice = (item: any): number => {
+  const cust = item.customization;
+  if (cust) {
+    if (typeof cust.unitPrice === 'number' && cust.unitPrice > 0) return cust.unitPrice;
+    if (typeof cust.customPrice === 'number' && cust.customPrice > 0) return cust.customPrice;
+    if (typeof cust.materialCost === 'number' && cust.materialCost > 0) return cust.materialCost;
+    if (typeof cust.materialSubtotal === 'number' && cust.materialSubtotal > 0) return cust.materialSubtotal;
+    if (typeof cust.subtotal === 'number' && cust.subtotal > 0 && item.quantity > 0) {
+      return Math.round(cust.subtotal / item.quantity);
+    }
+  }
+  return Number(item.product?.discountPrice ?? item.product?.price ?? 0);
+};
+
 const calculateSubtotal = (cart: any) => {
   const subtotal = cart.items.reduce((sum: number, item: any) => {
-    const price = item.product.discountPrice ?? item.product.price;
-    return sum + (Number(price) * item.quantity);
+    const price = getItemUnitPrice(item);
+    return sum + (price * item.quantity);
   }, 0);
   return { ...cart, subtotal };
 };
@@ -53,9 +67,13 @@ router.post('/items', async (req: AuthReq, res, next) => {
     });
 
     if (existingItem) {
+      // If adding customized item (e.g. Nursery), overwrite customization and quantity
       await prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + quantity }
+        data: {
+          quantity: customization ? quantity : existingItem.quantity + quantity,
+          customization: customization || existingItem.customization
+        }
       });
     } else {
       await prisma.cartItem.create({

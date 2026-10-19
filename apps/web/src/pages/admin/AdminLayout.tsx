@@ -19,8 +19,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     <div className="admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
-          <Link to="/" className="logo text-xl">
-            <span className="logo-casa">Interior</span><span className="logo-canvas">G</span> <span className="text-sm font-normal text-muted">ADMIN</span>
+          <Link to="/" className="logo text-xl flex items-center gap-2.5">
+            <img src="/interiorg-mark-transparent.png" alt="InteriorG" className="w-7 h-7 object-contain" />
+            <span>Interior<span className="logo-g">G</span></span> <span className="text-xs font-semibold uppercase tracking-wider text-muted ml-1">Admin</span>
           </Link>
         </div>
         <nav className="admin-sidebar-nav">

@@ -1,8 +1,22 @@
-import React, { useState } from 'react';
-import { X, ShoppingBag, Check, Star, ShieldCheck, Truck, Sparkles, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { 
+  X, 
+  ShoppingBag, 
+  Star, 
+  ShieldCheck, 
+  Truck, 
+  Award, 
+  Sparkles, 
+  ChevronRight, 
+  ArrowRight,
+  Leaf,
+  Layers,
+  Check
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
-import toast from 'react-hot-toast';
+import { ImageZoomViewer } from './ImageZoomViewer';
+import { useLocationContext } from '../contexts/LocationContext';
 
 interface ProductQuickViewModalProps {
   product: Product | null;
@@ -13,16 +27,36 @@ interface ProductQuickViewModalProps {
 export function ProductQuickViewModal({ product, onClose, onAddToCart }: ProductQuickViewModalProps) {
   if (!product) return null;
 
+  const { formatPrice, currentCountry } = useLocationContext();
+  const navigate = useNavigate();
   const [selectedImageIdx, setSelectedImageIdx] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [isAdding, setIsAdding] = useState<boolean>(false);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  // Prevent background body scroll while modal is open
+  useEffect(() => {
+    const origOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = origOverflow;
+    };
+  }, []);
 
   const curPrice = Number(product.discountPrice || product.price);
   const origPrice = Number(product.price);
   const hasDiscount = product.discountPrice !== null && Number(product.discountPrice) < origPrice;
   const discountPct = hasDiscount ? Math.round(((origPrice - curPrice) / origPrice) * 100) : null;
   const images = product.images && product.images.length > 0 ? product.images : [];
-  const currentImage = images[selectedImageIdx] || images[0];
+  const currentImage = images[selectedImageIdx] || images[0] || null;
 
   const handleAdd = async () => {
     setIsAdding(true);
@@ -30,258 +64,296 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
       await onAddToCart(product, quantity);
       onClose();
     } catch {
-      // toast handled in parent
+      // Toast notification is managed by parent
     } finally {
       setIsAdding(false);
     }
   };
 
+  const handleViewFullPage = () => {
+    onClose();
+    navigate(`/products/${product.id}`);
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 110 }}>
+    <div className="quickview-backdrop" onClick={onClose}>
       <div 
-        className="modal-box bg-white overflow-hidden shadow-2xl relative" 
+        className="quickview-container" 
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: '840px', width: '95%', padding: '0', borderRadius: '8px' }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Quick View: ${product.name}`}
       >
-        {/* Close Button */}
+        {/* Floating Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-dark shadow flex items-center justify-center border-none cursor-pointer transition-all"
-          aria-label="Close modal"
+          className="quickview-close-btn"
+          aria-label="Close Quick View"
+          type="button"
         >
           <X size={18} />
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Left: Image Gallery */}
-          <div className="p-6 bg-[#fbf9f5] border-r flex flex-col justify-between" style={{ borderColor: '#ded9d0' }}>
-            <div className="w-full h-80 bg-white border rounded overflow-hidden relative shadow-inner" style={{ borderColor: '#ded9d0' }}>
-              {currentImage ? (
-                <img 
-                  src={currentImage} 
-                  alt={product.name} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className={`w-full h-full gradient-bg gradient-${product.type.toLowerCase()}`} />
-              )}
+        <div className="grid grid-cols-1 md:grid-cols-2 overflow-y-auto flex-1">
+          {/* ================================================================= */}
+          {/* LEFT: IMAGE GALLERY WITH STANDARD ASPECT RATIO                    */}
+          {/* ================================================================= */}
+          <div className="p-5 sm:p-6 bg-[#f8fafc] border-b md:border-b-0 md:border-r border-[#cbdceb]/80 flex flex-col justify-between">
+            <div>
+              {/* Main Product Showcase Box */}
+              <ImageZoomViewer
+                src={currentImage}
+                alt={product.name}
+                aspectRatio="4/5"
+                fallbackGradient={`gradient-${product.type.toLowerCase()}`}
+                className="w-full max-h-[380px] md:max-h-[420px] mb-3"
+                badges={
+                  <>
+                    {hasDiscount && (
+                      <span className="bg-[#be123c] text-white text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded shadow-sm">
+                        {discountPct}% OFF
+                      </span>
+                    )}
+                    <span className="bg-[#0f2444] text-white text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded shadow-sm">
+                      {product.isCustomizable ? '✨ BESPOKE' : '🏺 HANDCRAFTED'}
+                    </span>
+                  </>
+                }
+              />
 
-              {hasDiscount && (
-                <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow">
-                  {discountPct}% OFF
-                </span>
+              {/* Thumbnails Row */}
+              {images.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1.5 pt-1">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedImageIdx(idx)}
+                      className={`product-thumbnail-btn ${selectedImageIdx === idx ? 'active' : ''}`}
+                      aria-label={`Select product image view ${idx + 1}`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
               )}
-
-              <span className={`absolute bottom-3 left-3 badge ${product.isCustomizable ? 'badge-blue' : 'badge-yellow'} text-xs shadow-sm`}>
-                {product.isCustomizable ? '✨ BESPOKE CUSTOMIZABLE' : '🏺 BANJARA CURATED'}
-              </span>
             </div>
 
-            {/* Thumbnail Strip */}
-            {images.length > 1 && (
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedImageIdx(idx)}
-                    className={`w-14 h-14 rounded border overflow-hidden p-0 flex-shrink-0 cursor-pointer transition-all ${
-                      selectedImageIdx === idx ? 'border-accent ring-2 ring-accent/30' : 'border-[#ded9d0] opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Quick Guarantees */}
-            <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t text-[11px] text-muted" style={{ borderColor: '#ded9d0' }}>
+            {/* Quality Guarantee Row */}
+            <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-[#cbdceb]/70 text-[11px] text-[#536b88]">
               <div className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-accent" />
-                <span>Authentic Banjara Craft</span>
+                <ShieldCheck size={14} className="text-[#0f2444] flex-shrink-0" />
+                <span className="truncate font-medium">100% Authentic</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Truck size={14} className="text-accent" />
-                <span>Insured Indian Delivery</span>
+                <Truck size={14} className="text-[#0f2444] flex-shrink-0" />
+                <span className="truncate font-medium">Insured Transit</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Award size={14} className="text-[#0f2444] flex-shrink-0" />
+                <span className="truncate font-medium">1-Yr Warranty</span>
               </div>
             </div>
           </div>
 
-          {/* Right: Product Details & Purchase Actions */}
-          <div className="p-6 md:p-8 flex flex-col justify-between bg-white">
+          {/* ================================================================= */}
+          {/* RIGHT: EDITORIAL DETAILS & BUYING FLOW                            */}
+          {/* ================================================================= */}
+          <div className="p-5 sm:p-7 flex flex-col justify-between bg-white overflow-y-auto">
             <div>
-              {/* Category & Spaces Header */}
+              {/* Category, Space & Provenance Header */}
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="badge badge-gray text-xs">{product.category?.name || 'Home Decor'}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2444] bg-[#edf4fc] border border-[#cbdceb] px-2.5 py-0.5 rounded-full">
+                  {product.category?.name || 'InteriorG Collection'}
+                </span>
+
                 {product.primaryDomain && (
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                  <span className={`text-[10px] font-semibold tracking-wide uppercase px-2.5 py-0.5 rounded-full ${
                     product.primaryDomain === 'outdoor' 
                       ? 'bg-[#dce9d8] text-[#2e5926]' 
                       : product.primaryDomain === 'both'
                       ? 'bg-[#ede3f7] text-[#552d79]'
-                      : 'bg-[#f4ebd9] text-[#795627]'
+                      : 'bg-[#f0f5fc] text-[#0f2444]'
                   }`}>
-                    {product.primaryDomain === 'outdoor' ? '🌿 Outdoor Space' : product.primaryDomain === 'both' ? '🏠🌿 Indoor & Outdoor' : '🏠 Indoor Space'}
+                    {product.primaryDomain === 'outdoor' ? '🌿 Outdoor & Garden' : product.primaryDomain === 'both' ? '🏡 Indoor & Outdoor' : '🛋️ Indoor Living'}
                   </span>
                 )}
-                {product.spaces && product.spaces.length > 0 ? (
-                  <div className="flex flex-wrap items-center gap-1">
-                    {product.spaces.slice(0, 3).map(s => (
-                      <span key={s.slug} className="text-xs text-accent font-medium bg-[#f5efe6] px-2 py-0.5 rounded flex items-center gap-1">
-                        <span>{s.icon}</span>
-                        <span>{s.name}</span>
-                      </span>
-                    ))}
-                  </div>
-                ) : product.rooms && product.rooms.length > 0 ? (
-                  <span className="text-xs text-accent font-medium bg-[#f5efe6] px-2 py-0.5 rounded">
-                    📍 {product.rooms.slice(0, 2).join(' • ')}
-                  </span>
-                ) : null}
               </div>
 
-              {/* Product Title */}
-              <h2 className="text-2xl font-normal text-dark m-0 leading-snug">
+              {/* Product Title in Italic Serif */}
+              <h2 className="text-xl sm:text-2xl font-serif italic font-normal text-[#0a192f] m-0 mb-2 leading-tight">
                 {product.name}
               </h2>
 
-              {/* Price Row */}
-              <div className="flex items-baseline gap-3 my-3">
-                <span className="text-2xl font-bold text-accent font-playfair">
-                  ₹{curPrice.toLocaleString('en-IN')}
-                </span>
-                {hasDiscount && (
-                  <span className="text-base text-muted line-through">
-                    ₹{origPrice.toLocaleString('en-IN')}
+              {/* Rating & Review Badge */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center text-amber-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={13} fill="currentColor" />
+                  ))}
+                </div>
+                <span className="text-xs font-semibold text-[#0a192f]">4.9</span>
+                <span className="text-xs text-[#536b88]">• 48 Verified Customer Reviews</span>
+              </div>
+
+              {/* Price Presentation */}
+              <div className="mb-3.5 pb-3 border-b border-[#e2e8f0]">
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span className="text-2xl font-serif font-bold text-[#0f2444]">
+                    {formatPrice(curPrice)}
                   </span>
-                )}
-                <span className="text-xs text-muted">/ {product.unit}</span>
+                  {hasDiscount && (
+                    <span className="text-sm text-[#8fa4bf] line-through">
+                      {formatPrice(origPrice)}
+                    </span>
+                  )}
+                  <span className="text-xs text-[#536b88] uppercase tracking-wider">
+                    / {product.unit || 'piece'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#536b88] mt-1 m-0">
+                  Inclusive of {currentCountry.tax.name} • {currentCountry.deliveryNotice}
+                </p>
               </div>
 
-              {/* Stock Status */}
-              <div className="mb-4">
-                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-medium bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-                  In Stock • Ready to Dispatch from Gurugram
+              {/* Live Inventory Status */}
+              <div className="mb-3.5">
+                <span className="inline-flex items-center gap-2 text-xs text-[#15803d] font-semibold bg-[#f0fdf4] border border-[#bbf7d0] px-3 py-1 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse"></span>
+                  <span>In Stock • Ready for Express Dispatch in 24–48 Hours</span>
                 </span>
               </div>
 
-              {/* Description */}
-              <p className="text-xs md:text-sm text-muted leading-relaxed mb-4">
+              {/* Short Description */}
+              <p className="text-xs sm:text-[13px] text-[#475569] leading-relaxed mb-4">
                 {product.description}
               </p>
 
-              {/* Botanical Freshness & Health Benefits */}
+              {/* Botanical Benefits Pills (If Available) */}
               {product.botanicalBenefits && product.botanicalBenefits.length > 0 && (
-                <div className="bg-[#f2f8f1] p-3.5 rounded border border-[#cbe1c7] mb-4 text-xs">
-                  <div className="flex items-center gap-1.5 font-bold text-[#2a5424] mb-2 uppercase text-[11px] tracking-wider">
-                    <span>🌱</span>
-                    <span>Freshness & Wellness Benefits:</span>
+                <div className="bg-[#f0f7ef] p-3 rounded-xl border border-[#cbe1c7] mb-4">
+                  <div className="flex items-center gap-1.5 font-bold text-[#2e5926] mb-1.5 text-xs">
+                    <Leaf size={13} className="text-[#2e5926]" />
+                    <span>Botanical Living Attributes:</span>
                   </div>
-                  <ul className="m-0 pl-4 space-y-1.5 text-[#2d4d28] list-disc font-medium">
-                    {product.botanicalBenefits.map((benefit, bIdx) => (
-                      <li key={bIdx} className="leading-snug">
+                  <div className="flex flex-wrap gap-1.5">
+                    {product.botanicalBenefits.slice(0, 2).map((benefit, bIdx) => (
+                      <span key={bIdx} className="text-[11px] font-medium bg-white text-[#2e5926] px-2.5 py-0.5 rounded-md border border-[#cbe1c7]">
                         {benefit}
-                      </li>
+                      </span>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
 
-              {/* Specs & Material */}
-              <div className="bg-[#faf8f5] p-3.5 rounded border text-xs space-y-1.5 mb-6" style={{ borderColor: '#ded9d0' }}>
+              {/* Architectural Specifications Grid */}
+              <div className="bg-[#f8fafc] p-3.5 rounded-xl border border-[#cbdceb] text-xs grid grid-cols-2 gap-2 mb-4">
                 {product.material && (
-                  <div className="flex justify-between">
-                    <span className="text-muted">Material:</span>
-                    <span className="font-semibold text-dark">{product.material}</span>
+                  <div>
+                    <span className="text-[#536b88] block text-[11px]">Material</span>
+                    <span className="font-semibold text-[#0a192f]">{product.material}</span>
                   </div>
                 )}
                 {product.finish && (
-                  <div className="flex justify-between">
-                    <span className="text-muted">Finish:</span>
-                    <span className="font-semibold text-dark">{product.finish}</span>
+                  <div>
+                    <span className="text-[#536b88] block text-[11px]">Finish</span>
+                    <span className="font-semibold text-[#0a192f]">{product.finish}</span>
                   </div>
                 )}
+                <div>
+                  <span className="text-[#536b88] block text-[11px]">SKU Reference</span>
+                  <span className="font-mono text-[11px] font-semibold text-[#0a192f]">{product.sku}</span>
+                </div>
                 {product.pricePerSqFt && (
-                  <div className="flex justify-between">
-                    <span className="text-muted">Rate per sq ft:</span>
-                    <span className="font-semibold text-accent">₹{product.pricePerSqFt}/sq ft</span>
+                  <div>
+                    <span className="text-[#536b88] block text-[11px]">Bespoke Rate</span>
+                    <span className="font-semibold text-[#0f2444]">₹{product.pricePerSqFt}/sq ft</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div>
+            {/* =============================================================== */}
+            {/* BOTTOM COMMERCE ACTIONS                                         */}
+            {/* =============================================================== */}
+            <div className="pt-3 border-t border-[#e2e8f0]">
               {product.isCustomizable ? (
-                <div className="space-y-2">
-                  <a
-                    href="#custom"
-                    onClick={onClose}
-                    className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold"
+                <div className="space-y-2.5">
+                  <button
+                    type="button"
+                    onClick={handleViewFullPage}
+                    className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 text-xs uppercase tracking-wider font-semibold"
                   >
-                    <Sparkles size={16} />
-                    <span>Calculate Custom Wall Dimensions</span>
-                  </a>
-                  <Link
-                    to={`/products/${product.id}`}
-                    onClick={onClose}
-                    className="btn btn-ghost w-full text-xs text-center text-muted hover:text-dark block"
+                    <Sparkles size={14} />
+                    <span>Configure Custom Wall Dimensions</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleViewFullPage}
+                    className="w-full text-xs text-center text-[#0f2444] hover:text-[#1b3a6b] font-semibold py-1.5 flex items-center justify-center gap-1"
                   >
-                    View Product Details & Specifications →
-                  </Link>
+                    <span>View Architectural Specifications & Gallery</span>
+                    <ChevronRight size={13} />
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-dark">Quantity:</span>
-                    <div className="qty-control rounded" style={{ border: '1px solid #ded9d0' }}>
-                      <button 
-                        type="button" 
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-3 py-1 cursor-pointer font-bold text-dark hover:bg-gray-100 border-none bg-transparent"
-                      >
-                        -
-                      </button>
-                      <input 
-                        type="text" 
-                        value={quantity} 
-                        readOnly 
-                        className="w-10 text-center text-xs font-semibold border-none bg-transparent"
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="px-3 py-1 cursor-pointer font-bold text-dark hover:bg-gray-100 border-none bg-transparent"
-                      >
-                        +
-                      </button>
+                  {/* Quantity and Subtotal Row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-semibold text-[#0a192f]">Quantity:</span>
+                      <div className="inline-flex items-center rounded-lg bg-[#f8fafc] border border-[#cbdceb] overflow-hidden">
+                        <button 
+                          type="button" 
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="w-8 h-8 flex items-center justify-center text-sm font-bold text-[#0a192f] hover:bg-[#edf4fc] cursor-pointer border-none bg-transparent"
+                          aria-label="Decrease quantity"
+                        >
+                          &minus;
+                        </button>
+                        <span className="w-9 text-center text-xs font-bold text-[#0a192f]">
+                          {quantity}
+                        </span>
+                        <button 
+                          type="button" 
+                          onClick={() => setQuantity(quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center text-sm font-bold text-[#0a192f] hover:bg-[#edf4fc] cursor-pointer border-none bg-transparent"
+                          aria-label="Increase quantity"
+                        >
+                          &#43;
+                        </button>
+                      </div>
                     </div>
-                    <span className="text-xs text-muted ml-auto">
-                      Subtotal: <strong className="text-dark">₹{(curPrice * quantity).toLocaleString('en-IN')}</strong>
-                    </span>
+
+                    <div className="text-right">
+                      <span className="text-[11px] text-[#536b88] block">Subtotal</span>
+                      <strong className="text-sm font-serif font-bold text-[#0f2444]">
+                        {formatPrice(curPrice * quantity)}
+                      </strong>
+                    </div>
                   </div>
 
+                  {/* Add to Cart CTA */}
                   <button
                     type="button"
                     onClick={handleAdd}
                     disabled={isAdding}
-                    className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold shadow-sm cursor-pointer"
+                    className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 text-xs uppercase tracking-wider font-semibold cursor-pointer shadow-md"
                   >
-                    <ShoppingBag size={16} />
-                    <span>{isAdding ? 'Adding to cart...' : `Add to Cart • ₹${(curPrice * quantity).toLocaleString('en-IN')}`}</span>
+                    <ShoppingBag size={15} />
+                    <span>{isAdding ? 'Adding to Bag...' : `Add to Bag • ${formatPrice(curPrice * quantity)}`}</span>
                   </button>
 
-                  <div className="text-center">
-                    <Link
-                      to={`/products/${product.id}`}
-                      onClick={onClose}
-                      className="text-xs text-accent hover:underline inline-flex items-center gap-1 font-medium"
+                  {/* Direct Link to Full Product Page */}
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      onClick={handleViewFullPage}
+                      className="text-xs text-[#0f2444] hover:text-[#1b3a6b] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer bg-transparent border-none p-0"
                     >
-                      <span>Full Product Story & Customer Reviews</span>
-                      <ChevronRight size={13} />
-                    </Link>
+                      <span>Explore Complete Heritage Story & Specifications</span>
+                      <ArrowRight size={13} />
+                    </button>
                   </div>
                 </div>
               )}

@@ -16,6 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 // Curated Wallpaper Design Options
@@ -123,6 +124,7 @@ interface WallpaperCustomizerProps {
 export function WallpaperCustomizer({ initialDesignSlug, customizableProducts }: WallpaperCustomizerProps) {
   const navigate = useNavigate();
   const { addItem } = useCart();
+  const { user } = useAuth();
 
   // Design State
   const [selectedDesign, setSelectedDesign] = useState<WallpaperDesign>(() => {
@@ -190,6 +192,10 @@ export function WallpaperCustomizer({ initialDesignSlug, customizableProducts }:
 
   // Add Custom Wallpaper to Cart
   const handleAddCustomWallpaper = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     setIsAdding(true);
     try {
       // Find matching product in catalog or use first customizable product id
@@ -221,7 +227,7 @@ export function WallpaperCustomizer({ initialDesignSlug, customizableProducts }:
       await addItem(productId, 1, customSpec);
       toast.success(`🎉 Added bespoke ${selectedDesign.name} (${calculations.billableAreaSqFt} sq ft) to your cart!`);
     } catch {
-      toast.error('Please sign in as a customer to add custom orders to your cart.');
+      toast.error('Unable to add custom order to cart.');
     } finally {
       setIsAdding(false);
     }
