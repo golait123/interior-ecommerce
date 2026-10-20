@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../api/products';
-import { ShoppingBag, Eye, Sliders } from 'lucide-react';
+import { ShoppingBag, Eye, Sliders, Ban } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +16,13 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
   const discountPct = isDiscounted && origPrice > curPrice 
     ? Math.round(((origPrice - curPrice) / origPrice) * 100) 
     : null;
+
+  const availableStock = product.inventoryAvailable !== undefined 
+    ? product.inventoryAvailable 
+    : product.inventory 
+      ? (product.inventory.totalQuantity - product.inventory.reservedQuantity - (product.inventory.damagedQuantity || 0)) 
+      : 10;
+  const isOutOfStock = product.inStock === false || availableStock <= 0;
 
   // Safe Image handling with fallback to avoid broken icons & alt text leak
   const fallbackImg = '/images/outdoor-garden.jpg';
@@ -32,9 +39,9 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
   const spaceLabel = spaceItem ? `${spaceItem.icon} ${spaceItem.name}` : roomName ? roomName : null;
 
   return (
-    <div className="product-card group">
+    <div className={`product-card group ${isOutOfStock ? 'opacity-90' : ''}`}>
       {/* 1. Studio Image Box */}
-      <div className="product-card-image-wrapper">
+      <div className="product-card-image-wrapper relative">
         <Link to={`/products/${product.id}`} className="block w-full h-full">
           <div className="product-image-placeholder">
             <img 
@@ -50,7 +57,14 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
 
         {/* Top-Left Badge: Single clean, non-overlapping pill */}
         <div className="product-badge-corner">
-          {discountPct ? (
+          {isOutOfStock ? (
+            <span 
+              className="product-badge-pill"
+              style={{ background: '#b91c1c', color: '#fff', fontWeight: 700, letterSpacing: '0.04em' }}
+            >
+              OUT OF STOCK
+            </span>
+          ) : discountPct ? (
             <span className="product-badge-pill product-badge-discount">
               {discountPct}% OFF
             </span>
@@ -98,7 +112,16 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
             </button>
           )}
 
-          {onAddToCart ? (
+          {isOutOfStock ? (
+            <div 
+              className="product-btn-addtocart flex items-center justify-center gap-1.5"
+              style={{ background: '#71717a', color: '#fff', cursor: 'not-allowed', opacity: 0.9 }}
+              title="Article currently out of stock"
+            >
+              <Ban size={13} />
+              <span>Sold Out</span>
+            </div>
+          ) : onAddToCart ? (
             <button
               type="button"
               onClick={(e) => {
@@ -149,8 +172,16 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
             {product.name}
           </Link>
 
-          {/* Botanical / Craft Highlight (if available) */}
-          {product.botanicalBenefits && product.botanicalBenefits.length > 0 ? (
+          {/* Botanical / Craft Highlight or Stock indicator */}
+          {isOutOfStock ? (
+            <span className="product-highlight-pill text-red-700 bg-red-50 border-red-200" style={{ color: '#b91c1c' }}>
+              ⚠️ Currently Out of Stock
+            </span>
+          ) : availableStock > 0 && availableStock <= 5 ? (
+            <span className="product-highlight-pill text-amber-700 bg-amber-50 border-amber-200" style={{ color: '#b45309' }}>
+              🔥 Only {availableStock} left!
+            </span>
+          ) : product.botanicalBenefits && product.botanicalBenefits.length > 0 ? (
             <span className="product-highlight-pill" title={product.botanicalBenefits[0]}>
               🌱 {product.botanicalBenefits[0]}
             </span>
@@ -178,7 +209,15 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
           </div>
 
           {/* Quick Footer Action Button */}
-          {onAddToCart ? (
+          {isOutOfStock ? (
+            <span 
+              className="product-footer-action-btn flex items-center justify-center"
+              style={{ background: '#f4f4f5', color: '#a1a1aa', cursor: 'not-allowed', border: '1px solid #e4e4e7' }}
+              title="Out of stock"
+            >
+              <Ban size={14} />
+            </span>
+          ) : onAddToCart ? (
             <button
               type="button"
               onClick={(e) => {
@@ -205,3 +244,4 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
     </div>
   );
 }
+

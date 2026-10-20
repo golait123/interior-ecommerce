@@ -388,7 +388,11 @@ router.get('/', async (req, res, next) => {
         const category = req.query.category;
         const space = req.query.space || req.query.room;
         const type = req.query.type;
-        const where = { isActive: true };
+        const includeInactive = req.query.includeInactive === 'true' || req.query.all === 'true';
+        const where = {};
+        if (!includeInactive) {
+            where.isActive = true;
+        }
         if (q) {
             where.OR = [
                 { name: { contains: q, mode: 'insensitive' } },
@@ -413,8 +417,13 @@ router.get('/', async (req, res, next) => {
             const isIndoor = exports.INDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, p));
             const isOutdoor = exports.OUTDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, p));
             const primaryDomain = isIndoor && isOutdoor ? 'both' : isIndoor ? 'indoor' : isOutdoor ? 'outdoor' : 'indoor';
+            const available = p.inventory
+                ? (p.inventory.totalQuantity - p.inventory.reservedQuantity - (p.inventory.damagedQuantity || 0))
+                : 0;
             return {
                 ...p,
+                inventoryAvailable: available,
+                inStock: available > 0,
                 rooms: matchingLeaves.map(rm => rm.name), // legacy field
                 spaces: matchingLeaves.map(leaf => ({
                     id: leaf.id,
@@ -526,8 +535,13 @@ router.get('/:id', async (req, res, next) => {
         const isIndoor = exports.INDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, product));
         const isOutdoor = exports.OUTDOOR_LEAVES.some(leaf => (0, exports.matchLeafNode)(leaf, product));
         const primaryDomain = isIndoor && isOutdoor ? 'both' : isIndoor ? 'indoor' : isOutdoor ? 'outdoor' : 'indoor';
+        const available = product.inventory
+            ? (product.inventory.totalQuantity - product.inventory.reservedQuantity - (product.inventory.damagedQuantity || 0))
+            : 0;
         const enriched = {
             ...product,
+            inventoryAvailable: available,
+            inStock: available > 0,
             rooms: matchingLeaves.map(rm => rm.name),
             spaces: matchingLeaves.map(leaf => ({
                 id: leaf.id,
@@ -664,21 +678,205 @@ router.put('/:id', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN, client_1.
             type: zod_1.z.nativeEnum(client_1.ProductType).optional(),
             sku: zod_1.z.string().optional(),
             price: zod_1.z.number().positive().optional(),
-            discountPrice: zod_1.z.number().positive().optional(),
+            discountPrice: zod_1.z.number().positive().nullable().optional(),
             categoryId: zod_1.z.string().optional(),
             unit: zod_1.z.string().optional(),
             pricePerSqFt: zod_1.z.number().optional(),
+            coverageSqFt: zod_1.z.number().optional(),
             isCustomizable: zod_1.z.boolean().optional(),
             material: zod_1.z.string().optional(),
             finish: zod_1.z.string().optional(),
             images: zod_1.z.array(zod_1.z.string()).optional(),
+            stockQuantity: zod_1.z.number().int().min(0).optional(),
+            reorderLevel: zod_1.z.number().int().min(0).optional(),
+            warehouseLocation: zod_1.z.string().optional(),
         });
-        const data = schema.parse(req.body);
-        const product = await prisma_1.prisma.product.update({
-            where: { id },
-            data
+        const parsed = schema.parse(req.body);
+        const { stockQuantity, reorderLevel, warehouseLocation, ...productData } = parsed;
+        const product = await prisma_1.prisma.$transaction(async (tx) => {
+            await tx.product.update({
+                where: { id },
+                data: productData
+            });
+            if (stockQuantity !== undefined || reorderLevel !== undefined || warehouseLocation !== undefined) {
+                const inv = await tx.inventory.findUnique({ where: { productId: id } });
+                if (inv) {
+                    const prevTotal = inv.totalQuantity;
+                    const newTotal = stockQuantity !== undefined ? stockQuantity : inv.totalQuantity;
+                    await tx.inventory.update({
+                        where: { id: inv.id },
+                        data: {
+                            ...(stockQuantity !== undefined ? { totalQuantity: newTotal } : {}),
+                            ...(reorderLevel !== undefined ? { reorderLevel } : {}),
+                            ...(warehouseLocation !== undefined ? { warehouseLocation } : {}),
+                        }
+                    });
+                    if (stockQuantity !== undefined && stockQuantity !== prevTotal) {
+                        await tx.inventoryTransaction.create({
+                            data: {
+                                inventoryId: inv.id,
+                                type: stockQuantity > prevTotal ? 'STOCK_IN' : 'ADJUSTMENT',
+                                quantity: Math.abs(stockQuantity - prevTotal),
+                                previousQuantity: prevTotal,
+                                newQuantity: newTotal,
+                                performedBy: req.user.id,
+                                referenceId: 'Stock modified in product edit'
+                            }
+                        });
+                    }
+                }
+            }
+            return tx.product.findUnique({
+                where: { id },
+                include: { category: true, inventory: true }
+            });
         });
-        res.json({ success: true, message: 'Product updated', data: product });
+        res.json({ success: true, message: 'Product updated successfully', data: product });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.delete('/:id', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN), async (req, res, next) => {
+    try {
+        const id = String(req.params.id);
+        const force = req.query.force === 'true';
+        // Check if referenced in OrderItem
+        const orderItemCount = await prisma_1.prisma.orderItem.count({ where: { productId: id } });
+        if (orderItemCount > 0 && !force) {
+            // Soft-delete by deactivating to preserve financial audit trail
+            const updated = await prisma_1.prisma.product.update({
+                where: { id },
+                data: { isActive: false }
+            });
+            return res.json({
+                success: true,
+                message: 'Product is referenced in existing customer orders. It has been deactivated / archived to preserve financial records.',
+                data: { archived: true, product: updated }
+            });
+        }
+        // Delete cart items, inventory, transactions, and product
+        await prisma_1.prisma.$transaction(async (tx) => {
+            await tx.cartItem.deleteMany({ where: { productId: id } });
+            const inv = await tx.inventory.findUnique({ where: { productId: id } });
+            if (inv) {
+                await tx.inventoryTransaction.deleteMany({ where: { inventoryId: inv.id } });
+                await tx.inventory.delete({ where: { id: inv.id } });
+            }
+            if (orderItemCount > 0 && force) {
+                await tx.orderItem.deleteMany({ where: { productId: id } });
+            }
+            await tx.product.delete({ where: { id } });
+        });
+        res.json({ success: true, message: 'Product deleted successfully', data: { deleted: true, id } });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.patch('/:id/stock', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN, client_1.Role.STOCK_MANAGER), async (req, res, next) => {
+    try {
+        const id = String(req.params.id);
+        const schema = zod_1.z.object({
+            action: zod_1.z.enum(['set', 'add', 'deduct']),
+            quantity: zod_1.z.number().int().min(0),
+            reason: zod_1.z.string().optional()
+        });
+        const { action, quantity, reason } = schema.parse(req.body);
+        const updated = await prisma_1.prisma.$transaction(async (tx) => {
+            const inv = await tx.inventory.findUnique({ where: { productId: id } });
+            if (!inv)
+                throw new Error('Inventory not found for product');
+            let newTotal = inv.totalQuantity;
+            let txnType = 'ADJUSTMENT';
+            if (action === 'set') {
+                newTotal = quantity;
+                txnType = 'ADJUSTMENT';
+            }
+            else if (action === 'add') {
+                newTotal = inv.totalQuantity + quantity;
+                txnType = 'STOCK_IN';
+            }
+            else if (action === 'deduct') {
+                const available = inv.totalQuantity - inv.reservedQuantity - inv.damagedQuantity;
+                if (quantity > available) {
+                    throw new Error(`Cannot deduct ${quantity} units. Only ${available} available unreserved.`);
+                }
+                newTotal = Math.max(0, inv.totalQuantity - quantity);
+                txnType = 'STOCK_OUT';
+            }
+            await tx.inventory.update({
+                where: { id: inv.id },
+                data: { totalQuantity: newTotal }
+            });
+            await tx.inventoryTransaction.create({
+                data: {
+                    inventoryId: inv.id,
+                    type: txnType,
+                    quantity: Math.abs(newTotal - inv.totalQuantity) || quantity,
+                    previousQuantity: inv.totalQuantity,
+                    newQuantity: newTotal,
+                    performedBy: req.user.id,
+                    referenceId: reason || `Stock ${action} manual operation`
+                }
+            });
+            return tx.product.findUnique({
+                where: { id },
+                include: { category: true, inventory: true }
+            });
+        });
+        res.json({ success: true, message: `Stock updated (${action}: ${quantity})`, data: updated });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+router.patch('/:id/out-of-stock', auth_1.auth, (0, auth_1.roles)(client_1.Role.ADMIN, client_1.Role.STOCK_MANAGER), async (req, res, next) => {
+    try {
+        const id = String(req.params.id);
+        const schema = zod_1.z.object({
+            outOfStock: zod_1.z.boolean().optional()
+        });
+        const parsed = schema.parse(req.body);
+        const updated = await prisma_1.prisma.$transaction(async (tx) => {
+            const inv = await tx.inventory.findUnique({ where: { productId: id } });
+            if (!inv)
+                throw new Error('Inventory not found for product');
+            const currentAvailable = inv.totalQuantity - inv.reservedQuantity - inv.damagedQuantity;
+            const isCurrentlyOutOfStock = currentAvailable <= 0;
+            const shouldBeOutOfStock = parsed.outOfStock !== undefined ? parsed.outOfStock : !isCurrentlyOutOfStock;
+            let newTotal = inv.totalQuantity;
+            if (shouldBeOutOfStock) {
+                newTotal = inv.reservedQuantity + inv.damagedQuantity;
+            }
+            else {
+                newTotal = inv.reservedQuantity + inv.damagedQuantity + Math.max(inv.reorderLevel || 10, 20);
+            }
+            await tx.inventory.update({
+                where: { id: inv.id },
+                data: { totalQuantity: newTotal }
+            });
+            await tx.inventoryTransaction.create({
+                data: {
+                    inventoryId: inv.id,
+                    type: shouldBeOutOfStock ? 'ADJUSTMENT' : 'STOCK_IN',
+                    quantity: Math.abs(newTotal - inv.totalQuantity),
+                    previousQuantity: inv.totalQuantity,
+                    newQuantity: newTotal,
+                    performedBy: req.user.id,
+                    referenceId: shouldBeOutOfStock ? 'Marked out of stock by manager' : 'Restocked by manager'
+                }
+            });
+            return tx.product.findUnique({
+                where: { id },
+                include: { category: true, inventory: true }
+            });
+        });
+        res.json({
+            success: true,
+            message: 'Product stock status updated',
+            data: updated
+        });
     }
     catch (error) {
         next(error);

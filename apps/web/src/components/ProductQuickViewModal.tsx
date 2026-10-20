@@ -58,6 +58,13 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
   const images = product.images && product.images.length > 0 ? product.images : [];
   const currentImage = images[selectedImageIdx] || images[0] || null;
 
+  const availableStock = product.inventoryAvailable !== undefined 
+    ? product.inventoryAvailable 
+    : product.inventory 
+      ? (product.inventory.totalQuantity - product.inventory.reservedQuantity - (product.inventory.damagedQuantity || 0)) 
+      : 10;
+  const isOutOfStock = product.inStock === false || availableStock <= 0;
+
   const handleAdd = async () => {
     setIsAdding(true);
     try {
@@ -333,16 +340,22 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                     </div>
                   </div>
 
-                  {/* Add to Cart CTA */}
-                  <button
-                    type="button"
-                    onClick={handleAdd}
-                    disabled={isAdding}
-                    className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 text-xs uppercase tracking-wider font-semibold cursor-pointer shadow-md"
-                  >
-                    <ShoppingBag size={15} />
-                    <span>{isAdding ? 'Adding to Bag...' : `Add to Bag • ${formatPrice(curPrice * quantity)}`}</span>
-                  </button>
+                  {/* Add to Cart CTA or Sold Out */}
+                  {isOutOfStock ? (
+                    <div className="w-full py-3 px-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-center text-xs font-semibold">
+                      ⚠️ This article is currently out of stock and cannot be ordered.
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleAdd}
+                      disabled={isAdding}
+                      className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 text-xs uppercase tracking-wider font-semibold cursor-pointer shadow-md"
+                    >
+                      <ShoppingBag size={15} />
+                      <span>{isAdding ? 'Adding to Bag...' : `Add to Bag • ${formatPrice(curPrice * quantity)}`}</span>
+                    </button>
+                  )}
 
                   {/* Direct Link to Full Product Page */}
                   <div className="text-center pt-1">

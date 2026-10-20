@@ -8,6 +8,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { ProductCard } from '../components/ProductCard';
 import { ProductQuickViewModal } from '../components/ProductQuickViewModal';
+import { AddProductModal } from '../components/AddProductModal';
 import { useLocationContext } from '../contexts/LocationContext';
 import { 
   ArrowUpDown, 
@@ -20,7 +21,8 @@ import {
   LayoutGrid,
   X,
   SlidersHorizontal,
-  Sparkles
+  Sparkles,
+  Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -51,6 +53,7 @@ export default function Shop() {
 
   // Quick View State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
   // Fetch Tree Data
   const { data: spacesData } = useQuery({
@@ -300,6 +303,36 @@ export default function Shop() {
             </button>
           </div>
         </div>
+
+        {/* Store Manager Controls Bar (ADMIN / STOCK_MANAGER) */}
+        {user && (user.role === 'ADMIN' || user.role === 'STOCK_MANAGER') && (
+          <div className="mb-6 p-4 rounded-xl bg-[#faf7f2] border border-[#e8dfd5] flex flex-wrap items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="badge badge-blue">Store Manager Mode</span>
+              <span className="text-xs text-[#555]">
+                Logged in as <strong>{user.name}</strong> ({user.role}). You have shop data manipulation permissions (insert, update, delete, stock adjust).
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(true)}
+                className="btn btn-primary btn-sm flex items-center gap-1.5"
+              >
+                <Plus size={14} />
+                <span>+ Add Product</span>
+              </button>
+              <Link
+                to="/admin/products"
+                className="btn btn-secondary btn-sm flex items-center gap-1.5"
+              >
+                <SlidersHorizontal size={14} />
+                <span>Manage Store Catalog</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* 2. ORGANIZED CONTROL CENTER (SUB-SPACES, SEARCH, CRAFT, BUDGET & SORT)    */}
@@ -589,6 +622,13 @@ export default function Shop() {
           onAddToCart={(product, qty) => handleAddToCart(product, qty)}
         />
       )}
+
+      {/* Add Product Modal for Store Managers */}
+      <AddProductModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        defaultRole="ADMIN"
+      />
 
       <Footer />
     </div>

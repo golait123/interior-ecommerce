@@ -206,8 +206,12 @@ export default function ProductDetail() {
   const images = p.images && p.images.length > 0 ? p.images : [];
   const currentImage = images[activeImage] || images[0] || null;
 
-  const inStockQty = p.inventory ? (p.inventory.totalQuantity - p.inventory.reservedQuantity) : 10;
-  const isAvailable = inStockQty > 0;
+  const inStockQty = p.inventoryAvailable !== undefined 
+    ? p.inventoryAvailable 
+    : p.inventory 
+      ? Math.max(0, p.inventory.totalQuantity - p.inventory.reservedQuantity - (p.inventory.damagedQuantity || 0)) 
+      : 10;
+  const isAvailable = p.inStock !== false && inStockQty > 0 && p.isActive !== false;
 
   return (
     <div className="page-wrapper bg-white">
@@ -400,10 +404,17 @@ export default function ProductDetail() {
 
             {/* Live Inventory Status */}
             <div className="mb-4">
-              <span className="inline-flex items-center gap-2 text-xs text-[#15803d] font-semibold bg-[#f0fdf4] border border-[#bbf7d0] px-3.5 py-1.5 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse"></span>
-                <span>{isAvailable ? `${inStockQty} units in stock • Ready to dispatch in 24–48 hours` : 'Made to Order • 5–7 Days Production'}</span>
-              </span>
+              {isAvailable ? (
+                <span className="inline-flex items-center gap-2 text-xs text-[#15803d] font-semibold bg-[#f0fdf4] border border-[#bbf7d0] px-3.5 py-1.5 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse"></span>
+                  <span>{inStockQty} units in stock • Ready to dispatch in 24–48 hours</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2 text-xs text-[#b91c1c] font-semibold bg-red-50 border border-red-200 px-3.5 py-1.5 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-[#b91c1c]"></span>
+                  <span>Currently Out of Stock • Restock in progress</span>
+                </span>
+              )}
             </div>
 
             {/* Product Description */}
@@ -544,27 +555,34 @@ export default function ProductDetail() {
                   </div>
                 </div>
 
-                {/* Dual CTAs: Solid Navy Add to Bag + Buy Now */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <button 
-                    type="button"
-                    onClick={handleAddToCart}
-                    disabled={!isAvailable}
-                    className="btn btn-primary py-3.5 px-6 text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                  >
-                    <ShoppingBag size={16} />
-                    <span>Add To Bag</span>
-                  </button>
+                {/* Dual CTAs or Out of Stock Notification */}
+                {!isAvailable ? (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                    <div className="text-red-700 font-bold text-sm mb-1">Article Out of Stock</div>
+                    <p className="text-xs text-red-600 m-0">
+                      All units have been claimed by existing orders. Our workshop is handcrafting additional stock.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <button 
+                      type="button"
+                      onClick={handleAddToCart}
+                      className="btn btn-primary py-3.5 px-6 text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    >
+                      <ShoppingBag size={16} />
+                      <span>Add To Bag</span>
+                    </button>
 
-                  <button 
-                    type="button"
-                    onClick={handleBuyNow}
-                    disabled={!isAvailable}
-                    className="btn btn-secondary py-3.5 px-6 text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Instant Commission</span>
-                  </button>
-                </div>
+                    <button 
+                      type="button"
+                      onClick={handleBuyNow}
+                      className="btn btn-secondary py-3.5 px-6 text-xs uppercase tracking-wider font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <span>Instant Commission</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

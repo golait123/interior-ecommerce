@@ -45,6 +45,11 @@ export const productsApi = {
   get: (id: string) => api.get(`/products/${id}`).then(unwrap<Product>),
   create: (d: any) => api.post('/products', d).then(unwrap<Product>),
   update: (id: string, d: any) => api.put(`/products/${id}`, d).then(unwrap<Product>),
+  delete: (id: string, force?: boolean) => api.delete(`/products/${id}`, { params: { force } }).then(unwrap<{ success: boolean; message: string; deleted?: boolean; archived?: boolean }>),
+  updateStock: (id: string, data: { action: 'set' | 'add' | 'deduct'; quantity: number; reason?: string }) =>
+    api.patch(`/products/${id}/stock`, data).then(unwrap<Product>),
+  toggleOutOfStock: (id: string, outOfStock?: boolean) =>
+    api.patch(`/products/${id}/out-of-stock`, { outOfStock }).then(unwrap<Product>),
   toggleStatus: (id: string) => api.patch(`/products/${id}/status`, {}).then(unwrap<Product>),
 };
 
