@@ -1,18 +1,18 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Package, ShoppingCart, Users, FileText, LogOut, ExternalLink, MapPin } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, FileText, LogOut, ExternalLink, MapPin, DollarSign, Landmark } from 'lucide-react';
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
   const { pathname } = useLocation();
 
   const links = [
-    { to: '/admin', icon: <LayoutDashboard size={20} />, label: 'Overview' },
-    { to: '/admin/products', icon: <Package size={20} />, label: 'Products' },
-    { to: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Orders' },
+    { to: '/admin', icon: <Landmark size={20} />, label: 'Financial & Revenue' },
+    { to: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Orders & Ledger' },
     { to: '/admin/customers', icon: <Users size={20} />, label: 'Customers' },
     { to: '/admin/locations', icon: <MapPin size={20} />, label: 'Location Analytics' },
+    { to: '/stock/products', icon: <Package size={20} />, label: 'Stock & Catalog Portal' },
   ];
 
   return (

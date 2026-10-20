@@ -1,10 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { inventoryApi } from '../../api/inventory';
 import { StockLayout } from './StockLayout';
 import { StatCard } from '../../components/StatCard';
 import { InventoryTable } from '../../components/InventoryTable';
-import { Package, AlertTriangle, Activity } from 'lucide-react';
+import { Package, AlertTriangle, Activity, PackageCheck, ShoppingBag } from 'lucide-react';
 
 export function StockDashboard() {
   const { data: alerts } = useQuery({ queryKey: ['stock-alerts'], queryFn: inventoryApi.alerts });
@@ -16,8 +17,17 @@ export function StockDashboard() {
 
   return (
     <StockLayout>
-      <div className="page-header mb-8">
-        <h1>Stock Dashboard</h1>
+      <div className="page-header flex flex-wrap justify-between items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-serif">Stock & Inventory Operations</h1>
+          <p className="text-muted text-sm mt-1">Live overview of warehouse storage, stock allocations, and shop articles.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link to="/stock/products" className="btn btn-primary flex items-center gap-2 shadow-xs">
+            <PackageCheck size={18} />
+            <span>Manage Shop Products & Stock</span>
+          </Link>
+        </div>
       </div>
 
       <div className="dashboard-grid grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

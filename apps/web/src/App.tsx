@@ -23,6 +23,7 @@ import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminLocations } from './pages/admin/AdminLocations';
 import { StockDashboard } from './pages/stock/StockDashboard';
+import { StockProducts } from './pages/stock/StockProducts';
 import { StockInventory } from './pages/stock/StockInventory';
 import { StockMovements } from './pages/stock/StockMovements';
 import { StockOrders } from './pages/stock/StockOrders';
@@ -89,6 +90,7 @@ export default function App() {
               <Route path="/admin/locations" element={<ProtectedRoute roles={['ADMIN']}><AdminLocations /></ProtectedRoute>} />
               {/* Stock Manager */}
               <Route path="/stock" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockDashboard /></ProtectedRoute>} />
+              <Route path="/stock/products" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockProducts /></ProtectedRoute>} />
               <Route path="/stock/orders" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockOrders /></ProtectedRoute>} />
               <Route path="/stock/inventory" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockInventory /></ProtectedRoute>} />
               <Route path="/stock/movements" element={<ProtectedRoute roles={['STOCK_MANAGER', 'ADMIN']}><StockMovements /></ProtectedRoute>} />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Package, Activity, AlertTriangle, LogOut, ExternalLink, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Package, Activity, AlertTriangle, LogOut, ExternalLink, ShoppingBag, PackageCheck } from 'lucide-react';
 
 export function StockLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
@@ -9,8 +9,9 @@ export function StockLayout({ children }: { children: React.ReactNode }) {
 
   const links = [
     { to: '/stock', icon: <LayoutDashboard size={20} />, label: 'Overview' },
-    { to: '/stock/orders', icon: <ShoppingBag size={20} />, label: 'Orders & Tracking' },
+    { to: '/stock/products', icon: <PackageCheck size={20} />, label: 'Products & Catalog' },
     { to: '/stock/inventory', icon: <Package size={20} />, label: 'Inventory' },
+    { to: '/stock/orders', icon: <ShoppingBag size={20} />, label: 'Orders & Tracking' },
     { to: '/stock/movements', icon: <Activity size={20} />, label: 'Movements' },
   ];
 
