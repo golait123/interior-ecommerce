@@ -98,6 +98,7 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
     },
     onSuccess: () => {
       toast.success('Product updated successfully!');
+      queryClient.invalidateQueries({ queryKey: ['stock-products'] });
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
@@ -144,7 +145,7 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) return toast.error('Product name is required');
+    if (!name.trim()) return toast.error('Product title / name is required');
     if (!price || Number(price) <= 0) return toast.error('Valid base price is required');
 
     const payload: any = {
@@ -175,36 +176,44 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
     : Number(stockQuantity);
 
   return (
-    <div className="modal-overlay" style={{ zIndex: 1200 }}>
+    <div className="modal-overlay" onClick={onClose}>
       <div 
-        className="modal-box bg-white" 
-        style={{ maxWidth: '880px', width: '95%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', padding: 0 }}
+        className="modal-box" 
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-edit-product-title"
       >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-[#faf8f5]">
+        {/* Pinned Modal Header */}
+        <div className="modal-header">
           <div>
-            <h2 className="text-xl font-serif font-bold text-[#2d2a27]">Edit Product & Manage Stock</h2>
-            <p className="text-xs text-muted mt-0.5">
-              SKU: <strong className="text-[#8c6f52]">{sku || product.sku}</strong> • ID: {product.id.slice(0, 8)}...
+            <div className="flex items-center gap-2 mb-1">
+              <span className="badge badge-blue">Catalog & Stock Editor</span>
+              <span className="text-xs text-muted font-mono">{sku || product.sku}</span>
+            </div>
+            <h2 id="modal-edit-product-title">Edit Product & Inventory</h2>
+            <p className="text-muted text-xs mt-0.5 mb-0">
+              Update pricing, specifications, live stock allocations, and photography.
             </p>
           </div>
           <button 
             type="button" 
             onClick={onClose} 
-            className="btn btn-ghost btn-sm p-2 text-muted hover:text-dark"
+            className="btn btn-ghost btn-sm p-1.5 text-muted hover:text-[#0f2444]"
+            aria-label="Close dialog"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Modal Body / Form */}
-        <form onSubmit={handleSubmit} style={{ overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {/* Scrollable Form Body */}
+        <form id="edit-product-form" onSubmit={handleSubmit} className="modal-body space-y-4">
           
           {/* Quick Status Bar */}
-          <div className="flex flex-wrap items-center justify-between p-3.5 rounded-lg bg-[#f4ede4] border border-[#e5dcd3] gap-3">
+          <div className="flex flex-wrap items-center justify-between p-3.5 rounded-xl bg-[#fbf9f6] border border-[#cbdceb] gap-3">
             <div className="flex items-center gap-3">
               <span className={`badge ${availableUnits > 5 ? 'badge-green' : availableUnits > 0 ? 'badge-yellow' : 'badge-red'}`}>
-                {availableUnits > 0 ? `${availableUnits} Available In Stock` : 'OUT OF STOCK'}
+                {availableUnits > 0 ? `${availableUnits} Available in Stock` : 'OUT OF STOCK'}
               </span>
               <span className={`badge ${isActive ? 'badge-blue' : 'badge-gray'}`}>
                 {isActive ? 'Published (Live)' : 'Draft / Inactive'}
@@ -215,14 +224,14 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
               <button
                 type="button"
                 onClick={() => setStockQuantity('0')}
-                className="btn btn-ghost btn-sm text-xs text-red-700 bg-red-50 hover:bg-red-100 border border-red-200"
+                className="btn btn-ghost btn-xs text-red-700 bg-red-50 hover:bg-red-100 border border-red-200"
               >
                 Mark Out of Stock (0)
               </button>
               <button
                 type="button"
                 onClick={() => setStockQuantity(String(Math.max(25, Number(stockQuantity) + 25)))}
-                className="btn btn-ghost btn-sm text-xs text-green-800 bg-green-50 hover:bg-green-100 border border-green-200"
+                className="btn btn-ghost btn-xs text-green-800 bg-green-50 hover:bg-green-100 border border-green-200"
               >
                 + Restock 25 Units
               </button>
@@ -230,96 +239,105 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
           </div>
 
           {/* Section 1: Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-group md:col-span-2">
-              <label className="form-label font-semibold text-xs uppercase tracking-wider text-muted">
-                Product Title / Name *
-              </label>
-              <input
-                type="text"
-                className="input w-full"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Royal Bengal Heritage Sheesham Console"
-                required
-              />
-            </div>
+          <div className="form-section-card">
+            <h4 className="form-section-title">
+              <Tag size={15} className="text-[#8c6f52]" />
+              <span>1. Product Identity & Classification</span>
+            </h4>
 
-            <div className="form-group">
-              <label className="form-label font-semibold text-xs uppercase tracking-wider text-muted">
-                Category *
-              </label>
-              <select
-                className="select w-full"
-                value={categoryId}
-                onChange={e => setCategoryId(e.target.value)}
-                required
-              >
-                <option value="">Select Category</option>
-                {categories?.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="form-group md:col-span-2" style={{ margin: 0 }}>
+                <label className="form-label">
+                  Product Title / Name <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="e.g. Royal Bengal Heritage Sheesham Console"
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label font-semibold text-xs uppercase tracking-wider text-muted">
-                Product Type
-              </label>
-              <select
-                className="select w-full"
-                value={type}
-                onChange={e => {
-                  setType(e.target.value);
-                  setIsCustomizable(e.target.value === 'CUSTOM_WALLPAPER');
-                }}
-              >
-                {PRODUCT_TYPES.map(t => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-            </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">
+                  Category <span className="required">*</span>
+                </label>
+                <select
+                  className="select"
+                  value={categoryId}
+                  onChange={e => setCategoryId(e.target.value)}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {categories?.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="form-group">
-              <label className="form-label font-semibold text-xs uppercase tracking-wider text-muted">
-                SKU (Stock Keeping Unit)
-              </label>
-              <input
-                type="text"
-                className="input w-full"
-                value={sku}
-                onChange={e => setSku(e.target.value)}
-                placeholder="e.g. IG-CON-8841"
-              />
-            </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">
+                  Product Type
+                </label>
+                <select
+                  className="select"
+                  value={type}
+                  onChange={e => {
+                    setType(e.target.value);
+                    setIsCustomizable(e.target.value === 'CUSTOM_WALLPAPER');
+                  }}
+                >
+                  {PRODUCT_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="form-group">
-              <label className="form-label font-semibold text-xs uppercase tracking-wider text-muted">
-                Unit of Measure
-              </label>
-              <input
-                type="text"
-                className="input w-full"
-                value={unit}
-                onChange={e => setUnit(e.target.value)}
-                placeholder="e.g. piece, set, sq ft, roll"
-              />
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">
+                  SKU (Stock Keeping Unit)
+                </label>
+                <input
+                  type="text"
+                  className="input font-mono"
+                  value={sku}
+                  onChange={e => setSku(e.target.value)}
+                  placeholder="e.g. IG-CON-8841"
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">
+                  Unit of Measure
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  value={unit}
+                  onChange={e => setUnit(e.target.value)}
+                  placeholder="piece, set, sq ft, roll"
+                />
+              </div>
             </div>
           </div>
 
           {/* Section 2: Pricing & Discounts */}
-          <div className="p-4 rounded-lg border border-[#e8e4de] bg-[#fbf9f6]">
-            <h3 className="text-sm font-bold text-[#2d2a27] mb-3 flex items-center gap-1.5">
-              <DollarSign size={16} className="text-[#8c6f52]" />
-              <span>Pricing & Offers</span>
-            </h3>
+          <div className="form-section-card">
+            <h4 className="form-section-title">
+              <DollarSign size={15} className="text-[#8c6f52]" />
+              <span>2. Valuation & Pricing</span>
+            </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="form-group">
-                <label className="form-label text-xs">Regular Price (₹) *</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">
+                  Regular Price (₹) <span className="required">*</span>
+                </label>
                 <input
                   type="number"
-                  className="input w-full"
+                  className="input font-mono"
                   value={price}
                   onChange={e => setPrice(e.target.value)}
                   min="1"
@@ -327,11 +345,11 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label text-xs">Discounted Price (₹)</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Discounted Price (₹)</label>
                 <input
                   type="number"
-                  className="input w-full"
+                  className="input font-mono"
                   value={discountPrice}
                   onChange={e => setDiscountPrice(e.target.value)}
                   placeholder="Optional sale price"
@@ -339,11 +357,11 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label text-xs">Price / Sq Ft (₹)</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Price / Sq Ft (₹)</label>
                 <input
                   type="number"
-                  className="input w-full"
+                  className="input font-mono"
                   value={pricePerSqFt}
                   onChange={e => setPricePerSqFt(e.target.value)}
                   placeholder="For custom wallpapers"
@@ -353,48 +371,48 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
             </div>
           </div>
 
-          {/* Section 3: Inventory & Warehouse Management */}
-          <div className="p-4 rounded-lg border border-[#e8e4de] bg-[#fbf9f6]">
-            <h3 className="text-sm font-bold text-[#2d2a27] mb-3 flex items-center gap-1.5">
-              <Package size={16} className="text-[#8c6f52]" />
-              <span>Inventory & Warehouse Control</span>
-            </h3>
+          {/* Section 3: Inventory Control */}
+          <div className="form-section-card">
+            <h4 className="form-section-title">
+              <Package size={15} className="text-[#8c6f52]" />
+              <span>3. Inventory & Warehouse Depot</span>
+            </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="form-group">
-                <label className="form-label text-xs">Total Stock Quantity *</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">
+                  Total Stock Quantity <span className="required">*</span>
+                </label>
                 <input
                   type="number"
-                  className="input w-full"
+                  className="input font-mono"
                   value={stockQuantity}
                   onChange={e => setStockQuantity(e.target.value)}
                   min="0"
                   required
                 />
-                <small className="text-muted text-[11px] mt-1 block">
-                  Available: {availableUnits} units (Reserved: {product.inventory?.reservedQuantity || 0})
-                </small>
+                <span className="form-hint">
+                  Available: {availableUnits} | Reserved: {product.inventory?.reservedQuantity || 0}
+                </span>
               </div>
 
-              <div className="form-group">
-                <label className="form-label text-xs">Low Stock Alert Level</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Low Stock Threshold</label>
                 <input
                   type="number"
-                  className="input w-full"
+                  className="input font-mono"
                   value={reorderLevel}
                   onChange={e => setReorderLevel(e.target.value)}
                   min="0"
                 />
-                <small className="text-muted text-[11px] mt-1 block">
-                  Triggers reorder warning when stock &le; this level
-                </small>
+                <span className="form-hint">Triggers reorder warning</span>
               </div>
 
-              <div className="form-group">
-                <label className="form-label text-xs">Warehouse / Bay Location</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Warehouse Depot</label>
                 <input
                   type="text"
-                  className="input w-full"
+                  className="input"
                   value={warehouseLocation}
                   onChange={e => setWarehouseLocation(e.target.value)}
                   placeholder="e.g. Sector 58 Guild Bay"
@@ -403,35 +421,42 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
             </div>
           </div>
 
-          {/* Section 4: Specifications & Craft */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="form-group">
-              <label className="form-label text-xs">Material</label>
-              <input
-                type="text"
-                className="input w-full"
-                value={material}
-                onChange={e => setMaterial(e.target.value)}
-                placeholder="e.g. Solid Sheesham Wood, Brass, Terracotta"
-              />
+          {/* Section 4: Specifications */}
+          <div className="form-section-card">
+            <h4 className="form-section-title">
+              <Sparkles size={15} className="text-[#8c6f52]" />
+              <span>4. Materials, Finish & Craft Story</span>
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Material Composition</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={material}
+                  onChange={e => setMaterial(e.target.value)}
+                  placeholder="e.g. Solid Sheesham Wood, Brass, Terracotta"
+                />
+              </div>
+
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Surface Finish</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={finish}
+                  onChange={e => setFinish(e.target.value)}
+                  placeholder="e.g. Distressed Teak Oil, Antique Gold Patina"
+                />
+              </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label text-xs">Finish</label>
-              <input
-                type="text"
-                className="input w-full"
-                value={finish}
-                onChange={e => setFinish(e.target.value)}
-                placeholder="e.g. Distressed Teak Oil, Antique Gold Patina"
-              />
-            </div>
-
-            <div className="form-group sm:col-span-2">
-              <label className="form-label text-xs">Description & Specifications</label>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">Description & Specifications</label>
               <textarea
-                className="input w-full"
-                rows={4}
+                className="input"
+                rows={3}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Detailed craft description, dimensions, and styling notes..."
@@ -439,32 +464,31 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
             </div>
           </div>
 
-          {/* Section 5: Image Gallery Management */}
-          <div className="p-4 rounded-lg border border-[#e8e4de] bg-[#fbf9f6]">
-            <h3 className="text-sm font-bold text-[#2d2a27] mb-2 flex items-center gap-1.5">
-              <ImageIcon size={16} className="text-[#8c6f52]" />
-              <span>Product Image Gallery ({images.length})</span>
-            </h3>
+          {/* Section 5: Photos */}
+          <div className="form-section-card">
+            <h4 className="form-section-title">
+              <ImageIcon size={15} className="text-[#8c6f52]" />
+              <span>5. Product Photography ({images.length})</span>
+            </h4>
 
-            {/* Current Image Grid */}
             <div className="flex flex-wrap gap-3 mb-3">
               {images.map((img, idx) => (
                 <div 
                   key={idx} 
-                  className="relative group border border-[#ddd] rounded-md overflow-hidden bg-white"
+                  className="relative group border border-[#cbdceb] rounded-lg overflow-hidden bg-white shadow-xs"
                   style={{ width: '84px', height: '84px' }}
                 >
                   <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(idx)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-90 hover:opacity-100 shadow transition-opacity"
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 shadow hover:bg-red-700 transition cursor-pointer border-none"
                     title="Remove image"
                   >
                     <Trash2 size={12} />
                   </button>
                   {idx === 0 && (
-                    <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5 font-bold uppercase tracking-wider">
+                    <span className="absolute bottom-0 inset-x-0 bg-black/75 text-white text-[9px] text-center py-0.5 font-bold uppercase tracking-wider">
                       Cover
                     </span>
                   )}
@@ -475,7 +499,6 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
               )}
             </div>
 
-            {/* Add Image Controls */}
             <div className="flex flex-wrap items-center gap-3">
               <input
                 type="file"
@@ -513,27 +536,29 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
               </div>
             </div>
           </div>
-
-          {/* Modal Footer Controls */}
-          <div className="flex items-center justify-between pt-4 border-t mt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-ghost"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={updateMutation.isPending}
-              className="btn btn-primary flex items-center gap-2"
-            >
-              <Check size={16} />
-              <span>{updateMutation.isPending ? 'Saving Changes...' : 'Save Product Changes'}</span>
-            </button>
-          </div>
         </form>
+
+        {/* Pinned Modal Footer */}
+        <div className="modal-footer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-ghost"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            form="edit-product-form"
+            disabled={updateMutation.isPending}
+            className="btn btn-primary btn-sm flex items-center gap-2 shadow-sm"
+          >
+            <Check size={16} />
+            <span>{updateMutation.isPending ? 'Saving Changes...' : 'Save Product Changes'}</span>
+          </button>
+        </div>
+
       </div>
     </div>
   );

@@ -1582,9 +1582,270 @@ button, input[type="button"], input[type="submit"], .btn {
 .loading-spinner { border: 3px solid rgba(0,0,0,0.1); border-top-color: var(--dark); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* MODAL */
-.modal-overlay { position: fixed; inset: 0; background: rgba(33, 29, 25, 0.7); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-.modal-box { background: var(--bg-primary); width: 100%; max-width: 500px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+/* ========================================================================= */
+/* UNIVERSAL FORM CONTROLS & SYSTEMATIC MODALS (WHITE & NAVY LUXURY THEME)    */
+/* ========================================================================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--navy-deep);
+  margin-bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.form-label .required, .form-label-required {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.form-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.input, .select, textarea.input {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  background-color: #f8fafc;
+  border: 1.5px solid var(--navy-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-height: 42px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.input::placeholder, textarea.input::placeholder {
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+.input:hover, .select:hover, textarea.input:hover {
+  background-color: #ffffff;
+  border-color: #9cbcdb;
+}
+
+.input:focus, .select:focus, textarea.input:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3.5px rgba(15, 36, 68, 0.12);
+}
+
+.select {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230f2444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
+.input-sm, .select-sm {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+textarea.input {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* MODAL SYSTEM: LUXURY GLASSMORPHIC OVERLAY WITH CRISP CARD */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 25, 47, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 24px 16px;
+  animation: modalFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-box {
+  background: #ffffff;
+  width: 100%;
+  max-width: 860px;
+  border-radius: 16px;
+  border: 1px solid rgba(203, 220, 237, 0.8);
+  box-shadow: 0 25px 60px -15px rgba(10, 25, 47, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+  overflow: hidden;
+  position: relative;
+  animation: modalSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(16px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  background: #fbf9f6;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-header h2, .modal-header h3 {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--navy-deep);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--navy-border) transparent;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--navy-border);
+  border-radius: 9999px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  background: #faf8f5;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* SYSTEMATIC STEPPED TAB CONTROLLER */
+.modal-steps-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f0f4f9;
+  border-radius: 10px;
+  border: 1px solid var(--navy-border);
+  overflow-x: auto;
+  margin-bottom: 20px;
+  scrollbar-width: none;
+}
+.modal-steps-nav::-webkit-scrollbar { display: none; }
+
+.modal-step-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.modal-step-btn:hover {
+  color: var(--navy-deep);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.modal-step-btn.active {
+  color: var(--navy-deep);
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(10, 25, 47, 0.1);
+  font-weight: 700;
+}
+
+.modal-step-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  background: #dbe7f4;
+  color: var(--navy);
+}
+
+.modal-step-btn.active .modal-step-num {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+/* ELEGANT CARDS INSIDE FORMS */
+.form-section-card {
+  background: #ffffff;
+  border: 1px solid var(--navy-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(10, 25, 47, 0.03);
+}
+
+.form-section-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--navy-deep);
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {

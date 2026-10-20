@@ -4,7 +4,8 @@ import { productsApi } from '../api/products';
 import { uploadApi } from '../api/upload';
 import { 
   X, UploadCloud, Image as ImageIcon, Sparkles, Home, Trees, Layers, 
-  Check, Info, Tag, DollarSign, Package, MapPin, ShieldAlert
+  Check, Info, Tag, DollarSign, Package, MapPin, ShieldAlert, 
+  ChevronRight, ChevronLeft, CheckCircle2, ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -65,9 +66,12 @@ const CRAFT_HIGHLIGHTS_OPTIONS = [
   'Speckled Artisan Glaze'
 ];
 
+type StepTab = 'identity' | 'spaces' | 'inventory' | 'media';
+
 export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProductModalProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeStep, setActiveStep] = useState<StepTab>('identity');
 
   // Form State
   const [name, setName] = useState('');
@@ -106,7 +110,6 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
     queryFn: () => productsApi.categories(),
   });
 
-  // Auto-set category if available
   React.useEffect(() => {
     if (categories && categories.length > 0 && !categoryId) {
       setCategoryId(categories[0].id);
@@ -155,44 +158,21 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
-
     const availableSlots = 5 - selectedFiles.length;
     if (availableSlots <= 0) {
-      toast.error('You can only select up to 5 pictures.');
+      toast.error('Maximum 5 pictures allowed');
       return;
     }
-
-    const filesToAdd = files.slice(0, availableSlots);
-    if (files.length > availableSlots) {
-      toast('Maximum 5 pictures allowed. Only the first ' + availableSlots + ' were added.', { icon: '⚠️' });
-    }
-
-    const validFiles: File[] = [];
-    const newPreviews: string[] = [];
-
-    filesToAdd.forEach(file => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image file.`);
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`${file.name} exceeds the 10MB size limit.`);
-        return;
-      }
-      validFiles.push(file);
-      newPreviews.push(URL.createObjectURL(file));
-    });
-
-    setSelectedFiles(prev => [...prev, ...validFiles]);
+    const toAdd = files.slice(0, availableSlots);
+    const newPreviews = toAdd.map(f => URL.createObjectURL(f));
+    setSelectedFiles(prev => [...prev, ...toAdd]);
     setPreviewUrls(prev => [...prev, ...newPreviews]);
-
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleRemoveImage = (index: number) => {
-    URL.revokeObjectURL(previewUrls[index]);
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveImage = (idx: number) => {
+    URL.revokeObjectURL(previewUrls[idx]);
+    setSelectedFiles(prev => prev.filter((_, i) => i !== idx));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== idx));
   };
 
   const resetForm = () => {
@@ -215,16 +195,17 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
     setSelectedSpaces(['living-room']);
     setSelectedBenefits([]);
     setSelectedCrafts([]);
-
     previewUrls.forEach(url => URL.revokeObjectURL(url));
     setSelectedFiles([]);
     setPreviewUrls([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    setActiveStep('identity');
   };
 
   const createProductMutation = useMutation({
     mutationFn: (payload: any) => productsApi.create(payload),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock-products'] });
       queryClient.invalidateQueries({ queryKey: ['stock-inventory-full'] });
       queryClient.invalidateQueries({ queryKey: ['stock-inventory'] });
       queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
@@ -245,11 +226,22 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) return toast.error('Product name is required');
-    if (!categoryId) return toast.error('Please select a category');
-    if (!price || Number(price) <= 0) return toast.error('Please enter a valid price');
-    if (!description.trim()) return toast.error('Product description is required');
-    if (selectedSpaces.length === 0) return toast.error('Please select at least one suitable space or room');
+    if (!name.trim()) {
+      setActiveStep('identity');
+      return toast.error('Product title / name is required');
+    }
+    if (!categoryId) {
+      setActiveStep('identity');
+      return toast.error('Please select a category');
+    }
+    if (!price || Number(price) <= 0) {
+      setActiveStep('identity');
+      return toast.error('Please enter a valid base price');
+    }
+    if (selectedSpaces.length === 0) {
+      setActiveStep('spaces');
+      return toast.error('Please select at least one suitable room or living space');
+    }
 
     let uploadedUrls: string[] = [];
     if (selectedFiles.length > 0) {
@@ -268,7 +260,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
     const payload: any = {
       name: name.trim(),
       sku: sku.trim() || undefined,
-      description: description.trim(),
+      description: description.trim() || `${name.trim()} - Handcrafted for luxury architectural living.`,
       type,
       categoryId,
       price: Number(price),
@@ -302,549 +294,655 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1000 }}>
+    <div className="modal-overlay" onClick={onClose}>
       <div 
         className="modal-box" 
-        style={{ 
-          maxWidth: '840px', 
-          width: '95%',
-          maxHeight: '92vh', 
-          overflowY: 'auto',
-          padding: '28px',
-          background: '#ffffff',
-          borderRadius: '8px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-        }} 
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-add-product-title"
       >
-        {/* Header */}
-        <div className="flex justify-between items-start mb-6 pb-4 border-b">
+        {/* Pinned Luxury Modal Header */}
+        <div className="modal-header">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="badge badge-green" style={{ textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '10px' }}>
-                Stock Catalog & Studio
+              <span className="badge badge-blue">
+                Stock & Studio Portal
               </span>
-              <span className="text-xs text-muted">All Website Fields Included</span>
+              <span className="text-xs text-muted font-medium">Standard Website Specifications</span>
             </div>
-            <h2 style={{ margin: 0, fontSize: '1.6rem', fontFamily: 'var(--font-heading)' }}>
+            <h2 id="modal-add-product-title">
               Add New Product to Inventory
             </h2>
-            <p className="text-muted text-xs mt-1">
-              Specify architectural space tree placement, botanical living tags, materials, inventory thresholds, and upload pictures.
+            <p className="text-muted text-xs mt-0.5 mb-0">
+              Complete catalog data entry with architectural living spaces, pricing, inventory alerts, and studio photos.
             </p>
           </div>
           <button 
+            type="button"
             onClick={onClose} 
-            className="btn btn-ghost" 
-            style={{ padding: '6px', border: 'none', cursor: 'pointer' }}
-            aria-label="Close"
+            className="btn btn-ghost btn-sm p-1.5 text-muted hover:text-[#0f2444]"
+            aria-label="Close dialog"
           >
-            <X size={22} />
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Stepped Tab Controller */}
+        <div className="px-6 pt-4 bg-[#ffffff] border-b border-[#e2e8f0]">
+          <div className="modal-steps-nav">
+            <button
+              type="button"
+              onClick={() => setActiveStep('identity')}
+              className={`modal-step-btn ${activeStep === 'identity' ? 'active' : ''}`}
+            >
+              <span className="modal-step-num">1</span>
+              <span>Identity & Pricing</span>
+              {name && price && <Check size={13} className="text-green-700 ml-0.5" />}
+            </button>
 
-          {/* 1. MEDIA SECTION: SYSTEM PICTURES UPLOAD */}
-          <div className="p-4 border rounded" style={{ background: '#faf9f7', borderColor: 'var(--border)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <label className="form-label font-medium flex items-center gap-1.5" style={{ margin: 0 }}>
-                <UploadCloud size={16} className="text-accent" />
-                Product Pictures (From Local System) *
-              </label>
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded ${selectedFiles.length === 5 ? 'bg-amber-100 text-amber-900' : 'bg-stone-200 text-stone-700'}`}>
-                {selectedFiles.length} / 5 pictures chosen
-              </span>
-            </div>
-            <p className="text-muted text-xs mb-3">
-              Upload high-resolution photography for website gallery & quick view. (JPG, PNG, WebP — max 10MB per file).
-            </p>
+            <button
+              type="button"
+              onClick={() => setActiveStep('spaces')}
+              className={`modal-step-btn ${activeStep === 'spaces' ? 'active' : ''}`}
+            >
+              <span className="modal-step-num">2</span>
+              <span>Spaces & Craft ({selectedSpaces.length})</span>
+            </button>
 
-            <input 
-              type="file" 
-              ref={fileInputRef}
-              multiple 
-              accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-              id="modal-system-image-upload"
-              disabled={selectedFiles.length >= 5}
-            />
+            <button
+              type="button"
+              onClick={() => setActiveStep('inventory')}
+              className={`modal-step-btn ${activeStep === 'inventory' ? 'active' : ''}`}
+            >
+              <span className="modal-step-num">3</span>
+              <span>Inventory & Depot</span>
+            </button>
 
-            {selectedFiles.length < 5 && (
-              <label 
-                htmlFor="modal-system-image-upload" 
-                className="flex flex-col items-center justify-center p-5 border-dashed border-2 cursor-pointer hover:bg-white transition-colors text-center"
-                style={{ borderColor: 'var(--border)', borderRadius: '6px' }}
-              >
-                <UploadCloud size={28} className="text-accent mb-1.5" />
-                <span className="font-medium text-sm">Click to choose pictures from your computer</span>
-                <span className="text-muted text-xs mt-1">Select 1 to {5 - selectedFiles.length} remaining images</span>
-              </label>
-            )}
+            <button
+              type="button"
+              onClick={() => setActiveStep('media')}
+              className={`modal-step-btn ${activeStep === 'media' ? 'active' : ''}`}
+            >
+              <span className="modal-step-num">4</span>
+              <span>Photos & Story ({selectedFiles.length})</span>
+            </button>
+          </div>
+        </div>
 
-            {previewUrls.length > 0 && (
-              <div className="grid grid-cols-5 gap-3 mt-3" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
-                {previewUrls.map((url, idx) => (
-                  <div 
-                    key={idx} 
-                    className="relative group border overflow-hidden bg-white shadow-sm" 
-                    style={{ height: '90px', borderRadius: '4px' }}
-                  >
-                    <img 
-                      src={url} 
-                      alt={`Preview ${idx + 1}`} 
-                      className="w-full h-full object-cover" 
+        {/* Scrollable Form Body */}
+        <form id="add-product-form" onSubmit={handleSubmit} className="modal-body">
+
+          {/* STEP 1: IDENTITY & PRICING */}
+          {activeStep === 'identity' && (
+            <div>
+              <div className="form-section-card">
+                <h4 className="form-section-title">
+                  <Tag size={15} className="text-[#8c6f52]" />
+                  <span>1. Product Classification & Identification</span>
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2 form-group">
+                    <label className="form-label">
+                      Product Title / Name <span className="required">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      required 
+                      className="input" 
+                      placeholder="e.g. Royal Botanica Gold Leaf Velvet Wallpaper / Sheesham Console"
+                      value={name} 
+                      onChange={e => setName(e.target.value)} 
                     />
-                    <span 
-                      className="absolute bottom-1 left-1 bg-black bg-opacity-70 text-white text-xs px-1.5 py-0.5"
-                      style={{ fontSize: '10px', borderRadius: '2px' }}
-                    >
-                      #{idx + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(idx)}
-                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full shadow hover:bg-red-700 transition"
-                      style={{ width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-                      title="Remove picture"
-                      aria-label="Remove picture"
-                    >
-                      <X size={14} />
-                    </button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* 2. BASIC IDENTITY */}
-          <div>
-            <h4 className="text-xs uppercase tracking-wider text-muted font-bold mb-3 flex items-center gap-1.5">
-              <Tag size={14} /> 1. Product Identity & Classification
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2 form-group">
-                <label className="form-label font-medium">Product Title / Name *</label>
-                <input 
-                  type="text" 
-                  required 
-                  className="input w-full" 
-                  placeholder="e.g. Royal Botanica Velvet Wallpaper / Sheesham Console"
-                  value={name} 
-                  onChange={e => setName(e.target.value)} 
-                />
-              </div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      SKU (Stock Keeping Unit)
+                    </label>
+                    <input 
+                      type="text" 
+                      className="input font-mono" 
+                      placeholder="e.g. IG-BOT-091"
+                      value={sku} 
+                      onChange={e => setSku(e.target.value)} 
+                    />
+                    <span className="form-hint">Generated automatically if left blank</span>
+                  </div>
+                </div>
 
-              <div className="form-group">
-                <label className="form-label font-medium">SKU (Stock Keeping Unit)</label>
-                <input 
-                  type="text" 
-                  className="input w-full" 
-                  placeholder="e.g. IG-BOT-091 (Auto if blank)"
-                  value={sku} 
-                  onChange={e => setSku(e.target.value)} 
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                  <div className="form-group">
+                    <label className="form-label">
+                      Store Category <span className="required">*</span>
+                    </label>
+                    <select 
+                      className="select" 
+                      value={categoryId} 
+                      onChange={e => setCategoryId(e.target.value)}
+                      required
+                    >
+                      <option value="">-- Select Store Category --</option>
+                      {categories?.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-              <div className="form-group">
-                <label className="form-label font-medium">Category *</label>
-                <select 
-                  className="select w-full" 
-                  value={categoryId} 
-                  onChange={e => setCategoryId(e.target.value)}
-                  required
-                >
-                  <option value="">-- Select Store Category --</option>
-                  {categories?.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label font-medium">Product Type *</label>
-                <select 
-                  className="select w-full" 
-                  value={type} 
-                  onChange={e => handleTypeChange(e.target.value)}
-                >
-                  {PRODUCT_TYPES.map(t => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. ARCHITECTURAL SPACE TREE CATEGORIZATION */}
-          <div className="p-4 border rounded bg-stone-50" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-xs uppercase tracking-wider text-muted font-bold m-0 flex items-center gap-1.5">
-                <Layers size={14} /> 2. Architectural Space Tree Taxonomy (Website Navigation & Filtering) *
-              </h4>
-              <span className="text-xs text-accent font-medium">
-                {selectedSpaces.length} spaces selected
-              </span>
-            </div>
-            <p className="text-muted text-xs mb-3">
-              Assign this product to the architectural spaces where it belongs. Customers will filter by these in the tree navigation and catalog.
-            </p>
-
-            {/* Domain Selector */}
-            <div className="mb-3">
-              <label className="text-xs font-semibold text-stone-700 block mb-1">Primary Space Domain:</label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDomainChange('indoor')}
-                  className={`btn btn-sm flex items-center gap-1.5 ${primaryDomain === 'indoor' ? 'btn-primary' : 'btn-secondary'}`}
-                >
-                  <Home size={14} /> Indoor Spaces
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDomainChange('outdoor')}
-                  className={`btn btn-sm flex items-center gap-1.5 ${primaryDomain === 'outdoor' ? 'btn-primary' : 'btn-secondary'}`}
-                >
-                  <Trees size={14} /> Outdoor Spaces
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDomainChange('both')}
-                  className={`btn btn-sm flex items-center gap-1.5 ${primaryDomain === 'both' ? 'btn-primary' : 'btn-secondary'}`}
-                >
-                  <Sparkles size={14} /> Both (Indoor & Outdoor)
-                </button>
-              </div>
-            </div>
-
-            {/* Target Space Selection Chips */}
-            {(primaryDomain === 'indoor' || primaryDomain === 'both') && (
-              <div className="mb-3">
-                <span className="text-xs font-semibold text-stone-700 block mb-1.5">Indoor Rooms:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {INDOOR_SPACES.map(space => {
-                    const isSelected = selectedSpaces.includes(space.id);
-                    return (
-                      <button
-                        key={space.id}
-                        type="button"
-                        onClick={() => toggleSpace(space.id)}
-                        className={`text-xs px-2.5 py-1 rounded border transition-all flex items-center gap-1 cursor-pointer ${
-                          isSelected 
-                            ? 'bg-stone-900 text-white border-stone-900 shadow-sm' 
-                            : 'bg-white text-stone-700 border-stone-300 hover:border-stone-400'
-                        }`}
-                      >
-                        <span>{space.icon}</span>
-                        <span>{space.name}</span>
-                        {isSelected && <Check size={12} className="ml-1" />}
-                      </button>
-                    );
-                  })}
+                  <div className="form-group">
+                    <label className="form-label">
+                      Product Type <span className="required">*</span>
+                    </label>
+                    <select 
+                      className="select" 
+                      value={type} 
+                      onChange={e => handleTypeChange(e.target.value)}
+                    >
+                      {PRODUCT_TYPES.map(t => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            )}
 
-            {(primaryDomain === 'outdoor' || primaryDomain === 'both') && (
-              <div>
-                <span className="text-xs font-semibold text-stone-700 block mb-1.5">Outdoor Spaces:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {OUTDOOR_SPACES.map(space => {
-                    const isSelected = selectedSpaces.includes(space.id);
-                    return (
-                      <button
-                        key={space.id}
-                        type="button"
-                        onClick={() => toggleSpace(space.id)}
-                        className={`text-xs px-2.5 py-1 rounded border transition-all flex items-center gap-1 cursor-pointer ${
-                          isSelected 
-                            ? 'bg-stone-900 text-white border-stone-900 shadow-sm' 
-                            : 'bg-white text-stone-700 border-stone-300 hover:border-stone-400'
-                        }`}
-                      >
-                        <span>{space.icon}</span>
-                        <span>{space.name}</span>
-                        {isSelected && <Check size={12} className="ml-1" />}
-                      </button>
-                    );
-                  })}
+              {/* Pricing & Surface Specifications */}
+              <div className="form-section-card">
+                <h4 className="form-section-title">
+                  <DollarSign size={15} className="text-[#8c6f52]" />
+                  <span>2. Valuation, Pricing & Discounts</span>
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="form-group">
+                    <label className="form-label">
+                      Base Price (₹) <span className="required">*</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      required 
+                      min="1"
+                      className="input font-mono" 
+                      placeholder="e.g. 1499"
+                      value={price} 
+                      onChange={e => setPrice(e.target.value)} 
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      Discounted Price (₹)
+                    </label>
+                    <input 
+                      type="number" 
+                      min="1"
+                      className="input font-mono" 
+                      placeholder="Optional special sale price"
+                      value={discountPrice} 
+                      onChange={e => setDiscountPrice(e.target.value)} 
+                    />
+                    <span className="form-hint">Applies strikethrough on original price</span>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      Unit of Measure
+                    </label>
+                    <input 
+                      type="text" 
+                      className="input" 
+                      placeholder="piece, sq ft, set, roll"
+                      value={unit} 
+                      onChange={e => setUnit(e.target.value)} 
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
 
-          {/* 4. BOTANICAL & WELLNESS BENEFITS */}
-          <div className="p-4 border rounded" style={{ background: '#f6f9f6', borderColor: '#cde4cd' }}>
-            <h4 className="text-xs uppercase tracking-wider font-bold mb-1 flex items-center gap-1.5" style={{ color: '#2d5a27' }}>
-              <Trees size={14} /> 3. Botanical Living & Environmental Benefits
-            </h4>
-            <p className="text-muted text-xs mb-3">
-              Tag health, evaporative cooling, and wellness features shown on `/gardening` and the product specs card.
-            </p>
-            <div className="space-y-1.5">
-              {BOTANICAL_BENEFITS_OPTIONS.map(b => {
-                const isSelected = selectedBenefits.includes(b.label);
-                return (
-                  <label 
-                    key={b.id} 
-                    className={`flex items-center gap-2 text-xs p-2 rounded cursor-pointer transition-colors border ${
-                      isSelected ? 'bg-white border-green-600 font-medium' : 'bg-transparent border-transparent hover:bg-white'
+                {/* Wallpaper Customizer Fields */}
+                {type === 'CUSTOM_WALLPAPER' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 p-3 bg-[#edf4fc] rounded-lg border border-[#cbdceb]">
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label text-[#0f2444]">
+                        Price Per Sq Ft (₹)
+                      </label>
+                      <input 
+                        type="number" 
+                        min="1"
+                        className="input" 
+                        placeholder="e.g. 42"
+                        value={pricePerSqFt} 
+                        onChange={e => setPricePerSqFt(e.target.value)} 
+                      />
+                      <span className="form-hint text-[#536b88]">Used by wall dimension calculator</span>
+                    </div>
+
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label text-[#0f2444]">
+                        Standard Roll Coverage (Sq Ft)
+                      </label>
+                      <input 
+                        type="number" 
+                        min="1"
+                        className="input" 
+                        placeholder="e.g. 120"
+                        value={coverageSqFt} 
+                        onChange={e => setCoverageSqFt(e.target.value)} 
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: SPACES & CRAFT */}
+          {activeStep === 'spaces' && (
+            <div>
+              <div className="form-section-card">
+                <h4 className="form-section-title">
+                  <Home size={15} className="text-[#8c6f52]" />
+                  <span>1. Living Domain Placement</span>
+                </h4>
+
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => handleDomainChange('indoor')}
+                    className={`p-3 text-center rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
+                      primaryDomain === 'indoor'
+                        ? 'border-[#0f2444] bg-[#edf4fc] text-[#0f2444] shadow-xs'
+                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#cbdceb]'
                     }`}
                   >
+                    <span className="text-lg block mb-1">🏠</span>
+                    <span>Indoor Sanctuary</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDomainChange('outdoor')}
+                    className={`p-3 text-center rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
+                      primaryDomain === 'outdoor'
+                        ? 'border-[#15803d] bg-[#f0fdf4] text-[#15803d] shadow-xs'
+                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#cbdceb]'
+                    }`}
+                  >
+                    <span className="text-lg block mb-1">🌿</span>
+                    <span>Outdoor & Botanical</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDomainChange('both')}
+                    className={`p-3 text-center rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
+                      primaryDomain === 'both'
+                        ? 'border-[#8c6f52] bg-[#fcf9f6] text-[#8c6f52] shadow-xs'
+                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#cbdceb]'
+                    }`}
+                  >
+                    <span className="text-lg block mb-1">🏡</span>
+                    <span>Indoor & Outdoor</span>
+                  </button>
+                </div>
+
+                <label className="form-label mb-2">
+                  Suitable Living Spaces & Rooms ({selectedSpaces.length} selected) <span className="required">*</span>
+                </label>
+
+                {/* Indoor Spaces Grid */}
+                {(primaryDomain === 'indoor' || primaryDomain === 'both') && (
+                  <div className="mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2444] block mb-1.5">Indoor Spaces:</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                      {INDOOR_SPACES.map(s => {
+                        const isSel = selectedSpaces.includes(s.id);
+                        return (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => toggleSpace(s.id)}
+                            className={`p-2 text-left rounded-md border text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                              isSel 
+                                ? 'bg-[#0f2444] text-white border-[#0f2444] font-semibold' 
+                                : 'bg-white border-[#e2e8f0] text-[#2d2a27] hover:border-[#cbdceb]'
+                            }`}
+                          >
+                            <span>{s.icon}</span>
+                            <span className="truncate">{s.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Outdoor Spaces Grid */}
+                {(primaryDomain === 'outdoor' || primaryDomain === 'both') && (
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#15803d] block mb-1.5">Outdoor Spaces:</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {OUTDOOR_SPACES.map(s => {
+                        const isSel = selectedSpaces.includes(s.id);
+                        return (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => toggleSpace(s.id)}
+                            className={`p-2 text-left rounded-md border text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                              isSel 
+                                ? 'bg-[#15803d] text-white border-[#15803d] font-semibold' 
+                                : 'bg-white border-[#e2e8f0] text-[#2d2a27] hover:border-[#cbdceb]'
+                            }`}
+                          >
+                            <span>{s.icon}</span>
+                            <span className="truncate">{s.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Botanical & Craft Highlights */}
+              <div className="form-section-card">
+                <h4 className="form-section-title">
+                  <Trees size={15} className="text-[#15803d]" />
+                  <span>2. Botanical Benefits & Craft Highlights</span>
+                </h4>
+
+                <div className="mb-4">
+                  <span className="form-label mb-1.5">Botanical Living Wellness Tags:</span>
+                  <div className="space-y-1.5">
+                    {BOTANICAL_BENEFITS_OPTIONS.map(b => (
+                      <label 
+                        key={b.id} 
+                        className={`flex items-center gap-2 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
+                          selectedBenefits.includes(b.label) ? 'bg-[#f0fdf4] border-[#bbf7d0] text-[#15803d] font-semibold' : 'bg-white border-[#e2e8f0] text-muted'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedBenefits.includes(b.label)}
+                          onChange={() => toggleBenefit(b.label)}
+                          className="accent-[#15803d]"
+                        />
+                        <span>{b.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="form-label mb-1.5">Artisan Craft Highlights:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CRAFT_HIGHLIGHTS_OPTIONS.map(c => {
+                      const isSel = selectedCrafts.includes(c);
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => toggleCraft(c)}
+                          className={`px-2.5 py-1 rounded-full border text-[11px] font-medium cursor-pointer transition-all ${
+                            isSel ? 'bg-[#8c6f52] text-white border-[#8c6f52]' : 'bg-white border-[#e2e8f0] text-muted hover:border-[#cbdceb]'
+                          }`}
+                        >
+                          {isSel ? '✓ ' : '+ '}{c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: INVENTORY & DEPOT */}
+          {activeStep === 'inventory' && (
+            <div>
+              <div className="form-section-card">
+                <h4 className="form-section-title">
+                  <Package size={15} className="text-[#8c6f52]" />
+                  <span>1. Inventory Levels & Reorder Thresholds</span>
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <label className="form-label">
+                      Initial Available Stock (Units) <span className="required">*</span>
+                    </label>
                     <input 
-                      type="checkbox" 
-                      checked={isSelected} 
-                      onChange={() => toggleBenefit(b.label)}
-                      style={{ width: '16px', height: '16px' }} 
+                      type="number" 
+                      min="0"
+                      required
+                      className="input font-mono" 
+                      placeholder="e.g. 50"
+                      value={initialStock} 
+                      onChange={e => setInitialStock(e.target.value)} 
                     />
-                    <span>{b.label}</span>
+                    <span className="form-hint">Physical stock available immediately for customer orders</span>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      Low Stock Alert Threshold
+                    </label>
+                    <input 
+                      type="number" 
+                      min="0"
+                      className="input font-mono" 
+                      placeholder="e.g. 10"
+                      value={reorderLevel} 
+                      onChange={e => setReorderLevel(e.target.value)} 
+                    />
+                    <span className="form-hint">Triggers warning alert when remaining stock &le; this count</span>
+                  </div>
+                </div>
+
+                <div className="form-group mt-2">
+                  <label className="form-label">
+                    Warehouse / Depot Location
                   </label>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 5. PRICING & COMMERCE */}
-          <div>
-            <h4 className="text-xs uppercase tracking-wider text-muted font-bold mb-3 flex items-center gap-1.5">
-              <DollarSign size={14} /> 4. Pricing, Dimensions & Units
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="form-group">
-                <label className="form-label font-medium">Standard Selling Price ($) *</label>
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  min="0.1" 
-                  required 
-                  className="input w-full" 
-                  placeholder="299.00"
-                  value={price} 
-                  onChange={e => setPrice(e.target.value)} 
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label font-medium">Discount / Offer Price ($)</label>
-                <input 
-                  type="number" 
-                  step="0.01" 
-                  min="0" 
-                  className="input w-full" 
-                  placeholder="Optional sale price"
-                  value={discountPrice} 
-                  onChange={e => setDiscountPrice(e.target.value)} 
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label font-medium">Measurement Unit</label>
-                <input 
-                  type="text" 
-                  className="input w-full" 
-                  placeholder="sq ft / piece / roll / pot / set"
-                  value={unit} 
-                  onChange={e => setUnit(e.target.value)} 
-                />
+                  <div className="relative">
+                    <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                    <input 
+                      type="text" 
+                      className="input" 
+                      style={{ paddingLeft: '34px' }}
+                      placeholder="e.g. Sector 58 Guild Bay, Gurugram"
+                      value={warehouseLocation} 
+                      onChange={e => setWarehouseLocation(e.target.value)} 
+                    />
+                  </div>
+                  <span className="form-hint">Used for dispatch routing and packing slips</span>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-              <div className="form-group">
-                <label className="form-label font-medium">Price per Sq Ft ($) (For Wallpapers/Murals)</label>
+          {/* STEP 4: PHOTOS & CRAFT STORY */}
+          {activeStep === 'media' && (
+            <div>
+              {/* Media Upload */}
+              <div className="form-section-card">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="form-section-title" style={{ margin: 0 }}>
+                    <UploadCloud size={16} className="text-[#8c6f52]" />
+                    <span>1. High-Resolution Photography</span>
+                  </h4>
+                  <span className="text-xs font-semibold text-[#8c6f52] bg-[#fbf6f0] border border-[#ecd9c6] px-2 py-0.5 rounded">
+                    {selectedFiles.length} / 5 pictures chosen
+                  </span>
+                </div>
+                <p className="text-muted text-xs mb-3">
+                  Upload photography from your computer. (JPG, PNG, WebP — max 10MB per file). First photo acts as Cover.
+                </p>
+
                 <input 
-                  type="number" 
-                  step="0.01" 
-                  className="input w-full" 
-                  placeholder="e.g. 35.00 for wall customizer"
-                  value={pricePerSqFt} 
-                  onChange={e => setPricePerSqFt(e.target.value)} 
+                  type="file" 
+                  ref={fileInputRef}
+                  multiple 
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                  id="modal-system-image-upload"
+                  disabled={selectedFiles.length >= 5}
                 />
+
+                {selectedFiles.length < 5 && (
+                  <label 
+                    htmlFor="modal-system-image-upload" 
+                    className="flex flex-col items-center justify-center p-6 border-dashed border-2 rounded-xl cursor-pointer hover:bg-[#faf9f7] transition-all text-center border-[#cbdceb] bg-[#fbf9f6]"
+                  >
+                    <UploadCloud size={32} className="text-[#8c6f52] mb-1.5" />
+                    <span className="font-semibold text-sm text-[#0f2444]">Click to choose pictures from your computer</span>
+                    <span className="text-muted text-xs mt-1">Select 1 to {5 - selectedFiles.length} remaining images</span>
+                  </label>
+                )}
+
+                {previewUrls.length > 0 && (
+                  <div className="grid grid-cols-5 gap-3 mt-4">
+                    {previewUrls.map((url, idx) => (
+                      <div 
+                        key={idx} 
+                        className="relative group border border-[#ded9d0] rounded-lg overflow-hidden bg-white shadow-xs" 
+                        style={{ height: '96px' }}
+                      >
+                        <img 
+                          src={url} 
+                          alt={`Preview ${idx + 1}`} 
+                          className="w-full h-full object-cover" 
+                        />
+                        <span className="absolute bottom-1 left-1 bg-black/75 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                          {idx === 0 ? 'COVER' : `#${idx + 1}`}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 shadow hover:bg-red-700 transition cursor-pointer border-none"
+                          title="Remove picture"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="form-group">
-                <label className="form-label font-medium">Coverage Area (Sq Ft per Unit)</label>
-                <input 
-                  type="number" 
-                  step="0.1" 
-                  className="input w-full" 
-                  placeholder="e.g. 56.0 sq ft per roll"
-                  value={coverageSqFt} 
-                  onChange={e => setCoverageSqFt(e.target.value)} 
-                />
+              {/* Specifications & Description */}
+              <div className="form-section-card">
+                <h4 className="form-section-title">
+                  <Layers size={15} className="text-[#8c6f52]" />
+                  <span>2. Craft Story, Materials & Finish</span>
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Material Composition</label>
+                    <input 
+                      type="text" 
+                      className="input" 
+                      placeholder="e.g. Solid Sheesham Wood, Brass, Terracotta"
+                      value={material} 
+                      onChange={e => setMaterial(e.target.value)} 
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label">Surface Finish</label>
+                    <input 
+                      type="text" 
+                      className="input" 
+                      placeholder="e.g. Distressed Teak Oil, Antique Gold Patina"
+                      value={finish} 
+                      onChange={e => setFinish(e.target.value)} 
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label">
+                    Full Description & Styling Notes
+                  </label>
+                  <textarea 
+                    className="input" 
+                    rows={4}
+                    placeholder="Describe heritage motifs, dimensions, styling inspirations, and care guidelines..."
+                    value={description} 
+                    onChange={e => setDescription(e.target.value)} 
+                  />
+                </div>
               </div>
             </div>
-
-            <div className="form-group mt-3 flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                id="modal-customizable" 
-                checked={isCustomizable} 
-                onChange={e => setIsCustomizable(e.target.checked)} 
-                style={{ width: '18px', height: '18px' }}
-              />
-              <label htmlFor="modal-customizable" className="font-medium text-sm cursor-pointer">
-                Enable Bespoke Dimension Calculator (Customers can customize height & width on product page)
-              </label>
-            </div>
-          </div>
-
-          {/* 6. MATERIALS & CRAFTSMANSHIP */}
-          <div>
-            <h4 className="text-xs uppercase tracking-wider text-muted font-bold mb-3 flex items-center gap-1.5">
-              <Sparkles size={14} /> 5. Materials, Finishes & Craftsmanship
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label font-medium">Primary Material</label>
-                <input 
-                  type="text" 
-                  className="input w-full" 
-                  placeholder="e.g. Solid Sheesham Wood / Pure Terracotta / Brass"
-                  value={material} 
-                  onChange={e => setMaterial(e.target.value)} 
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label font-medium">Finish & Texture</label>
-                <input 
-                  type="text" 
-                  className="input w-full" 
-                  placeholder="e.g. Natural Matte / Textured Glaze / Gold Leaf"
-                  value={finish} 
-                  onChange={e => setFinish(e.target.value)} 
-                />
-              </div>
-            </div>
-
-            <div className="mt-3">
-              <span className="text-xs font-semibold text-stone-700 block mb-1.5">Quick Craft Tags:</span>
-              <div className="flex flex-wrap gap-1.5">
-                {CRAFT_HIGHLIGHTS_OPTIONS.map(craft => {
-                  const isSelected = selectedCrafts.includes(craft);
-                  return (
-                    <button
-                      key={craft}
-                      type="button"
-                      onClick={() => toggleCraft(craft)}
-                      className={`text-xs px-2.5 py-1 rounded border transition-all cursor-pointer ${
-                        isSelected 
-                          ? 'bg-amber-900 text-white border-amber-900 font-medium' 
-                          : 'bg-white text-stone-700 border-stone-300 hover:border-stone-400'
-                      }`}
-                    >
-                      {craft} {isSelected && '✓'}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* 7. STOCK MANAGER INVENTORY FIELDS */}
-          <div className="p-4 border rounded bg-amber-50" style={{ borderColor: '#e9dbcd' }}>
-            <h4 className="text-xs uppercase tracking-wider font-bold mb-1 flex items-center gap-1.5 text-amber-900">
-              <Package size={14} /> 6. Stock & Warehouse Management
-            </h4>
-            <p className="text-muted text-xs mb-3">
-              Initial physical stock counts and automatic low-stock reorder thresholds for warehouse inventory tracking.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="form-group">
-                <label className="form-label font-medium text-xs">Initial Stock Available *</label>
-                <input 
-                  type="number" 
-                  min="0" 
-                  required
-                  className="input w-full bg-white" 
-                  placeholder="50"
-                  value={initialStock} 
-                  onChange={e => setInitialStock(e.target.value)} 
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label font-medium text-xs">Low Stock Reorder Alert Level *</label>
-                <input 
-                  type="number" 
-                  min="1" 
-                  required
-                  className="input w-full bg-white" 
-                  placeholder="10"
-                  value={reorderLevel} 
-                  onChange={e => setReorderLevel(e.target.value)} 
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label font-medium text-xs">Warehouse / Depot Location *</label>
-                <input 
-                  type="text" 
-                  required
-                  className="input w-full bg-white" 
-                  placeholder="e.g. Sector 58 Guild Bay / Bay 4 Nursery"
-                  value={warehouseLocation} 
-                  onChange={e => setWarehouseLocation(e.target.value)} 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 8. DESCRIPTION */}
-          <div className="form-group">
-            <label className="form-label font-medium">Editorial Description & Styling Narrative *</label>
-            <textarea 
-              required 
-              rows={4} 
-              className="input w-full" 
-              style={{ height: 'auto', padding: '12px', lineHeight: '1.5' }}
-              placeholder="Detail the craft heritage, aesthetic mood, suitable lighting, room ambiance, and installation recommendations..."
-              value={description} 
-              onChange={e => setDescription(e.target.value)} 
-            />
-          </div>
-
-          {/* ACTIONS */}
-          <div className="flex justify-end gap-3 pt-4 border-t items-center">
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="btn btn-secondary"
-              disabled={isUploading || createProductMutation.isPending}
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              disabled={isUploading || createProductMutation.isPending} 
-              className="btn btn-primary flex items-center gap-2"
-              style={{ minWidth: '160px', justifyContent: 'center' }}
-            >
-              {isUploading ? (
-                <>
-                  <UploadCloud size={16} className="animate-spin" />
-                  <span>Uploading Pictures...</span>
-                </>
-              ) : createProductMutation.isPending ? (
-                <>
-                  <Package size={16} className="animate-spin" />
-                  <span>Creating Product...</span>
-                </>
-              ) : (
-                <>
-                  <Check size={16} />
-                  <span>Add Product to Catalog</span>
-                </>
-              )}
-            </button>
-          </div>
+          )}
 
         </form>
+
+        {/* Pinned Luxury Modal Footer */}
+        <div className="modal-footer">
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="btn btn-ghost"
+          >
+            Cancel
+          </button>
+
+          <div className="flex items-center gap-2">
+            {activeStep !== 'identity' && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeStep === 'media') setActiveStep('inventory');
+                  else if (activeStep === 'inventory') setActiveStep('spaces');
+                  else if (activeStep === 'spaces') setActiveStep('identity');
+                }}
+                className="btn btn-secondary btn-sm flex items-center gap-1.5"
+              >
+                <ChevronLeft size={14} />
+                <span>Previous Step</span>
+              </button>
+            )}
+
+            {activeStep !== 'media' ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeStep === 'identity') {
+                    if (!name.trim()) return toast.error('Product title / name is required');
+                    if (!categoryId) return toast.error('Please select a category');
+                    if (!price || Number(price) <= 0) return toast.error('Please enter a valid base price');
+                    setActiveStep('spaces');
+                  } else if (activeStep === 'spaces') {
+                    if (selectedSpaces.length === 0) return toast.error('Please select at least one living space');
+                    setActiveStep('inventory');
+                  } else if (activeStep === 'inventory') {
+                    setActiveStep('media');
+                  }
+                }}
+                className="btn btn-primary btn-sm flex items-center gap-1.5"
+              >
+                <span>Continue</span>
+                <ChevronRight size={14} />
+              </button>
+            ) : (
+              <button 
+                type="submit" 
+                form="add-product-form"
+                disabled={createProductMutation.isPending || isUploading}
+                className="btn btn-primary btn-sm flex items-center gap-1.5 shadow-sm"
+              >
+                <Check size={15} />
+                <span>
+                  {isUploading ? 'Uploading Pictures...' : createProductMutation.isPending ? 'Publishing...' : 'Publish & Add to Inventory'}
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

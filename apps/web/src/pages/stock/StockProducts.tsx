@@ -7,7 +7,7 @@ import { EditProductModal } from '../../components/EditProductModal';
 import { 
   Plus, Image as ImageIcon, Edit3, Trash2, Ban, CheckCircle, 
   ChevronUp, ChevronDown, RefreshCw, AlertCircle, PackageCheck, 
-  PackageX, Filter, PackagePlus
+  PackageX, Filter, PackagePlus, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -411,21 +411,33 @@ export function StockProducts() {
 
       {/* DELETE CONFIRMATION DIALOG */}
       {deletingProduct && (
-        <div className="modal-overlay" style={{ zIndex: 1300 }}>
-          <div className="modal-box bg-white p-6 max-w-md w-full">
-            <div className="flex items-center gap-3 text-red-600 mb-3">
-              <AlertCircle size={24} />
-              <h3 className="font-bold text-lg text-[#2d2a27]">Delete Product</h3>
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ maxWidth: '480px', width: '100%' }}>
+            <div className="modal-header">
+              <div className="flex items-center gap-2.5 text-red-600">
+                <AlertCircle size={20} />
+                <h3 className="font-bold text-base text-[#0a192f] m-0">Confirm Product Removal</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setDeletingProduct(null)} 
+                className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition border-none bg-transparent cursor-pointer"
+              >
+                <X size={18} />
+              </button>
             </div>
             
-            <p className="text-sm text-[#555] mb-4">
-              Are you sure you want to delete <strong>"{deletingProduct.name}"</strong>?
-            </p>
-            <p className="text-xs text-muted bg-[#faf8f5] p-3 rounded border border-[#eee] mb-5">
-              Note: If this article has past customer orders, our financial integrity system will automatically archive/deactivate it to preserve your audit logs and order histories.
-            </p>
+            <div className="modal-body">
+              <p className="text-sm text-[#2d2a27] mb-3">
+                Are you sure you want to delete <strong className="font-semibold text-[#0a192f]">"{deletingProduct.name}"</strong>?
+              </p>
+              <div className="text-xs text-[#555] bg-[#edf4fc] p-3 rounded-lg border border-[#cbdceb] leading-relaxed">
+                <strong className="text-[#0a192f] block mb-1">Financial Integrity Note:</strong>
+                If this item has existing customer orders, our database will safely deactivate/archive it instead of hard deleting, preserving audit trails and customer invoice receipts.
+              </div>
+            </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="modal-footer">
               <button
                 type="button"
                 onClick={() => setDeletingProduct(null)}
