@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator } from 'lucide-react';
+import { UIcon } from './UIcon';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
 import { useCart } from '../contexts/CartContext';
@@ -65,7 +65,7 @@ export function WallpaperCalculator({ pricePerSqFt = '5.00', product }: Props) {
   return (
     <div className="calculator-card">
       <div className="calculator-header">
-        <Calculator size={24} />
+        <UIcon name="calculator" size={22} className="text-[#8c6f52]" />
         <h3>Custom Wall Calculator</h3>
       </div>
       

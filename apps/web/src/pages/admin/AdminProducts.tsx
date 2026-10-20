@@ -4,6 +4,7 @@ import { productsApi, Product } from '../../api/products';
 import { AdminLayout } from './AdminLayout';
 import { AddProductModal } from '../../components/AddProductModal';
 import { EditProductModal } from '../../components/EditProductModal';
+import { UIcon } from '../../components/UIcon';
 import { 
   Plus, Image as ImageIcon, Edit3, Trash2, Ban, CheckCircle, 
   ChevronUp, ChevronDown, RefreshCw, AlertCircle, PackageCheck, 
@@ -139,7 +140,7 @@ export function AdminProducts() {
           onClick={() => setIsAddModalOpen(true)} 
           className="btn btn-primary flex items-center gap-2 shadow-sm"
         >
-          <Plus size={18} />
+          <UIcon name="plus" size={16} />
           <span>Add New Product</span>
         </button>
       </div>
@@ -372,7 +373,7 @@ export function AdminProducts() {
                           className="btn btn-ghost btn-sm p-1.5 text-blue-700 hover:bg-blue-50"
                           title="Edit product data & stock"
                         >
-                          <Edit3 size={15} />
+                          <UIcon name="edit" size={15} />
                         </button>
                         <button
                           type="button"
@@ -380,7 +381,7 @@ export function AdminProducts() {
                           className="btn btn-ghost btn-sm p-1.5 text-red-600 hover:bg-red-50"
                           title="Delete / Archive product"
                         >
-                          <Trash2 size={15} />
+                          <UIcon name="trash" size={15} />
                         </button>
                       </div>
                     </td>

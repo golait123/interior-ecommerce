@@ -4,7 +4,7 @@ import { useCart, getItemUnitPrice } from '../contexts/CartContext';
 import { useLocationContext } from '../contexts/LocationContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Trash2, ArrowRight, ShoppingBag, ShieldCheck, Truck, Sparkles, ChevronRight } from 'lucide-react';
+import { UIcon } from '../components/UIcon';
 
 export default function Cart() {
   const { cart, itemCount, subtotal, updateItem, removeItem } = useCart();
@@ -24,7 +24,7 @@ export default function Cart() {
         {/* EDITORIAL BREADCRUMBS */}
         <nav className="flex items-center gap-2 text-xs text-muted mb-6 uppercase tracking-wider">
           <Link to="/" className="hover:text-dark">Home</Link>
-          <ChevronRight size={12} />
+          <UIcon name="angle-small-right" size={12} />
           <span className="text-dark font-medium">Shopping Bag</span>
         </nav>
 
@@ -49,7 +49,7 @@ export default function Cart() {
         {items.length === 0 ? (
           <div className="text-center py-16 px-4 bg-[#faf9f7] border border-[#ded9d0] rounded-lg max-w-2xl mx-auto my-8">
             <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4 border border-[#e0dad0] text-muted">
-              <ShoppingBag size={28} />
+              <UIcon name="shopping-bag" size={28} />
             </div>
             <h2 className="font-serif italic text-2xl mb-2 text-dark">Your bag is currently vacant</h2>
             <p className="text-muted text-sm max-w-md mx-auto mb-6">
@@ -60,7 +60,7 @@ export default function Cart() {
               className="btn btn-primary inline-flex items-center gap-2 py-3 px-8 text-sm"
             >
               <span>Explore The Collection</span>
-              <ArrowRight size={16} />
+              <UIcon name="arrow-right" size={15} />
             </Link>
           </div>
         ) : (
@@ -90,7 +90,7 @@ export default function Cart() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-muted">
-                            <Sparkles size={20} />
+                            <UIcon name="sparkles" size={18} />
                           </div>
                         )}
                       </div>
@@ -188,7 +188,7 @@ export default function Cart() {
                         title="Remove piece from bag"
                         aria-label="Remove piece from bag"
                       >
-                        <Trash2 size={18} />
+                        <UIcon name="trash" size={16} />
                       </button>
                     </div>
                   </div>
@@ -216,8 +216,8 @@ export default function Cart() {
                     <span className="font-medium text-dark">{formatPrice(tax)}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs text-[#3c6e47] bg-[#eff5f0] p-2 rounded">
-                    <span className="flex items-center gap-1 font-medium">
-                      <Truck size={14} /> White-Glove Delivery
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <UIcon name="truck-side" size={14} /> White-Glove Delivery
                     </span>
                     <span className="font-semibold uppercase">Complimentary</span>
                   </div>
@@ -235,17 +235,17 @@ export default function Cart() {
                   onClick={() => navigate('/checkout')}
                 >
                   <span>Proceed to Checkout</span>
-                  <ArrowRight size={16} />
+                  <UIcon name="arrow-right" size={15} />
                 </button>
 
                 {/* Trust Badges */}
                 <div className="mt-6 pt-4 border-t border-[#e5dfd5] space-y-2 text-xs text-muted">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck size={15} className="text-[#6a8c6f]" />
+                    <UIcon name="shield-check" size={15} className="text-[#6a8c6f]" />
                     <span>Direct from Sector 58 Banjara Master Artisans</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Truck size={15} className="text-[#6a8c6f]" />
+                    <UIcon name="truck-side" size={15} className="text-[#6a8c6f]" />
                     <span>Tracked & insured transit with protective crating</span>
                   </div>
                 </div>
