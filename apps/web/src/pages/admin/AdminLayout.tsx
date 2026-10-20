@@ -1,18 +1,18 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { UIcon } from '../../components/UIcon';
+import { LayoutDashboard, Package, ShoppingCart, Users, FileText, LogOut, ExternalLink, MapPin, DollarSign, Landmark } from 'lucide-react';
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
   const { pathname } = useLocation();
 
   const links = [
-    { to: '/admin', icon: <UIcon name="chart-histogram" size={18} />, label: 'Financial & Revenue' },
-    { to: '/admin/orders', icon: <UIcon name="shopping-cart" size={18} />, label: 'Orders & Ledger' },
-    { to: '/admin/customers', icon: <UIcon name="users" size={18} />, label: 'Customers' },
-    { to: '/admin/locations', icon: <UIcon name="marker" size={18} />, label: 'Location Analytics' },
-    { to: '/stock/products', icon: <UIcon name="box-alt" size={18} />, label: 'Stock & Catalog Portal' },
+    { to: '/admin', icon: <Landmark size={20} />, label: 'Financial & Revenue' },
+    { to: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Orders & Ledger' },
+    { to: '/admin/customers', icon: <Users size={20} />, label: 'Customers' },
+    { to: '/admin/locations', icon: <MapPin size={20} />, label: 'Location Analytics' },
+    { to: '/stock/products', icon: <Package size={20} />, label: 'Stock & Catalog Portal' },
   ];
 
   return (
@@ -33,10 +33,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="admin-sidebar-footer">
           <Link to="/" className="admin-nav-item">
-            <UIcon name="shop" size={18} /> <span>Back to Store</span>
+            <ExternalLink size={20} /> <span>Back to Store</span>
           </Link>
           <button onClick={logout} className="admin-nav-item text-danger w-full text-left">
-            <UIcon name="sign-out-alt" size={18} /> <span>Sign Out</span>
+            <LogOut size={20} /> <span>Sign Out</span>
           </button>
         </div>
       </aside>

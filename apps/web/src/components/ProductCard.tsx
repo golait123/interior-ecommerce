@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../api/products';
-import { UIcon } from './UIcon';
+import { ShoppingBag, Eye, Sliders, Ban } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -107,7 +107,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               className="product-btn-quickview"
               title="Quick preview product"
             >
-              <UIcon name="eye" size={13} />
+              <Eye size={13} />
               <span>Quick View</span>
             </button>
           )}
@@ -118,7 +118,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               style={{ background: '#71717a', color: '#fff', cursor: 'not-allowed', opacity: 0.9 }}
               title="Article currently out of stock"
             >
-              <UIcon name="ban" size={13} />
+              <Ban size={13} />
               <span>Sold Out</span>
             </div>
           ) : onAddToCart ? (
@@ -132,7 +132,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               className="product-btn-addtocart"
               title="Add to cart"
             >
-              <UIcon name="shopping-bag" size={13} />
+              <ShoppingBag size={13} />
               <span>Add</span>
             </button>
           ) : product.isCustomizable ? (
@@ -141,7 +141,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               onClick={(e) => e.stopPropagation()}
               className="product-btn-addtocart"
             >
-              <UIcon name="settings-sliders" size={13} />
+              <Sliders size={13} />
               <span>Customize</span>
             </Link>
           ) : null}
@@ -215,7 +215,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               style={{ background: '#f4f4f5', color: '#a1a1aa', cursor: 'not-allowed', border: '1px solid #e4e4e7' }}
               title="Out of stock"
             >
-              <UIcon name="ban" size={14} />
+              <Ban size={14} />
             </span>
           ) : onAddToCart ? (
             <button
@@ -228,7 +228,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               className="product-footer-action-btn"
               title="Add to cart"
             >
-              <UIcon name="shopping-bag" size={14} />
+              <ShoppingBag size={14} />
             </button>
           ) : product.isCustomizable ? (
             <Link
@@ -236,7 +236,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               className="product-footer-action-btn"
               title="Customize product"
             >
-              <UIcon name="settings-sliders" size={14} />
+              <Sliders size={14} />
             </Link>
           ) : null}
         </div>

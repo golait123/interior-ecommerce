@@ -2,8 +2,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import '@flaticon/flaticon-uicons/css/bold/rounded.css';
-import '@flaticon/flaticon-uicons/css/brands/all.css';
 import './style.css';
 
 // Manage Service Worker registration based on environment:

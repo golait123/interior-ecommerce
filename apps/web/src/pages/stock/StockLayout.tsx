@@ -1,18 +1,18 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { UIcon } from '../../components/UIcon';
+import { LayoutDashboard, Package, Activity, AlertTriangle, LogOut, ExternalLink, ShoppingBag, PackageCheck } from 'lucide-react';
 
 export function StockLayout({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
   const { pathname } = useLocation();
 
   const links = [
-    { to: '/stock', icon: <UIcon name="apps" size={18} />, label: 'Overview' },
-    { to: '/stock/products', icon: <UIcon name="box-alt" size={18} />, label: 'Products & Catalog' },
-    { to: '/stock/inventory', icon: <UIcon name="boxes" size={18} />, label: 'Inventory' },
-    { to: '/stock/orders', icon: <UIcon name="shopping-bag" size={18} />, label: 'Orders & Tracking' },
-    { to: '/stock/movements', icon: <UIcon name="refresh" size={18} />, label: 'Movements' },
+    { to: '/stock', icon: <LayoutDashboard size={20} />, label: 'Overview' },
+    { to: '/stock/products', icon: <PackageCheck size={20} />, label: 'Products & Catalog' },
+    { to: '/stock/inventory', icon: <Package size={20} />, label: 'Inventory' },
+    { to: '/stock/orders', icon: <ShoppingBag size={20} />, label: 'Orders & Tracking' },
+    { to: '/stock/movements', icon: <Activity size={20} />, label: 'Movements' },
   ];
 
   return (
@@ -33,10 +33,10 @@ export function StockLayout({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="admin-sidebar-footer">
           <Link to="/" className="admin-nav-item">
-            <UIcon name="shop" size={18} /> <span>Back to Store</span>
+            <ExternalLink size={20} /> <span>Back to Store</span>
           </Link>
           <button onClick={logout} className="admin-nav-item text-danger w-full text-left">
-            <UIcon name="sign-out-alt" size={18} /> <span>Sign Out</span>
+            <LogOut size={20} /> <span>Sign Out</span>
           </button>
         </div>
       </aside>

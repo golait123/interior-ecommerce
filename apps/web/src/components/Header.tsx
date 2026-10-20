@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { UIcon } from './UIcon';
+import { Search, ShoppingBag, User as UserIcon, Menu, X, LayoutDashboard, Smartphone } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
@@ -36,7 +36,7 @@ export function Header() {
         {/* Mobile menu hamburger */}
         <div className="header-mobile-toggle">
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu" className="header-action-btn">
-            {isMenuOpen ? <UIcon name="cross" size={18} /> : <UIcon name="menu-burger" size={18} />}
+            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
@@ -70,7 +70,7 @@ export function Header() {
             className="app-install-badge"
             title="Install InteriorG App on Android, iOS & Web"
           >
-            <UIcon name="smartphone" size={13} />
+            <Smartphone size={13} />
             <span>Get App</span>
           </button>
 
@@ -81,7 +81,7 @@ export function Header() {
             className="header-action-btn"
             title="Search collection"
           >
-            <UIcon name="search" size={17} />
+            <Search size={19} />
           </button>
 
           {/* User Profile */}
@@ -89,12 +89,12 @@ export function Header() {
             <div className="user-menu">
               {['ADMIN', 'STOCK_MANAGER'].includes(user.role) && (
                 <Link to="/dashboard" className="header-action-btn" title="Dashboard">
-                  <UIcon name="apps" size={18} />
+                  <LayoutDashboard size={19} />
                 </Link>
               )}
               <div className="user-avatar-container group" style={{ position: 'relative' }}>
                 <button className="header-action-btn" aria-label="User account">
-                  <UIcon name="user" size={18} />
+                  <UserIcon size={20} />
                 </button>
                 <div className="user-dropdown dropdown-menu">
                   <div className="dropdown-header">
@@ -113,13 +113,13 @@ export function Header() {
             </div>
           ) : (
             <Link to="/login" className="header-action-btn" title="Account">
-              <UIcon name="user" size={18} />
+              <UserIcon size={20} />
             </Link>
           )}
 
           {/* Shopping Bag Icon */}
           <Link to="/cart" className="cart-icon" aria-label="Shopping Bag">
-            <UIcon name="shopping-bag" size={19} />
+            <ShoppingBag size={21} />
             {itemCount > 0 && <span className="cart-badge">{itemCount}</span>}
           </Link>
         </div>
@@ -129,7 +129,7 @@ export function Header() {
       {isSearchOpen && (
         <div className="search-drawer bg-white border-b py-3 px-4 shadow-sm" style={{ borderColor: '#eaeaea' }}>
           <form className="max-w-xl mx-auto flex items-center gap-3" onSubmit={handleSearch}>
-            <UIcon name="search" size={16} className="text-muted" />
+            <Search size={18} className="text-muted" />
             <input
               type="text"
               placeholder="Search chairs, consoles, brass decor, mirrors, wallpapers..."
@@ -141,9 +141,9 @@ export function Header() {
             <button
               type="button"
               onClick={() => setIsSearchOpen(false)}
-              className="text-xs text-muted hover:text-dark border-none bg-transparent cursor-pointer flex items-center gap-1"
+              className="text-xs text-muted hover:text-dark border-none bg-transparent cursor-pointer"
             >
-              <UIcon name="cross-small" size={14} /> Close
+              ✕ Close
             </button>
           </form>
         </div>
@@ -153,7 +153,7 @@ export function Header() {
       {isMenuOpen && (
         <div className="mobile-menu">
           <form className="search-bar" onSubmit={handleSearch}>
-            <UIcon name="search" size={16} />
+            <Search size={18} />
             <input 
               type="text" 
               placeholder="Search products..." 
@@ -175,7 +175,7 @@ export function Header() {
               }}
               className="flex items-center gap-2 py-2 text-dark font-semibold text-sm bg-transparent border-none cursor-pointer"
             >
-              <UIcon name="smartphone" size={16} />
+              <Smartphone size={16} />
               <span>Install InteriorG App</span>
             </button>
           </nav>
