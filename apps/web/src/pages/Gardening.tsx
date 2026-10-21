@@ -38,9 +38,179 @@ import {
   Search,
   Star,
   Filter,
-  ArrowUpDown
+  ArrowUpDown,
+  Tag
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+export interface DynamicFilterSection {
+  id: string;
+  title: string;
+  options: {
+    id: string;
+    label: string;
+    keyword: string;
+  }[];
+}
+
+export const CATEGORY_SPECIFIC_FILTERS: Record<string, DynamicFilterSection[]> = {
+  plants: [
+    {
+      id: 'plant-variety',
+      title: 'Plant Variety & Speciality',
+      options: [
+        { id: 'air-purifier', label: 'NASA Air-Purifying Plants', keyword: 'air purifier' },
+        { id: 'foliage-palms', label: 'Lush Foliage & Greenery', keyword: 'foliage' },
+        { id: 'hardy-succulents', label: 'Resilient Succulents & Jade', keyword: 'succulent' },
+        { id: 'snake-plants', label: 'Hardy Sansevieria (Snake Plant)', keyword: 'snake' },
+        { id: 'bonsai', label: 'Artisanal Miniature Bonsai', keyword: 'bonsai' },
+      ]
+    },
+    {
+      id: 'plant-light',
+      title: 'Sunlight & Daily Exposure',
+      options: [
+        { id: 'low-light', label: 'Low / Indirect Ambient Light', keyword: 'low-light' },
+        { id: 'bright-light', label: 'Bright Filtered Sunlight', keyword: 'bright' },
+        { id: 'direct-sun', label: 'Direct Sun & Balcony Foliage', keyword: 'sun' },
+      ]
+    },
+    {
+      id: 'plant-placement',
+      title: 'Placement & Living Space',
+      options: [
+        { id: 'tabletop', label: 'Work Desk & Tabletop', keyword: 'table' },
+        { id: 'balcony-lawn', label: 'Balcony & Terrace Garden', keyword: 'balcony' },
+        { id: 'indoor-living', label: 'Living Room Floor Decor', keyword: 'indoor' },
+      ]
+    }
+  ],
+  planters: [
+    {
+      id: 'planter-type',
+      title: 'Planter Type & Format',
+      options: [
+        { id: 'tabletop-pots', label: 'Round Tabletop Pots & Planters', keyword: 'round' },
+        { id: 'planter-stands', label: 'Multi-Tiered Planter Stands', keyword: 'stand' },
+        { id: 'drainage-trays', label: 'Rectangle Drip & Moisture Trays', keyword: 'tray' },
+        { id: 'hydroponic-vessels', label: 'Hydroponic Glass Propagation Vases', keyword: 'glass' },
+        { id: 'nursery-packs', label: 'Nursery Starter Pots (Pack of 20)', keyword: 'pack' },
+      ]
+    },
+    {
+      id: 'planter-material',
+      title: 'Pot Material & Craftsmanship',
+      options: [
+        { id: 'virgin-plastic', label: 'UV-Stabilized Virgin Plastic', keyword: 'plastic' },
+        { id: 'ceramic-clay', label: 'Artisan Glazed Ceramic Pottery', keyword: 'clay' },
+        { id: 'wrought-iron', label: 'Powder-Coated Wrought Iron', keyword: 'iron' },
+        { id: 'float-glass', label: 'Annealed Float Glass', keyword: 'glass' },
+      ]
+    },
+    {
+      id: 'planter-feature',
+      title: 'Smart Features',
+      options: [
+        { id: 'self-watering', label: 'Built-in Self-Watering Reservoir', keyword: 'self-watering' },
+        { id: 'drainage-system', label: 'Multi-Hole Runoff Drainage', keyword: 'drainage' },
+        { id: 'weather-proof', label: 'Rust & UV Weather-Proof', keyword: 'rust' },
+      ]
+    }
+  ],
+  seeds: [
+    {
+      id: 'seed-variety',
+      title: 'Seed Category',
+      options: [
+        { id: 'kitchen-herbs', label: 'Kitchen Herbs & Microgreens', keyword: 'herb' },
+        { id: 'fresh-veggies', label: 'Fresh Culinary Vegetables', keyword: 'vegetable' },
+        { id: 'all-season-seeds', label: 'All-Season High Yield Assortment', keyword: 'season' },
+      ]
+    },
+    {
+      id: 'seed-certification',
+      title: 'Purity & Certification',
+      options: [
+        { id: 'non-gmo', label: '100% Non-GMO Certified Seeds', keyword: 'non-gmo' },
+        { id: 'germination-rate', label: '98%+ Germination Guarantee', keyword: 'germination' },
+      ]
+    }
+  ],
+  bulbs: [
+    {
+      id: 'bulb-variety',
+      title: 'Flower Bulb Varieties',
+      options: [
+        { id: 'dutch-winter', label: 'Dutch Winter Sowing Bulbs', keyword: 'dutch' },
+        { id: 'mixed-blooms', label: 'Asiatic Lilies & Ranunculus Blooms', keyword: 'flower' },
+      ]
+    },
+    {
+      id: 'bulb-season',
+      title: 'Planting Season',
+      options: [
+        { id: 'winter-sow', label: 'Winter & Early Spring Potting', keyword: 'winter' },
+        { id: 'pre-chilled', label: 'Pre-Chilled Ready Bulbs', keyword: 'pre-chilled' },
+      ]
+    }
+  ],
+  gardening: [
+    {
+      id: 'gardening-pack',
+      title: 'Garden Combos & Starter Kits',
+      options: [
+        { id: 'air-clean-pack', label: 'NASA Air Purifier 4-Plant Combos', keyword: 'air purifier' },
+        { id: 'zen-starter-kit', label: 'Complete Bonsai & Zen Garden Starter Kits', keyword: 'zen' },
+        { id: 'pots-multipack', label: 'Thermoform Pot Multi-Packs (20 Pcs)', keyword: 'thermoform' },
+      ]
+    },
+    {
+      id: 'pack-inclusion',
+      title: 'What’s Included',
+      options: [
+        { id: 'potted-ready', label: 'Delivered Potted & Acclimated', keyword: 'self-watering' },
+        { id: 'accessories-included', label: 'Shears & Bonsai Tools Included', keyword: 'shears' },
+      ]
+    }
+  ],
+  'soil-fertilizer': [
+    {
+      id: 'soil-type',
+      title: 'Soil, Humus & Nutrients',
+      options: [
+        { id: 'vermicompost', label: 'Pure Organic Steam-Sterilized Vermicompost', keyword: 'vermicompost' },
+        { id: 'neem-cake', label: 'Organic Neem Cake & Bio-Enzymes', keyword: 'neem' },
+        { id: 'soil-aeration', label: 'Moisture Retention & Soil Aeration', keyword: 'water retention' },
+      ]
+    },
+    {
+      id: 'pack-weight',
+      title: 'Package Weight',
+      options: [
+        { id: '5kg-bag', label: '5 kg Home Nursery Pack', keyword: '5 kg' },
+      ]
+    }
+  ],
+  gifts: [
+    {
+      id: 'gift-occasion',
+      title: 'Living Gift Collection',
+      options: [
+        { id: 'good-luck-jade', label: 'Crassula Jade Good Luck Living Gift', keyword: 'jade' },
+        { id: 'festive-auspicious', label: 'Prosperity & Vastu Auspicious Plants', keyword: 'luck' },
+        { id: 'corporate-desk', label: 'Corporate & Housewarming Hampers', keyword: 'gift' },
+      ]
+    },
+    {
+      id: 'gift-container',
+      title: 'Luxury Planter Container',
+      options: [
+        { id: 'pure-brass', label: 'Hand-Spun Satin Brass Planter', keyword: 'brass' },
+        { id: 'gift-band', label: 'Wrapped with Bespoke Gift Band', keyword: 'band' },
+      ]
+    }
+  ]
+};
 
 export default function Gardening() {
   const { addItem } = useCart();
@@ -64,6 +234,10 @@ export default function Gardening() {
   const [selectedMainMenuCat, setSelectedMainMenuCat] = useState<string | null>(null);
   const [selectedSubCat, setSelectedSubCat] = useState<string | null>(null);
 
+  // Category-Specific Dynamic Sub-Filters (e.g. 'air purifier', 'ceramic', 'plastic')
+  const [selectedSubFilters, setSelectedSubFilters] = useState<string[]>([]);
+  const [openAccordionSections, setOpenAccordionSections] = useState<Record<string, boolean>>({});
+
   // Filter Sidebar states
   const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<'all' | 'in-stock' | 'out-of-stock'>('all');
@@ -86,6 +260,42 @@ export default function Gardening() {
   // Toolbar states (Screenshot 1)
   const [sortBy, setSortBy] = useState<string>('best-selling');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Dynamic category-specific filter sections & options
+  const currentCategoryFilterSections = useMemo(() => {
+    if (!selectedMainMenuCat) return [];
+    return CATEGORY_SPECIFIC_FILTERS[selectedMainMenuCat] || [];
+  }, [selectedMainMenuCat]);
+
+  const allDynamicOptions = useMemo(() => {
+    const list: { id: string; label: string; keyword: string }[] = [];
+    Object.values(CATEGORY_SPECIFIC_FILTERS).forEach(sections => {
+      sections.forEach(sec => {
+        list.push(...sec.options);
+      });
+    });
+    return list;
+  }, []);
+
+  const handleSelectHorizontalCategory = (categorySlug: string | null) => {
+    setSelectedMainMenuCat(categorySlug);
+    setSelectedSubCat(null);
+    setSelectedProductTypes([]);
+    setSelectedSubFilters([]);
+  };
+
+  const handleSubFilterToggle = (keyword: string) => {
+    setSelectedSubFilters(prev => 
+      prev.includes(keyword) ? prev.filter(k => k !== keyword) : [...prev, keyword]
+    );
+  };
+
+  const toggleAccordionSection = (sectionId: string) => {
+    setOpenAccordionSections(prev => ({
+      ...prev,
+      [sectionId]: prev[sectionId] !== undefined ? !prev[sectionId] : false
+    }));
+  };
 
   // Fetch backend products
   const { data: productsData, isLoading } = useQuery({
@@ -185,7 +395,15 @@ export default function Gardening() {
       });
     }
 
-    // 4. Filter by Product Type Checkboxes (OR logic amongst selected types)
+    // 4. Filter by Category-Specific Dynamic Sub-Filters (Keywords)
+    if (selectedSubFilters.length > 0) {
+      result = result.filter(p => {
+        const text = `${p.name} ${p.description} ${p.material || ''} ${p.finish || ''} ${p.productType || ''}`.toLowerCase();
+        return selectedSubFilters.some(kw => text.includes(kw.toLowerCase()));
+      });
+    }
+
+    // 5. Filter by Product Type Checkboxes (OR logic amongst selected types)
     if (selectedProductTypes.length > 0) {
       result = result.filter(p => {
         if (!p.productType) return false;
@@ -193,14 +411,14 @@ export default function Gardening() {
       });
     }
 
-    // 5. Filter by Availability
+    // 6. Filter by Availability
     if (selectedAvailability === 'in-stock') {
       result = result.filter(p => p.inStock !== false);
     } else if (selectedAvailability === 'out-of-stock') {
       result = result.filter(p => p.inStock === false);
     }
 
-    // 6. Filter by Price Bracket
+    // 7. Filter by Price Bracket
     if (priceFilter === 'under-300') {
       result = result.filter(p => Number(p.discountPrice || p.price) < 300);
     } else if (priceFilter === '300-500') {
@@ -217,14 +435,14 @@ export default function Gardening() {
       result = result.filter(p => Number(p.discountPrice || p.price) > 1000);
     }
 
-    // 7. Filter by Rating
+    // 8. Filter by Rating
     if (selectedRating === '4-above') {
       result = result.filter(p => (p.rating || 0) >= 4);
     } else if (selectedRating === '3-above') {
       result = result.filter(p => (p.rating || 0) >= 3);
     }
 
-    // 8. Sort by options
+    // 9. Sort by options
     if (sortBy === 'best-selling') {
       result.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
     } else if (sortBy === 'price-low') {
@@ -245,6 +463,7 @@ export default function Gardening() {
     searchQuery,
     selectedMainMenuCat, 
     selectedSubCat, 
+    selectedSubFilters,
     selectedProductTypes, 
     selectedAvailability, 
     priceFilter, 
@@ -263,6 +482,7 @@ export default function Gardening() {
     setSelectedMainMenuCat(null);
     setSelectedSubCat(null);
     setSelectedProductTypes([]);
+    setSelectedSubFilters([]);
     setSelectedAvailability('all');
     setPriceFilter('all');
     setSelectedRating('all');
@@ -275,13 +495,35 @@ export default function Gardening() {
     if (selectedMainMenuCat) count++;
     if (selectedSubCat) count++;
     if (selectedProductTypes.length > 0) count += selectedProductTypes.length;
+    if (selectedSubFilters.length > 0) count += selectedSubFilters.length;
     if (selectedAvailability !== 'all') count++;
     if (priceFilter !== 'all') count++;
     if (selectedRating !== 'all') count++;
     return count;
-  }, [searchQuery, selectedMainMenuCat, selectedSubCat, selectedProductTypes, selectedAvailability, priceFilter, selectedRating]);
+  }, [searchQuery, selectedMainMenuCat, selectedSubCat, selectedProductTypes, selectedSubFilters, selectedAvailability, priceFilter, selectedRating]);
 
   const hasActiveFilters = activeFiltersCount > 0;
+
+  // Option count helper based on catalog and active category
+  const getOptionCount = (keyword: string) => {
+    const kw = keyword.toLowerCase();
+    return masterNurseryCatalog.filter(p => {
+      if (selectedMainMenuCat) {
+        const catText = `${p.name} ${p.description} ${p.category?.slug || ''} ${p.productType || ''}`.toLowerCase();
+        const inCat = 
+          selectedMainMenuCat === 'gardening' ? (catText.includes('pack') || catText.includes('garden') || catText.includes('kit') || catText.includes('lawn')) :
+          selectedMainMenuCat === 'plants' ? (catText.includes('plant') || catText.includes('foliage') || catText.includes('sansevieria') || catText.includes('pothos')) :
+          selectedMainMenuCat === 'seeds' ? (catText.includes('seed') || catText.includes('herb')) :
+          selectedMainMenuCat === 'bulbs' ? (catText.includes('bulb') || catText.includes('lily') || catText.includes('ranunculus')) :
+          selectedMainMenuCat === 'planters' ? (catText.includes('pot') || catText.includes('planter') || catText.includes('vase') || catText.includes('tray') || catText.includes('stand')) :
+          selectedMainMenuCat === 'soil-fertilizer' ? (catText.includes('soil') || catText.includes('fertilizer') || catText.includes('vermicompost') || catText.includes('cocopeat')) :
+          selectedMainMenuCat === 'gifts' ? (catText.includes('gift') || catText.includes('lucky') || catText.includes('jade') || catText.includes('brass') || catText.includes('bonsai')) : true;
+        if (!inCat) return false;
+      }
+      const text = `${p.name} ${p.description} ${p.material || ''} ${p.finish || ''} ${p.productType || ''}`.toLowerCase();
+      return text.includes(kw);
+    }).length;
+  };
 
   // Filtered product types for sidebar internal search
   const visibleProductTypes = useMemo(() => {
@@ -506,10 +748,7 @@ export default function Gardening() {
             <div className="nursery-pills-scroll">
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedMainMenuCat(null);
-                  setSelectedSubCat(null);
-                }}
+                onClick={() => handleSelectHorizontalCategory(null)}
                 className={`nursery-pill-btn ${!selectedMainMenuCat ? 'active' : ''}`}
               >
                 <span>All Catalog</span>
@@ -531,11 +770,9 @@ export default function Gardening() {
                     type="button"
                     onClick={() => {
                       if (isSelected) {
-                        setSelectedMainMenuCat(null);
-                        setSelectedSubCat(null);
+                        handleSelectHorizontalCategory(null);
                       } else {
-                        setSelectedMainMenuCat(cat.slug);
-                        setSelectedSubCat(null);
+                        handleSelectHorizontalCategory(cat.slug);
                       }
                     }}
                     className={`nursery-pill-btn ${isSelected ? 'active' : ''}`}
@@ -564,7 +801,7 @@ export default function Gardening() {
         {/* ========================================================================= */}
         <section className="nursery-catalog-layout">
           {/* ======================================================================= */}
-          {/* LEFT SIDEBAR: FILTERS IN STANDARD FORMAT                                */}
+          {/* LEFT SIDEBAR: DYNAMIC CATEGORY-SPECIFIC FILTERS                         */}
           {/* ======================================================================= */}
           <aside className="nursery-sidebar-filters">
             <div className="nursery-sidebar-card">
@@ -590,96 +827,149 @@ export default function Gardening() {
                 )}
               </div>
 
-              {/* Accordion 1: Department / Category */}
-              <div className="nursery-filter-group">
-                <button
-                  type="button"
-                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                  className="nursery-filter-group-header"
-                >
-                  <span className="font-semibold text-stone-900">Category</span>
-                  {isCategoryOpen ? <Minus size={15} /> : <Plus size={15} />}
-                </button>
+              {/* If a category is selected from the horizontal bar, show relevant dynamic filter sections */}
+              {selectedMainMenuCat && currentCategoryFilterSections.length > 0 ? (
+                <>
+                  <div className="mb-3.5 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-950">
+                      <Tag size={13} className="text-emerald-700" />
+                      <span className="capitalize">{NURSERY_MAIN_MENU.find(m => m.slug === selectedMainMenuCat)?.name || selectedMainMenuCat} Filters</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectHorizontalCategory(null)}
+                      className="text-emerald-700 hover:text-emerald-900 font-bold underline cursor-pointer text-[11px]"
+                    >
+                      Show All Catalog
+                    </button>
+                  </div>
 
-                {isCategoryOpen && (
-                  <div className="pt-2 pl-1 space-y-1">
-                    <label className="nursery-checkbox-item">
-                      <input
-                        type="radio"
-                        name="main-cat-radio"
-                        checked={!selectedMainMenuCat}
-                        onChange={() => {
-                          setSelectedMainMenuCat(null);
-                          setSelectedSubCat(null);
-                        }}
-                        className="accent-emerald-700"
-                      />
-                      <span>All Categories</span>
-                      <span className="text-stone-400 text-xs ml-auto font-mono">({masterNurseryCatalog.length})</span>
-                    </label>
+                  {currentCategoryFilterSections.map(section => {
+                    const isSectionOpen = openAccordionSections[section.id] ?? true;
+                    return (
+                      <div key={section.id} className="nursery-filter-group">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordionSection(section.id)}
+                          className="nursery-filter-group-header"
+                        >
+                          <span className="font-semibold text-stone-900">{section.title}</span>
+                          {isSectionOpen ? <Minus size={15} /> : <Plus size={15} />}
+                        </button>
 
-                    {NURSERY_MAIN_MENU.map(cat => {
-                      const isChecked = selectedMainMenuCat === cat.slug;
-                      return (
-                        <label key={cat.id} className="nursery-checkbox-item">
+                        {isSectionOpen && (
+                          <div className="pt-2 pl-1 space-y-1">
+                            {section.options.map(opt => {
+                              const isChecked = selectedSubFilters.includes(opt.keyword);
+                              const count = getOptionCount(opt.keyword);
+                              return (
+                                <label key={opt.id} className="nursery-checkbox-item">
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => handleSubFilterToggle(opt.keyword)}
+                                  />
+                                  <span className="truncate">{opt.label}</span>
+                                  <span className="text-stone-400 text-xs ml-auto font-mono">
+                                    ({count})
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  {/* Accordion 1: Department / Category */}
+                  <div className="nursery-filter-group">
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                      className="nursery-filter-group-header"
+                    >
+                      <span className="font-semibold text-stone-900">Category</span>
+                      {isCategoryOpen ? <Minus size={15} /> : <Plus size={15} />}
+                    </button>
+
+                    {isCategoryOpen && (
+                      <div className="pt-2 pl-1 space-y-1">
+                        <label className="nursery-checkbox-item">
                           <input
                             type="radio"
                             name="main-cat-radio"
-                            checked={isChecked}
-                            onChange={() => {
-                              setSelectedMainMenuCat(cat.slug);
-                              setSelectedSubCat(null);
-                            }}
+                            checked={!selectedMainMenuCat}
+                            onChange={() => handleSelectHorizontalCategory(null)}
                             className="accent-emerald-700"
                           />
-                          <span>{cat.name}</span>
+                          <span>All Categories</span>
+                          <span className="text-stone-400 text-xs ml-auto font-mono">({masterNurseryCatalog.length})</span>
                         </label>
-                      );
-                    })}
+
+                        {NURSERY_MAIN_MENU.map(cat => {
+                          const isChecked = selectedMainMenuCat === cat.slug;
+                          return (
+                            <label key={cat.id} className="nursery-checkbox-item">
+                              <input
+                                type="radio"
+                                name="main-cat-radio"
+                                checked={isChecked}
+                                onChange={() => handleSelectHorizontalCategory(cat.slug)}
+                                className="accent-emerald-700"
+                              />
+                              <span>{cat.name}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* Accordion 2: Product type */}
-              <div className="nursery-filter-group">
-                <button
-                  type="button"
-                  onClick={() => setIsProductTypeOpen(!isProductTypeOpen)}
-                  className="nursery-filter-group-header"
-                >
-                  <span className="font-semibold text-stone-900">Product type</span>
-                  {isProductTypeOpen ? <Minus size={15} /> : <Plus size={15} />}
-                </button>
+                  {/* Accordion 2: Product type */}
+                  <div className="nursery-filter-group">
+                    <button
+                      type="button"
+                      onClick={() => setIsProductTypeOpen(!isProductTypeOpen)}
+                      className="nursery-filter-group-header"
+                    >
+                      <span className="font-semibold text-stone-900">Product type</span>
+                      {isProductTypeOpen ? <Minus size={15} /> : <Plus size={15} />}
+                    </button>
 
-                {isProductTypeOpen && (
-                  <div className="pt-2 pl-1 space-y-1">
-                    <input
-                      type="text"
-                      placeholder="Search types..."
-                      value={productTypeSearch}
-                      onChange={(e) => setProductTypeSearch(e.target.value)}
-                      className="nursery-filter-subsearch"
-                    />
+                    {isProductTypeOpen && (
+                      <div className="pt-2 pl-1 space-y-1">
+                        <input
+                          type="text"
+                          placeholder="Search types..."
+                          value={productTypeSearch}
+                          onChange={(e) => setProductTypeSearch(e.target.value)}
+                          className="nursery-filter-subsearch"
+                        />
 
-                    {visibleProductTypes.map(pt => {
-                      const isChecked = selectedProductTypes.includes(pt.name);
-                      return (
-                        <label key={pt.id} className="nursery-checkbox-item">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => handleProductTypeToggle(pt.name)}
-                          />
-                          <span className="truncate">{pt.name}</span>
-                          <span className="text-stone-400 text-xs ml-auto font-mono">
-                            ({pt.count})
-                          </span>
-                        </label>
-                      );
-                    })}
+                        {visibleProductTypes.map(pt => {
+                          const isChecked = selectedProductTypes.includes(pt.name);
+                          return (
+                            <label key={pt.id} className="nursery-checkbox-item">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleProductTypeToggle(pt.name)}
+                              />
+                              <span className="truncate">{pt.name}</span>
+                              <span className="text-stone-400 text-xs ml-auto font-mono">
+                                ({pt.count})
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              )}
 
               {/* Accordion 3: Price */}
               <div className="nursery-filter-group">
@@ -911,6 +1201,16 @@ export default function Gardening() {
                   </div>
                 ))}
 
+                {selectedSubFilters.map(kw => {
+                  const opt = allDynamicOptions.find(o => o.keyword === kw);
+                  return (
+                    <div key={kw} className="nursery-filter-chip">
+                      <span>{opt ? opt.label : kw}</span>
+                      <button type="button" onClick={() => handleSubFilterToggle(kw)}><X size={12} /></button>
+                    </div>
+                  );
+                })}
+
                 {selectedAvailability !== 'all' && (
                   <div className="nursery-filter-chip">
                     <span>{selectedAvailability === 'in-stock' ? 'In Stock Only' : 'Out of Stock'}</span>
@@ -976,40 +1276,28 @@ export default function Gardening() {
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        handleClearAllFilters();
-                        setSelectedMainMenuCat('plants');
-                      }}
+                      onClick={() => handleSelectHorizontalCategory('plants')}
                       className="text-xs font-semibold px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full cursor-pointer"
                     >
                       🌱 All Live Plants
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        handleClearAllFilters();
-                        setSelectedMainMenuCat('planters');
-                      }}
+                      onClick={() => handleSelectHorizontalCategory('planters')}
                       className="text-xs font-semibold px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full cursor-pointer"
                     >
                       🪴 Handcrafted Planters
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        handleClearAllFilters();
-                        setSelectedProductTypes(['Combo Packs - Plants']);
-                      }}
+                      onClick={() => handleSelectHorizontalCategory('gardening')}
                       className="text-xs font-semibold px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full cursor-pointer"
                     >
                       ✨ Air-Purifier Combos
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        handleClearAllFilters();
-                        setSelectedMainMenuCat('gifts');
-                      }}
+                      onClick={() => handleSelectHorizontalCategory('gifts')}
                       className="text-xs font-semibold px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full cursor-pointer"
                     >
                       🎁 Good Luck Gifts
