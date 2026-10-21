@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { LuckyBookingModal } from './LuckyBookingModal';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -31,6 +32,7 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isLuckyModalOpen, setIsLuckyModalOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,11 +56,24 @@ export function Header() {
       <div className="header-utility-strip">
         <div className="header-utility-container">
           <div className="utility-left">
-            <span className="utility-tagline">
+            <span className="utility-tagline hidden lg:inline">
               <Sparkles size={12} className="inline mr-1 text-gold" />
               Interior Architecture | Luxury Wall Decor | Green Living — <em>Design. Visualize. Personalize. Live Better.</em>
             </span>
           </div>
+
+          {/* Lucky Booking Window Section from Screenshot */}
+          <button
+            type="button"
+            onClick={() => setIsLuckyModalOpen(true)}
+            className="utility-lucky-banner-btn"
+            title="Click to enter the 5-Minute Lucky Booking Window"
+          >
+            <span className="lucky-pulse-dot" />
+            <span className="lucky-text-highlight">🎁 Free Lucky Draw:</span>
+            <span>Free Gardening Kit + 1 Room Decor Service</span>
+            <span className="lucky-countdown-pill">⚡ 5-Min Fast Book</span>
+          </button>
 
           <div className="utility-right">
             {/* Country / Currency Selector */}
@@ -342,6 +357,24 @@ export function Header() {
                 Sale (Up to 40% Off)
               </Link>
 
+              {/* Dedicated Lucky Customer Draw Card */}
+              <div 
+                className="mobile-lucky-drawer-card" 
+                onClick={() => { setIsMenuOpen(false); setIsLuckyModalOpen(true); }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="lucky-pulse-dot" />
+                  <span className="text-xs font-bold text-amber-300">⚡ 5-Minute Lucky Draw Window</span>
+                </div>
+                <p className="text-xs text-white/90 font-medium m-0 leading-snug">
+                  Free Deluxe Gardening Kit + 1 Single Room Decoration Service
+                </p>
+                <span className="text-[11px] text-amber-300 mt-1.5 font-bold inline-flex items-center gap-1">
+                  <span>Fast Book Now (Registered Members)</span>
+                  <Sparkles size={11} />
+                </span>
+              </div>
+
               {/* Dedicated Separate Space: 360° Room Studio Card */}
               <div className="p-3 my-2 bg-gradient-to-r from-[#faf7f2] to-[#f4ede3] rounded-xl border border-[#ded5c7]">
                 <div className="flex items-center justify-between mb-1">
@@ -393,6 +426,12 @@ export function Header() {
           </div>
         </div>
       )}
+
+      {/* Lucky Booking Modal */}
+      <LuckyBookingModal 
+        isOpen={isLuckyModalOpen} 
+        onClose={() => setIsLuckyModalOpen(false)} 
+      />
     </header>
   );
 }

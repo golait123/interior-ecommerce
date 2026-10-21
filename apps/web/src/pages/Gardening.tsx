@@ -596,7 +596,7 @@ export default function Gardening() {
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 mb-4 border-b border-[#eaeaea]">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs uppercase tracking-widest font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                <span className="text-xs uppercase tracking-widest font-bold text-[var(--navy)] bg-[#f0f5fc] px-2.5 py-0.5 rounded-full border border-[#cbdceb]">
                   🌿 Living Nature & Botanical Studio
                 </span>
               </div>
@@ -738,10 +738,10 @@ export default function Gardening() {
               {/* Sidebar Header */}
               <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-stone-200">
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal size={16} className="text-[#0f492c]" />
+                  <SlidersHorizontal size={16} className="text-[var(--navy)]" />
                   <h2 className="text-base font-bold text-stone-900 m-0">Filters</h2>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                    <span className="bg-blue-100 text-[var(--navy)] text-[11px] font-bold px-2 py-0.5 rounded-full">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -760,15 +760,15 @@ export default function Gardening() {
               {/* If a category is selected from the horizontal bar, show relevant dynamic filter sections */}
               {selectedMainMenuCat && currentCategoryFilterSections.length > 0 ? (
                 <>
-                  <div className="mb-3.5 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 font-bold text-emerald-950">
-                      <Tag size={13} className="text-emerald-700" />
+                  <div className="mb-3.5 p-2.5 bg-[#f0f5fc] border border-[#cbdceb] rounded-lg flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-[var(--navy)]">
+                      <Tag size={13} className="text-[var(--navy)]" />
                       <span className="capitalize">{NURSERY_MAIN_MENU.find(m => m.slug === selectedMainMenuCat)?.name || selectedMainMenuCat} Filters</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleSelectHorizontalCategory(null)}
-                      className="text-emerald-700 hover:text-emerald-900 font-bold underline cursor-pointer text-[11px]"
+                      className="text-[var(--navy)] hover:text-[#1b3a6b] font-bold underline cursor-pointer text-[11px]"
                     >
                       Show All Catalog
                     </button>
@@ -833,7 +833,7 @@ export default function Gardening() {
                             name="main-cat-radio"
                             checked={!selectedMainMenuCat}
                             onChange={() => handleSelectHorizontalCategory(null)}
-                            className="accent-emerald-700"
+                            className="accent-[var(--navy)]"
                           />
                           <span>All Categories</span>
                           <span className="text-stone-400 text-xs ml-auto font-mono">({masterNurseryCatalog.length})</span>
@@ -848,7 +848,7 @@ export default function Gardening() {
                                 name="main-cat-radio"
                                 checked={isChecked}
                                 onChange={() => handleSelectHorizontalCategory(cat.slug)}
-                                className="accent-emerald-700"
+                                className="accent-[var(--navy)]"
                               />
                               <span>{cat.name}</span>
                             </label>
@@ -927,7 +927,7 @@ export default function Gardening() {
                           name="price-bracket"
                           checked={priceFilter === p.id}
                           onChange={() => setPriceFilter(p.id as any)}
-                          className="accent-emerald-700"
+                          className="accent-[var(--navy)]"
                         />
                         <span>{p.label}</span>
                       </label>
@@ -993,7 +993,7 @@ export default function Gardening() {
                           name="rating-filter"
                           checked={selectedRating === r.id}
                           onChange={() => setSelectedRating(r.id as any)}
-                          className="accent-emerald-700"
+                          className="accent-[var(--navy)]"
                         />
                         <span className="flex items-center gap-1">
                           {r.label}
@@ -1024,7 +1024,7 @@ export default function Gardening() {
                   <SlidersHorizontal size={14} />
                   <span>Filters</span>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-[#0f492c] text-white text-[10px] px-1.5 py-0.2 rounded-full">
+                    <span className="bg-[var(--navy)] text-white text-[10px] px-1.5 py-0.2 rounded-full">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -1099,7 +1099,7 @@ export default function Gardening() {
             {hasActiveFilters && (
               <div className="nursery-active-chips-strip">
                 <span className="text-xs font-bold text-stone-600 flex items-center gap-1.5 mr-1">
-                  <Filter size={13} className="text-[#0f492c]" />
+                  <Filter size={13} className="text-[var(--navy)]" />
                   Active Filters:
                 </span>
 
@@ -1181,7 +1181,7 @@ export default function Gardening() {
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="py-16 px-6 text-center bg-white border border-dashed border-stone-300 rounded-2xl shadow-xs">
-                <div className="w-14 h-14 bg-emerald-50 text-[#0f492c] rounded-full flex items-center justify-center mx-auto mb-3.5">
+                <div className="w-14 h-14 bg-blue-50 text-[var(--navy)] rounded-full flex items-center justify-center mx-auto mb-3.5">
                   <Leaf size={28} />
                 </div>
                 <h3 className="text-lg font-bold text-stone-900 mb-1.5">No botanical items match your filter</h3>
@@ -1193,7 +1193,7 @@ export default function Gardening() {
                   <button
                     type="button"
                     onClick={handleClearAllFilters}
-                    className="px-4 py-2 bg-[#0f492c] hover:bg-[#165e39] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+                    className="px-4 py-2 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
                   >
                     Reset All Filters
                   </button>
@@ -1318,7 +1318,7 @@ export default function Gardening() {
           onClick={() => setShowFreePlantModal(false)}
         >
           <div 
-            className="bg-white max-w-md w-full p-6 rounded-lg shadow-2xl relative border-2 border-emerald-500 animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white max-w-md w-full p-6 rounded-lg shadow-2xl relative border-2 border-[var(--navy)] animate-in fade-in zoom-in-95 duration-200"
             onClick={e => e.stopPropagation()}
           >
             <button
@@ -1337,20 +1337,20 @@ export default function Gardening() {
                 Claim Your Complimentary Plant 🌱
               </h3>
               <p className="text-xs text-stone-600 mb-4 leading-relaxed">
-                Add any nursery items worth ₹999 or more to your cart, or use privilege voucher code <strong className="text-emerald-700">BOTANICALFREE</strong> during checkout to receive an acclimated Jade Plant or Succulent seedling absolutely free!
+                Add any nursery items worth ₹999 or more to your cart, or use privilege voucher code <strong className="text-[var(--navy)]">BOTANICALFREE</strong> during checkout to receive an acclimated Jade Plant or Succulent seedling absolutely free!
               </p>
 
-              <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-md mb-5 text-left text-xs text-emerald-900 space-y-1">
+              <div className="bg-[#f0f5fc] border border-[#cbdceb] p-3 rounded-md mb-5 text-left text-xs text-stone-800 space-y-1">
                 <div className="flex items-center gap-2">
-                  <Check size={14} className="text-emerald-600 flex-shrink-0" />
+                  <Check size={14} className="text-[var(--navy)] flex-shrink-0" />
                   <span>Free Potted Botanical Seedling with orders &gt; ₹999</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check size={14} className="text-emerald-600 flex-shrink-0" />
+                  <Check size={14} className="text-[var(--navy)] flex-shrink-0" />
                   <span>Pre-potted in nursery eco-thermoform cup</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check size={14} className="text-emerald-600 flex-shrink-0" />
+                  <Check size={14} className="text-[var(--navy)] flex-shrink-0" />
                   <span>Includes 14-day plant transit guarantee</span>
                 </div>
               </div>
@@ -1361,7 +1361,7 @@ export default function Gardening() {
                   handleCopyVoucher();
                   setShowFreePlantModal(false);
                 }}
-                className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-md shadow-sm transition-colors cursor-pointer"
+                className="w-full py-2.5 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-semibold rounded-md shadow-sm transition-colors cursor-pointer"
               >
                 Copy Voucher & Continue Shopping
               </button>

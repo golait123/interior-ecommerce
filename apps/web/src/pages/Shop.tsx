@@ -544,56 +544,7 @@ export default function Shop() {
                 )}
               </div>
 
-              {/* Accordion 1: Living Space / Zone */}
-              <div className="nursery-filter-group">
-                <button
-                  type="button"
-                  onClick={() => setIsSpaceOpen(!isSpaceOpen)}
-                  className="nursery-filter-group-header"
-                >
-                  <span className="font-semibold text-stone-900">
-                    {activeDomain === 'indoor' ? 'Living Room Space' : activeDomain === 'outdoor' ? 'Exterior Living Zone' : 'Living Space'}
-                  </span>
-                  {isSpaceOpen ? <Minus size={15} /> : <Plus size={15} />}
-                </button>
-
-                {isSpaceOpen && (
-                  <div className="pt-2 pl-1 space-y-1">
-                    <label className="nursery-checkbox-item">
-                      <input
-                        type="radio"
-                        name="shop-space-radio"
-                        checked={selectedSpace === '' || selectedSpace === activeDomain}
-                        onChange={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)}
-                        className="accent-[var(--navy)]"
-                      />
-                      <span>All {activeDomain === 'indoor' ? 'Rooms' : activeDomain === 'outdoor' ? 'Zones' : 'Spaces'}</span>
-                      <span className="text-stone-400 text-xs ml-auto font-mono">
-                        ({activeDomain === 'indoor' ? (indoorDomain?.count ?? 0) : activeDomain === 'outdoor' ? (outdoorDomain?.count ?? 0) : totalProducts})
-                      </span>
-                    </label>
-
-                    {activeDomainSpaces.map(leaf => {
-                      const isChecked = selectedSpace === leaf.slug;
-                      return (
-                        <label key={leaf.slug} className="nursery-checkbox-item">
-                          <input
-                            type="radio"
-                            name="shop-space-radio"
-                            checked={isChecked}
-                            onChange={() => handleSpaceSelect(leaf.slug)}
-                            className="accent-[var(--navy)]"
-                          />
-                          <span className="truncate">{getSpaceEmoji(leaf.slug)} {leaf.name}</span>
-                          <span className="text-stone-400 text-xs ml-auto font-mono">({leaf.count})</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Accordion 2: Category & Craft */}
+              {/* Accordion 1: Category & Craft */}
               <div className="nursery-filter-group">
                 <button
                   type="button"
@@ -965,35 +916,6 @@ export default function Shop() {
                 >
                   <X size={18} />
                 </button>
-              </div>
-
-              {/* Mobile Spaces */}
-              <div className="mb-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Living Space</h4>
-                <div className="space-y-1">
-                  <label className="nursery-checkbox-item">
-                    <input
-                      type="radio"
-                      name="m-shop-space-radio"
-                      checked={selectedSpace === '' || selectedSpace === activeDomain}
-                      onChange={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)}
-                      className="accent-[var(--navy)]"
-                    />
-                    <span>All {activeDomain === 'indoor' ? 'Rooms' : activeDomain === 'outdoor' ? 'Zones' : 'Spaces'}</span>
-                  </label>
-                  {activeDomainSpaces.map(leaf => (
-                    <label key={leaf.slug} className="nursery-checkbox-item">
-                      <input
-                        type="radio"
-                        name="m-shop-space-radio"
-                        checked={selectedSpace === leaf.slug}
-                        onChange={() => handleSpaceSelect(leaf.slug)}
-                        className="accent-[var(--navy)]"
-                      />
-                      <span className="truncate">{getSpaceEmoji(leaf.slug)} {leaf.name}</span>
-                    </label>
-                  ))}
-                </div>
               </div>
 
               {/* Mobile Categories */}
