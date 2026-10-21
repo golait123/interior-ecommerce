@@ -166,29 +166,29 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 2: Wallpapers & Paneling */}
+          {/* Col 2: Interior Design */}
           <div className="footer-col">
-            <h4 className="footer-col-title">Wallpapers & Paneling</h4>
+            <h4 className="footer-col-title">Interior Design</h4>
             <ul className="footer-menu">
+              <li><Link to="/shop?domain=indoor">Indoor Room Sanctuaries</Link></li>
               <li><Link to="/shop?category=botanical">Botanical & Floral Wallpapers</Link></li>
               <li><Link to="/shop?category=textured">Textured Linen & Raw Silk</Link></li>
               <li><Link to="/shop?category=3d-panels">3D Fluted Wall Panels</Link></li>
               <li><Link to="/shop?category=acoustic">Acoustic Wooden Slats</Link></li>
               <li><Link to="/shop?category=murals">Hand-painted Scenic Murals</Link></li>
-              <li><Link to="/shop?category=peel-stick">Peel & Stick Ready Rolls</Link></li>
             </ul>
           </div>
 
-          {/* Col 3: Plants & Gardening */}
+          {/* Col 3: Exterior Design & Nursery */}
           <div className="footer-col">
-            <h4 className="footer-col-title">Plants & Gardening</h4>
+            <h4 className="footer-col-title">Exterior Design & Nursery</h4>
             <ul className="footer-menu">
-              <li><Link to="/gardening?filter=indoor">Air-Purifying Indoor Plants</Link></li>
-              <li><Link to="/gardening?filter=low-light">Low-Light Office Plants</Link></li>
-              <li><Link to="/gardening?filter=pet-friendly">Pet-Friendly Botanicals</Link></li>
+              <li><Link to="/shop?domain=outdoor">Outdoor Living & Botanical</Link></li>
+              <li><Link to="/gardening">Nursery Decor & Plants</Link></li>
+              <li><Link to="/gardening?filter=indoor">Air-Purifying Nursery Greens</Link></li>
+              <li><Link to="/gardening?filter=planters">Artisanal Terracotta Planters</Link></li>
               <li><Link to="/gardening?filter=bonsai">Tabletop Bonsai Trees</Link></li>
-              <li><Link to="/gardening?filter=planters">Handcrafted Ceramic Pots</Link></li>
-              <li><Link to="/gardening/customize">Bespoke Nursery Studio</Link></li>
+              <li><Link to="/nursery-customizer">Bespoke Nursery Studio</Link></li>
             </ul>
           </div>
 

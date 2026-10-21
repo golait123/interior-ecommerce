@@ -8308,6 +8308,59 @@ button:active:not(:disabled),
   color: var(--text-muted);
 }
 
+/* Dedicated 360 Room Studio Launch Space */
+.room-studio-launcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #c9bea9;
+  border-radius: 20px;
+  color: #2d2a27;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(45, 42, 39, 0.06);
+  white-space: nowrap;
+}
+
+.room-studio-launcher-btn:hover {
+  background: #2d2a27;
+  color: #ffffff;
+  border-color: #2d2a27;
+  box-shadow: 0 4px 12px rgba(45, 42, 39, 0.16);
+  transform: translateY(-1px);
+}
+
+.room-studio-launcher-btn .badge-3d-pulse {
+  background: #8c6f52;
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 5.5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.room-studio-launcher-btn:hover .badge-3d-pulse {
+  background: #c4a982;
+  color: #2d2a27;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-slow, .animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
 /* Mobile Drawer */
 .header-mobile-toggle {
   display: none;

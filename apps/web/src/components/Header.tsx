@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Search, 
   ShoppingBag, 
@@ -25,6 +25,8 @@ export function Header() {
   const { itemCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const currentDomain = searchParams.get('domain');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
@@ -239,38 +241,55 @@ export function Header() {
         <div className="header-nav-container">
           <ul className="primary-nav-list">
             <li className="nav-item">
-              <Link to="/shop" className={`nav-link ${isActive('/shop') ? 'active' : ''}`}>
-                Wallpapers & Paneling
+              <Link 
+                to="/shop?domain=indoor" 
+                className={`nav-link ${location.pathname === '/shop' && (!currentDomain || currentDomain === 'indoor') ? 'active' : ''}`}
+              >
+                Interior Design
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/room-studio" className={`nav-link studio-highlight ${isActive('/room-studio') ? 'active' : ''}`}>
-                <Compass size={16} className="inline mr-1" />
-                360° Room Studio
-                <span className="nav-pill-badge">Interactive 3D</span>
+              <Link 
+                to="/shop?domain=outdoor" 
+                className={`nav-link ${location.pathname === '/shop' && currentDomain === 'outdoor' ? 'active' : ''}`}
+              >
+                Exterior Design
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/gardening" className={`nav-link ${isActive('/gardening') ? 'active' : ''}`}>
-                <Sprout size={16} className="inline mr-1" />
-                Plants & Gardening
+              <Link 
+                to="/gardening" 
+                className={`nav-link ${location.pathname === '/gardening' ? 'active' : ''}`}
+              >
+                Nursery Decor
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/gardening/customize" className={`nav-link ${isActive('/gardening/customize') ? 'active' : ''}`}>
-                Customizer Studio
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/shop?tag=sale" className="nav-link sale-link">
+              <Link 
+                to="/shop?tag=sale" 
+                className={`nav-link sale-link ${location.pathname === '/shop' && searchParams.get('tag') === 'sale' ? 'active' : ''}`}
+              >
                 Sale
                 <span className="sale-pill">Up to 40% Off</span>
               </Link>
             </li>
           </ul>
 
-          <div className="nav-quick-perk">
-            <span>Free Sample Swatches • 10-Year Warranty • 50+ Cities Installation</span>
+          <div className="flex items-center gap-3">
+            <div className="nav-quick-perk hidden xl:block">
+              <span>Free Sample Swatches • 10-Year Warranty • 50+ Cities Installation</span>
+            </div>
+
+            {/* Dedicated Separate Space: 360° Room Studio Launcher */}
+            <Link 
+              to="/room-studio" 
+              className="room-studio-launcher-btn"
+              title="Launch 360° Interactive 3D Room Studio"
+            >
+              <Compass size={14} className="spin-slow text-[#8c6f52]" />
+              <span>360° Room Studio</span>
+              <span className="badge-3d-pulse">3D</span>
+            </Link>
           </div>
         </div>
       </nav>
@@ -310,23 +329,42 @@ export function Header() {
               <Link to="/" onClick={closeMenu} className="mobile-nav-item">
                 Home
               </Link>
-              <Link to="/shop" onClick={closeMenu} className="mobile-nav-item">
-                Wallpapers & Paneling
+              <Link to="/shop?domain=indoor" onClick={closeMenu} className="mobile-nav-item">
+                Interior Design
               </Link>
-              <Link to="/room-studio" onClick={closeMenu} className="mobile-nav-item highlight">
-                <Compass size={16} className="inline mr-2" />
-                360° Room Studio
+              <Link to="/shop?domain=outdoor" onClick={closeMenu} className="mobile-nav-item">
+                Exterior Design
               </Link>
               <Link to="/gardening" onClick={closeMenu} className="mobile-nav-item">
-                <Sprout size={16} className="inline mr-2" />
-                Plants & Gardening
-              </Link>
-              <Link to="/gardening/customize" onClick={closeMenu} className="mobile-nav-item">
-                Customizer Studio
+                Nursery Decor
               </Link>
               <Link to="/shop?tag=sale" onClick={closeMenu} className="mobile-nav-item sale-item">
                 Sale (Up to 40% Off)
               </Link>
+
+              {/* Dedicated Separate Space: 360° Room Studio Card */}
+              <div className="p-3 my-2 bg-gradient-to-r from-[#faf7f2] to-[#f4ede3] rounded-xl border border-[#ded5c7]">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold text-dark flex items-center gap-1.5">
+                    <Compass size={15} className="text-[#8c6f52] animate-spin-slow" />
+                    360° Room Studio
+                  </span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#8c6f52] text-white">
+                    3D Interactive
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted mb-2 font-light">
+                  Experience your rooms in realistic 360° virtual 3D staging.
+                </p>
+                <Link
+                  to="/room-studio"
+                  onClick={closeMenu}
+                  className="btn btn-sm btn-primary w-full text-xs py-1.5 flex items-center justify-center gap-1.5 font-semibold"
+                >
+                  <span>Launch 360° Studio</span>
+                </Link>
+              </div>
+
               <hr className="drawer-separator" />
               <Link to="/customer/dashboard" onClick={closeMenu} className="mobile-nav-item">
                 Customer Dashboard

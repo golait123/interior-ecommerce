@@ -582,115 +582,45 @@ export default function Gardening() {
 
       <main>
         {/* ========================================================================= */}
-        {/* 1. BOTANICAL HERO BANNER: IMAGE ON LEFT, OFFERS RIGHT, VOUCHER DOWN SIDE */}
+        {/* EDITORIAL HEADER & BREADCRUMBS (REPLACED BANNER)                          */}
         {/* ========================================================================= */}
-        <section className="hero-split-banner" aria-label="Botanical Sanctuaries & Nursery Banner">
-          <div className="hero-split-stage">
-            <div className="hero-split-panel active">
-              {/* TOP ROW: IMAGE ON LEFT & OFFERS DETAIL ON RIGHT */}
-              <div className="hero-split-main">
-                {/* LEFT: IMAGE SHOWCASE */}
-                <div className="hero-split-left">
-                  <div className="hero-split-img-wrapper">
-                    <img 
-                      src="/images/outdoor-garden.jpg" 
-                      alt="Lush Botanical Garden & Nursery Design Sanctuary" 
-                      className="hero-split-img"
-                      loading="eager"
-                    />
-                    <div className="hero-split-img-tag">
-                      <Leaf size={12} className="text-emerald-400" />
-                      <span>Botanical Living Studio</span>
-                    </div>
-                  </div>
-                </div>
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+          <div className="flex items-center gap-1.5 text-xs text-muted mb-2 uppercase tracking-wider">
+            <Link to="/" className="hover:text-dark transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <Link to="/shop?domain=outdoor" className="hover:text-dark transition-colors">Exterior Design</Link>
+            <ChevronRight size={12} />
+            <span className="text-dark font-medium">Nursery Decor</span>
+          </div>
 
-                {/* RIGHT: OFFERS DETAIL */}
-                <div className="hero-split-right">
-                  <div className="hero-split-badges">
-                    <span className="hero-split-badge-tag">
-                      <Leaf size={13} style={{ color: '#38bdf8' }} />
-                      <span>Living Nature Sanctuary • Air-Purifying Greens</span>
-                    </span>
-                    <span className="hero-split-discount-pill">
-                      <Percent size={12} />
-                      <span>Complimentary Planter with ₹4,999</span>
-                    </span>
-                  </div>
-
-                  <h1 className="hero-split-title">
-                    Botanical Sanctuaries & Garden Decor
-                    <span className="hero-split-highlight">
-                      • Complimentary Planter
-                    </span>
-                  </h1>
-
-                  <p className="hero-split-desc">
-                    Air-purifying nursery greens in handcrafted artisanal fluted ceramic & unglazed terracotta planters. Delivered potted, nourished, and fully acclimated across India.
-                  </p>
-
-                  {/* Trust Perks Strip */}
-                  <div className="hero-split-perks">
-                    <span className="hero-split-perk">
-                      <Leaf size={14} className="hero-split-perk-icon" />
-                      <span>Air-Purifying Certified Greens</span>
-                    </span>
-                    <span className="hero-split-perk">
-                      <Sparkles size={14} className="hero-split-perk-icon" />
-                      <span>Delivered Potted & Acclimated</span>
-                    </span>
-                    <span className="hero-split-perk">
-                      <ShieldCheck size={14} className="hero-split-perk-icon" />
-                      <span>14-Day Plant Health Guarantee</span>
-                    </span>
-                  </div>
-                </div>
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 mb-4 border-b border-[#eaeaea]">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs uppercase tracking-widest font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  🌿 Living Nature & Botanical Studio
+                </span>
               </div>
+              <h1 className="text-3xl sm:text-4xl font-serif italic font-normal text-dark tracking-tight m-0">
+                Nursery Decor & Botanical Living
+              </h1>
+              <p className="text-xs sm:text-sm text-muted mt-1.5 max-w-2xl font-light leading-relaxed m-0">
+                Air-purifying nursery greens, handcrafted terracotta planters, organic botanical seeds, and climate-tailored garden crafts. Delivered potted and nourished across India.
+              </p>
+            </div>
 
-              {/* DOWN SIDE OF BANNER: VOUCHER CODE & RESPECTIVE BUTTON */}
-              <div className="hero-split-bottom-bar">
-                {/* Voucher Box with 1-Click Copy */}
-                <div className="hero-split-voucher-box">
-                  <div className="hero-split-voucher-meta">
-                    <span className="hero-split-voucher-label">
-                      Botanical Privilege Voucher
-                    </span>
-                    <span className="hero-split-voucher-code">
-                      BOTANICALFREE
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleCopyVoucher}
-                    className="hero-split-copy-btn"
-                    title="Copy voucher code"
-                    aria-label="Copy voucher code BOTANICALFREE"
-                  >
-                    {copiedVoucher ? (
-                      <Check size={14} className="text-emerald-400" />
-                    ) : (
-                      <Copy size={14} />
-                    )}
-                    <span>{copiedVoucher ? 'Copied!' : 'Copy Code'}</span>
-                  </button>
-                </div>
-
-                {/* Respective Action Button */}
-                <div className="hero-split-cta-wrapper flex items-center gap-3">
-                  <Link to="/nursery-customizer" className="hero-split-btn bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
-                    <Sparkles size={15} />
-                    <span>Customize Your Nursery</span>
-                  </Link>
-                  <a href="#nursery-store" className="hero-split-btn">
-                    <span>Shop Nursery Catalog</span>
-                    <ArrowRight size={15} />
-                  </a>
-                </div>
-              </div>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="badge badge-green text-xs font-mono font-semibold px-3 py-1">
+                {masterNurseryCatalog.length} Nursery Pieces
+              </span>
+              <a 
+                href="#nursery-store" 
+                className="btn btn-sm btn-primary text-xs px-4 py-2 font-semibold"
+              >
+                Browse Catalog ↓
+              </a>
             </div>
           </div>
-        </section>
+        </div>
 
         {/* ========================================================================= */}
         {/* 2. BESPOKE NURSERY CUSTOMIZATION SHOWCASE BANNER                          */}
