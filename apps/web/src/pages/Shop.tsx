@@ -27,6 +27,12 @@ import {
   Plus,
   Minus,
   Tag,
+  Truck,
+  Package,
+  ShieldCheck,
+  Star,
+  Leaf,
+  MapPin,
   Armchair,
   DoorOpen,
   Bed,
@@ -81,6 +87,10 @@ export default function Shop() {
   // Quick View State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+
+  // Delivery Pincode Verification State (Screenshot 1)
+  const [pincode, setPincode] = useState('400001');
+  const [pincodeVerified, setPincodeVerified] = useState(true);
 
   // Fetch Tree Data
   const { data: spacesData } = useQuery({
@@ -347,92 +357,173 @@ export default function Shop() {
 
       <main>
         {/* ========================================================================= */}
-        {/* 1. EDITORIAL HEADER WITH LIVE PIECES COUNT & DOMAIN SELECTOR               */}
+        {/* 1. TRUST BADGES RIBBON (SCREENSHOT 1)                                     */}
         {/* ========================================================================= */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-          {/* Breadcrumb Trail */}
-          <div className="flex items-center gap-1.5 text-xs text-muted mb-2 uppercase tracking-wider">
-            <Link to="/" className="hover:text-dark transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <Link to="/shop" className="hover:text-dark transition-colors">Catalog</Link>
-            {activeDomain !== 'all' && (
-              <>
-                <ChevronRight size={12} />
-                <span className="text-dark font-medium capitalize">
-                  {activeDomain === 'indoor' ? 'Interior Design' : 'Exterior Design'}
-                </span>
-              </>
-            )}
-            {activeSpaceObj && activeSpaceObj.slug !== activeDomain && (
-              <>
-                <ChevronRight size={12} />
-                <span className="text-[var(--navy)] font-semibold">{activeSpaceObj.name}</span>
-              </>
-            )}
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 mb-4 border-b border-[#eaeaea]">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs uppercase tracking-widest font-bold text-[var(--navy)] bg-[#f0f5fc] px-2.5 py-0.5 rounded-full border border-[#cbdceb]">
-                  {activeDomain === 'indoor' ? '🛋️ Interior Living Sanctuaries' : activeDomain === 'outdoor' ? '🌿 Exterior & Botanical Living' : '🏛️ The Curated Architecture & Living Collection'}
-                </span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-serif italic font-normal text-dark tracking-tight m-0">
-                {activeSpaceObj && activeSpaceObj.slug !== activeDomain
-                  ? activeSpaceObj.name
-                  : activeDomain === 'indoor'
-                  ? 'Interior Design Collection'
-                  : activeDomain === 'outdoor'
-                  ? 'Exterior Design Collection'
-                  : 'All Curated Pieces'}
-              </h1>
-              <p className="text-xs sm:text-sm text-muted mt-1.5 max-w-2xl font-light leading-relaxed m-0">
-                {activeSpaceObj?.description || (activeDomain === 'indoor'
-                  ? 'Authentic solid Sheesham and Teak hardwoods, hand-hammered brass, bespoke wall murals, and living interior furnishings tailored to your space.'
-                  : activeDomain === 'outdoor'
-                  ? 'Balcony sanctuaries, terrace gardens, hand-thrown terracotta planters, weather-resistant teak, and biophilic architectural crafts.'
-                  : 'Complete collection of interior living furnishings, artisan wall murals, and outdoor architectural decor.')}
-              </p>
+        <div className="nl-trust-ribbon">
+          <div className="nl-trust-ribbon-inner">
+            <div className="nl-trust-pill">
+              <Truck size={14} />
+              <span>Free Pan-India Delivery on Orders over ₹499</span>
             </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-              <button
-                type="button"
-                onClick={() => handleDomainSelect('all')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                  activeDomain === 'all'
-                    ? 'bg-[var(--navy)] text-white border-[var(--navy)] shadow-xs'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300'
-                }`}
-              >
-                All Pieces ({totalProducts})
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDomainSelect('indoor')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                  activeDomain === 'indoor'
-                    ? 'bg-[var(--navy)] text-white border-[var(--navy)] shadow-xs'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300'
-                }`}
-              >
-                🛋️ Interior ({indoorDomain?.count ?? 0})
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDomainSelect('outdoor')}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                  activeDomain === 'outdoor'
-                    ? 'bg-[var(--navy)] text-white border-[var(--navy)] shadow-xs'
-                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300'
-                }`}
-              >
-                🌿 Exterior ({outdoorDomain?.count ?? 0})
-              </button>
+            <div className="nl-trust-pill">
+              <Package size={14} />
+              <span>
+                {activeDomain === 'indoor' 
+                  ? '100% Breathable Transit-Safe Furniture & Mural Packaging'
+                  : '100% Breathable Transit-Safe Plant Packaging'}
+              </span>
+            </div>
+            <div className="nl-trust-pill">
+              <ShieldCheck size={14} />
+              <span>
+                {activeDomain === 'indoor'
+                  ? '10-Year Solid Hardwood Structural Guarantee'
+                  : '7-Day Live Plant Replacement Guarantee'}
+              </span>
+            </div>
+            <div className="nl-trust-pill">
+              <Star size={14} fill="#4ade80" />
+              <span>Over 1.5 Lakh+ Happy Green Homes Across India</span>
             </div>
           </div>
         </div>
+
+        {/* ========================================================================= */}
+        {/* 2. HERO STUDIO HEADER WITH CITY PINCODE CHECK (SCREENSHOT 1 DESIGN)        */}
+        {/* ========================================================================= */}
+        <header className="nl-hero-header">
+          <div className="nl-hero-glow" aria-hidden="true" />
+          <div className="nl-hero-content">
+            {/* Breadcrumb Trail on top of header */}
+            <div className="flex items-center gap-1.5 text-xs text-emerald-200/80 mb-3 uppercase tracking-wider">
+              <Link to="/" className="hover:text-white transition-colors">Home</Link>
+              <ChevronRight size={12} />
+              <Link to="/shop" className="hover:text-white transition-colors">Catalog</Link>
+              {activeDomain !== 'all' && (
+                <>
+                  <ChevronRight size={12} />
+                  <span className="text-white font-medium capitalize">
+                    {activeDomain === 'indoor' ? 'Interior Design' : 'Exterior Design'}
+                  </span>
+                </>
+              )}
+              {activeSpaceObj && activeSpaceObj.slug !== activeDomain && (
+                <>
+                  <ChevronRight size={12} />
+                  <span className="text-[#86efac] font-semibold">{activeSpaceObj.name}</span>
+                </>
+              )}
+            </div>
+
+            <div className="nl-hero-top-row">
+              <div>
+                <div className="nl-hero-badge">
+                  <Leaf size={13} />
+                  <span>
+                    {activeDomain === 'indoor'
+                      ? 'CasaCanvas Interior Studio • Bespoke Customizer'
+                      : activeDomain === 'outdoor'
+                      ? 'Nurserylive Botanical Studio • Bespoke Customizer'
+                      : 'InteriorG Architectural Studio • Curated Catalog'}
+                  </span>
+                </div>
+
+                <h1 className="nl-hero-title">
+                  {activeSpaceObj && activeSpaceObj.slug !== activeDomain
+                    ? activeSpaceObj.name
+                    : activeDomain === 'indoor'
+                    ? 'Custom Interior & Living Studio'
+                    : activeDomain === 'outdoor'
+                    ? 'Custom Nursery & Balcony Studio'
+                    : 'The Curated Architecture & Living Collection'}
+                </h1>
+
+                <p className="nl-hero-subtitle">
+                  {activeDomain === 'indoor'
+                    ? 'Customize your ideal indoor haven in 4 simple steps. Select your living area, pick solid Teak & Sheesham hardwoods, choose artisanal brass accents, and enjoy doorstep white-glove plant and furnishings delivery across India.'
+                    : activeDomain === 'outdoor'
+                    ? 'Customize your ideal green sanctuary in 4 simple steps. Select your living area, pick NASA-certified plant packs, choose premium self-watering pots, and enjoy doorstep white-glove plant delivery across India.'
+                    : 'Customize your complete home & garden living space in simple steps. Authentic solid hardwoods, bespoke wallpapers, hand-thrown terracotta pottery, and live botanical plants delivered nationwide.'}
+                </p>
+
+                {/* Domain Switcher Pills */}
+                <div className="flex items-center gap-2 mt-4 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => handleDomainSelect('all')}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                      activeDomain === 'all'
+                        ? 'bg-white text-stone-900 border-white shadow-sm font-bold'
+                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
+                    }`}
+                  >
+                    All Pieces ({totalProducts})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDomainSelect('indoor')}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                      activeDomain === 'indoor'
+                        ? 'bg-white text-stone-900 border-white shadow-sm font-bold'
+                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
+                    }`}
+                  >
+                    🛋️ Interior ({indoorDomain?.count ?? 0})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDomainSelect('outdoor')}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                      activeDomain === 'outdoor'
+                        ? 'bg-white text-stone-900 border-white shadow-sm font-bold'
+                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
+                    }`}
+                  >
+                    🌿 Exterior ({outdoorDomain?.count ?? 0})
+                  </button>
+                </div>
+              </div>
+
+              {/* Pincode Quick-Check Box (Screenshot 1) */}
+              <div className="nl-pincode-card">
+                <div className="nl-pincode-title">
+                  <MapPin size={14} />
+                  <span>Check Delivery to Your City</span>
+                </div>
+                <div className="nl-pincode-form">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Enter 6-digit Pincode"
+                    className="nl-pincode-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (pincode.length === 6) {
+                        setPincodeVerified(true);
+                        toast.success(`Express delivery verified for pincode ${pincode}`);
+                      } else {
+                        toast.error('Please enter a valid 6-digit Indian pincode');
+                      }
+                    }}
+                    className="nl-pincode-btn"
+                  >
+                    Verify
+                  </button>
+                </div>
+                {pincodeVerified && (
+                  <div className="nl-pincode-status">
+                    <Check size={14} />
+                    <span>Express 3–5 Days Safe Delivery to <strong>PIN {pincode}</strong></span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
 
         {/* Store Manager Controls Bar (ADMIN / STOCK_MANAGER) */}
         {user && (user.role === 'ADMIN' || user.role === 'STOCK_MANAGER') && (

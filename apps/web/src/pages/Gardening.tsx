@@ -39,7 +39,10 @@ import {
   Star,
   Filter,
   ArrowUpDown,
-  Tag
+  Tag,
+  Truck,
+  Package,
+  MapPin
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -225,6 +228,10 @@ export default function Gardening() {
 
   // Free Plant Modal State
   const [showFreePlantModal, setShowFreePlantModal] = useState(false);
+
+  // Pincode Verification State (Screenshot 1)
+  const [pincode, setPincode] = useState('400001');
+  const [pincodeVerified, setPincodeVerified] = useState(true);
 
   // Search input state
   const [searchQuery, setSearchQuery] = useState('');
@@ -582,93 +589,111 @@ export default function Gardening() {
 
       <main>
         {/* ========================================================================= */}
-        {/* EDITORIAL HEADER & BREADCRUMBS (REPLACED BANNER)                          */}
+        {/* 1. TRUST BADGES RIBBON (SCREENSHOT 1)                                     */}
         {/* ========================================================================= */}
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-          <div className="flex items-center gap-1.5 text-xs text-muted mb-2 uppercase tracking-wider">
-            <Link to="/" className="hover:text-dark transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <Link to="/shop?domain=outdoor" className="hover:text-dark transition-colors">Exterior Design</Link>
-            <ChevronRight size={12} />
-            <span className="text-dark font-medium">Nursery Decor</span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 mb-4 border-b border-[#eaeaea]">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs uppercase tracking-widest font-bold text-[var(--navy)] bg-[#f0f5fc] px-2.5 py-0.5 rounded-full border border-[#cbdceb]">
-                  🌿 Living Nature & Botanical Studio
-                </span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-serif italic font-normal text-dark tracking-tight m-0">
-                Nursery Decor & Botanical Living
-              </h1>
-              <p className="text-xs sm:text-sm text-muted mt-1.5 max-w-2xl font-light leading-relaxed m-0">
-                Air-purifying nursery greens, handcrafted terracotta planters, organic botanical seeds, and climate-tailored garden crafts. Delivered potted and nourished across India.
-              </p>
+        <div className="nl-trust-ribbon">
+          <div className="nl-trust-ribbon-inner">
+            <div className="nl-trust-pill">
+              <Truck size={14} />
+              <span>Free Pan-India Delivery on Orders over ₹499</span>
             </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-              <span className="badge badge-green text-xs font-mono font-semibold px-3 py-1">
-                {masterNurseryCatalog.length} Nursery Pieces
-              </span>
-              <a 
-                href="#nursery-store" 
-                className="btn btn-sm btn-primary text-xs px-4 py-2 font-semibold"
-              >
-                Browse Catalog ↓
-              </a>
+            <div className="nl-trust-pill">
+              <Package size={14} />
+              <span>100% Breathable Transit-Safe Plant Packaging</span>
+            </div>
+            <div className="nl-trust-pill">
+              <ShieldCheck size={14} />
+              <span>7-Day Live Plant Replacement Guarantee</span>
+            </div>
+            <div className="nl-trust-pill">
+              <Star size={14} fill="#4ade80" />
+              <span>Over 1.5 Lakh+ Happy Green Homes Across India</span>
             </div>
           </div>
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. BESPOKE NURSERY CUSTOMIZATION SHOWCASE BANNER                          */}
+        {/* 2. CUSTOMIZER HERO HEADER (NURSERYLIVE LOOK - SCREENSHOT 1)                */}
         {/* ========================================================================= */}
-        <section className="gardening-customizer-section">
-          <div className="gardening-customizer-banner">
-            <div className="gardening-customizer-bg-glow" aria-hidden="true" />
-            <div className="gardening-customizer-bg-dots" aria-hidden="true" />
-            
-            <div className="gardening-customizer-content">
-              <span className="gardening-customizer-pill">
-                <Sparkles size={13} />
-                <span>Customer Choice Nursery Customization</span>
-              </span>
-              <h2 className="gardening-customizer-title">
-                Design Your Complete Bespoke Nursery
-              </h2>
-              <p className="gardening-customizer-desc">
-                Choose your exact space layout (Balcony, Terrace, Verandah, or Corner), custom dimensions, microclimate sunlight, curated NASA foliage, terracotta or ceramic pottery finishes, and automated irrigation.
-              </p>
-              
-              <div className="gardening-customizer-perks">
-                <span className="gardening-customizer-perk">
-                  <Check size={14} className="text-emerald-400" /> Custom Dimensions
-                </span>
-                <span className="gardening-customizer-perk">
-                  <Check size={14} className="text-emerald-400" /> Tailored Plant Palettes
-                </span>
-                <span className="gardening-customizer-perk">
-                  <Check size={14} className="text-emerald-400" /> Hand-thrown Terracotta
-                </span>
-                <span className="gardening-customizer-perk">
-                  <Check size={14} className="text-emerald-400" /> Live Instant ₹ Quote
-                </span>
-              </div>
+        <header className="nl-hero-header">
+          <div className="nl-hero-glow" aria-hidden="true" />
+          <div className="nl-hero-content">
+            {/* Breadcrumb Trail on top of header */}
+            <div className="flex items-center gap-1.5 text-xs text-emerald-200/80 mb-3 uppercase tracking-wider">
+              <Link to="/" className="hover:text-white transition-colors">Home</Link>
+              <ChevronRight size={12} />
+              <Link to="/shop?domain=outdoor" className="hover:text-white transition-colors">Exterior Design</Link>
+              <ChevronRight size={12} />
+              <span className="text-[#86efac] font-semibold">Nursery Decor</span>
             </div>
 
-            <div className="gardening-customizer-btn-wrap">
-              <Link
-                to="/nursery-customizer"
-                className="gardening-customizer-btn"
-              >
-                <span>Launch Nursery Studio</span>
-                <ArrowRight size={15} />
-              </Link>
+            <div className="nl-hero-top-row">
+              <div>
+                <div className="nl-hero-badge">
+                  <Leaf size={13} />
+                  <span>Nurserylive Botanical Studio • Bespoke Customizer</span>
+                </div>
+                <h1 className="nl-hero-title">
+                  Custom Nursery & Balcony Studio
+                </h1>
+                <p className="nl-hero-subtitle">
+                  Customize your ideal green sanctuary in 4 simple steps. Select your living area, pick NASA-certified plant packs, choose premium self-watering pots, and enjoy doorstep white-glove plant delivery across India.
+                </p>
+
+                <div className="flex items-center gap-3 mt-4">
+                  <span className="badge badge-green text-xs font-mono font-semibold px-3 py-1">
+                    {masterNurseryCatalog.length} Nursery Pieces
+                  </span>
+                  <Link
+                    to="/nursery-customizer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-400 hover:bg-amber-500 text-stone-900 transition-colors shadow-xs"
+                  >
+                    <span>Launch 3D Nursery Studio</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Pincode Quick-Check Box (Screenshot 1) */}
+              <div className="nl-pincode-card">
+                <div className="nl-pincode-title">
+                  <MapPin size={14} />
+                  <span>Check Delivery to Your City</span>
+                </div>
+                <div className="nl-pincode-form">
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Enter 6-digit Pincode"
+                    className="nl-pincode-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (pincode.length === 6) {
+                        setPincodeVerified(true);
+                        toast.success(`Express delivery verified for pincode ${pincode}`);
+                      } else {
+                        toast.error('Please enter a valid 6-digit Indian pincode');
+                      }
+                    }}
+                    className="nl-pincode-btn"
+                  >
+                    Verify
+                  </button>
+                </div>
+                {pincodeVerified && (
+                  <div className="nl-pincode-status">
+                    <Check size={14} />
+                    <span>Express 3–5 Days Safe Delivery to <strong>PIN {pincode}</strong></span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </section>
+        </header>
 
         {/* ========================================================================= */}
         {/* 3. NURSERY DEPARTMENT NAV (QUICK-CATEGORY PILL TABS)                     */}
