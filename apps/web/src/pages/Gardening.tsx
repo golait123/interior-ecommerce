@@ -229,10 +229,6 @@ export default function Gardening() {
   // Free Plant Modal State
   const [showFreePlantModal, setShowFreePlantModal] = useState(false);
 
-  // Pincode Verification State (Screenshot 1)
-  const [pincode, setPincode] = useState('400001');
-  const [pincodeVerified, setPincodeVerified] = useState(true);
-
   // Search input state
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -652,44 +648,6 @@ export default function Gardening() {
                     <ArrowRight size={13} />
                   </Link>
                 </div>
-              </div>
-
-              {/* Pincode Quick-Check Box (Screenshot 1) */}
-              <div className="nl-pincode-card">
-                <div className="nl-pincode-title">
-                  <MapPin size={14} />
-                  <span>Check Delivery to Your City</span>
-                </div>
-                <div className="nl-pincode-form">
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={pincode}
-                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter 6-digit Pincode"
-                    className="nl-pincode-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (pincode.length === 6) {
-                        setPincodeVerified(true);
-                        toast.success(`Express delivery verified for pincode ${pincode}`);
-                      } else {
-                        toast.error('Please enter a valid 6-digit Indian pincode');
-                      }
-                    }}
-                    className="nl-pincode-btn"
-                  >
-                    Verify
-                  </button>
-                </div>
-                {pincodeVerified && (
-                  <div className="nl-pincode-status">
-                    <Check size={14} />
-                    <span>Express 3–5 Days Safe Delivery to <strong>PIN {pincode}</strong></span>
-                  </div>
-                )}
               </div>
             </div>
           </div>

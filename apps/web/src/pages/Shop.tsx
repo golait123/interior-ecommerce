@@ -88,10 +88,6 @@ export default function Shop() {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
-  // Delivery Pincode Verification State (Screenshot 1)
-  const [pincode, setPincode] = useState('400001');
-  const [pincodeVerified, setPincodeVerified] = useState(true);
-
   // Fetch Tree Data
   const { data: spacesData } = useQuery({
     queryKey: ['spaces-tree'],
@@ -445,81 +441,6 @@ export default function Shop() {
                     ? 'Customize your ideal green sanctuary in 4 simple steps. Select your living area, pick NASA-certified plant packs, choose premium self-watering pots, and enjoy doorstep white-glove plant delivery across India.'
                     : 'Customize your complete home & garden living space in simple steps. Authentic solid hardwoods, bespoke wallpapers, hand-thrown terracotta pottery, and live botanical plants delivered nationwide.'}
                 </p>
-
-                {/* Domain Switcher Pills */}
-                <div className="flex items-center gap-2 mt-4 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => handleDomainSelect('all')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                      activeDomain === 'all'
-                        ? 'bg-white text-stone-900 border-white shadow-sm font-bold'
-                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
-                    }`}
-                  >
-                    All Pieces ({totalProducts})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDomainSelect('indoor')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                      activeDomain === 'indoor'
-                        ? 'bg-white text-stone-900 border-white shadow-sm font-bold'
-                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
-                    }`}
-                  >
-                    🛋️ Interior ({indoorDomain?.count ?? 0})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDomainSelect('outdoor')}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                      activeDomain === 'outdoor'
-                        ? 'bg-white text-stone-900 border-white shadow-sm font-bold'
-                        : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
-                    }`}
-                  >
-                    🌿 Exterior ({outdoorDomain?.count ?? 0})
-                  </button>
-                </div>
-              </div>
-
-              {/* Pincode Quick-Check Box (Screenshot 1) */}
-              <div className="nl-pincode-card">
-                <div className="nl-pincode-title">
-                  <MapPin size={14} />
-                  <span>Check Delivery to Your City</span>
-                </div>
-                <div className="nl-pincode-form">
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={pincode}
-                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter 6-digit Pincode"
-                    className="nl-pincode-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (pincode.length === 6) {
-                        setPincodeVerified(true);
-                        toast.success(`Express delivery verified for pincode ${pincode}`);
-                      } else {
-                        toast.error('Please enter a valid 6-digit Indian pincode');
-                      }
-                    }}
-                    className="nl-pincode-btn"
-                  >
-                    Verify
-                  </button>
-                </div>
-                {pincodeVerified && (
-                  <div className="nl-pincode-status">
-                    <Check size={14} />
-                    <span>Express 3–5 Days Safe Delivery to <strong>PIN {pincode}</strong></span>
-                  </div>
-                )}
               </div>
             </div>
           </div>

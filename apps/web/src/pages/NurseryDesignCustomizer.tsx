@@ -576,44 +576,6 @@ export default function NurseryDesignCustomizer() {
                 Customize your ideal green sanctuary in 4 simple steps. Select your living area, pick NASA-certified plant packs, choose premium self-watering pots, and enjoy doorstep white-glove plant delivery across India.
               </p>
             </div>
-
-            {/* Pincode Quick-Check Box */}
-            <div className="nl-pincode-card">
-              <div className="nl-pincode-title">
-                <MapPin size={14} />
-                <span>Check Delivery to Your City</span>
-              </div>
-              <div className="nl-pincode-form">
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                  placeholder="Enter 6-digit Pincode"
-                  className="nl-pincode-input"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (pincode.length === 6) {
-                      setPincodeVerified(true);
-                      toast.success(`Express delivery verified for pincode ${pincode}`);
-                    } else {
-                      toast.error('Please enter a valid 6-digit Indian pincode');
-                    }
-                  }}
-                  className="nl-pincode-btn"
-                >
-                  Verify
-                </button>
-              </div>
-              {pincodeVerified && (
-                <div className="nl-pincode-status">
-                  <Check size={14} />
-                  <span>Express 3–5 Days Safe Delivery to <strong>PIN {pincode}</strong></span>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </header>
