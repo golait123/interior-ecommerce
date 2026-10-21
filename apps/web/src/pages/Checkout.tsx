@@ -71,6 +71,10 @@ export default function Checkout() {
   const [voucherInput, setVoucherInput] = useState('');
   const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discountPct: number } | null>(null);
 
+  // Add-ons from Module 5 walkthrough
+  const [addInstallation, setAddInstallation] = useState<boolean>(true);
+  const [addWastageSafety, setAddWastageSafety] = useState<boolean>(false);
+
   const { data: addresses } = useQuery({
     queryKey: ['addresses'],
     queryFn: addressesApi.list
@@ -102,7 +106,9 @@ export default function Checkout() {
   };
 
   const discountAmount = appliedVoucher ? subtotal * appliedVoucher.discountPct : 0;
-  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+  const installationFee = addInstallation ? 1350 : 0;
+  const wastageAllowance = addWastageSafety ? Math.round(subtotal * 0.10) : 0;
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount + installationFee + wastageAllowance);
   const taxRate = currentCountry.tax.rate;
   const taxName = currentCountry.tax.name;
   const tax = discountedSubtotal * taxRate;
@@ -771,6 +777,49 @@ export default function Checkout() {
                 })}
               </div>
 
+              {/* ADD-ONS SECTION (Module 5) */}
+              <div className="mb-5 p-4 bg-white border border-[#ded9d0] rounded-xl space-y-3">
+                <span className="text-xs uppercase tracking-wider text-muted font-semibold block">
+                  Installation & Precision Services
+                </span>
+                
+                <label className="flex items-start gap-3 cursor-pointer select-none text-xs">
+                  <input
+                    type="checkbox"
+                    checked={addInstallation}
+                    onChange={(e) => setAddInstallation(e.target.checked)}
+                    className="mt-0.5 accent-[var(--brand-primary)]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between font-semibold text-dark">
+                      <span>Certified Professional Installation</span>
+                      <span className="text-[var(--brand-primary)]">+₹1,350</span>
+                    </div>
+                    <p className="text-[11px] text-muted m-0">
+                      Master installer visit within 48h of roll delivery. Guaranteed bubble-free finish.
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer select-none text-xs pt-2 border-t border-[#f0ece4]">
+                  <input
+                    type="checkbox"
+                    checked={addWastageSafety}
+                    onChange={(e) => setAddWastageSafety(e.target.checked)}
+                    className="mt-0.5 accent-[var(--brand-primary)]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between font-semibold text-dark">
+                      <span>Extra 10% Wastage Safety Allowance</span>
+                      <span className="text-[var(--brand-primary)]">+{formatPrice(Math.round(subtotal * 0.10))}</span>
+                    </div>
+                    <p className="text-[11px] text-muted m-0">
+                      Recommended for complex architectural niches, archways, and window cuts.
+                    </p>
+                  </div>
+                </label>
+              </div>
+
               {/* VOUCHER PROMO INPUT */}
               <form onSubmit={handleApplyVoucher} className="mb-5 pb-5 border-b border-[#e8e4dc]">
                 <label className="text-xs uppercase tracking-wider text-muted font-semibold block mb-2">
@@ -819,6 +868,20 @@ export default function Checkout() {
                   <div className="flex justify-between text-[#2e6930]">
                     <span>Guild Discount ({appliedVoucher.code})</span>
                     <span className="font-medium">-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+
+                {addInstallation && (
+                  <div className="flex justify-between text-stone-600">
+                    <span>Professional Installation Service</span>
+                    <span className="font-medium text-dark">+₹1,350</span>
+                  </div>
+                )}
+
+                {addWastageSafety && (
+                  <div className="flex justify-between text-stone-600">
+                    <span>10% Safety Wastage Buffer</span>
+                    <span className="font-medium text-dark">+{formatPrice(wastageAllowance)}</span>
                   </div>
                 )}
 
