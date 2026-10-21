@@ -31,6 +31,8 @@ import { StockMovements } from './pages/stock/StockMovements';
 import { StockOrders } from './pages/stock/StockOrders';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { ExpertConsultationChat } from './components/ExpertConsultationChat';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
@@ -61,6 +63,8 @@ export default function App() {
                 <ScrollToTop />
                 <Toaster position="top-right" toastOptions={{ style: { fontFamily: 'DM Sans, sans-serif', borderRadius: 0 } }} />
                 <PwaInstallPrompt />
+                <ExpertConsultationChat />
+                <ThemeSwitcher />
                 <Routes>
                 {/* Public */}
                 <Route path="/" element={<Home />} />

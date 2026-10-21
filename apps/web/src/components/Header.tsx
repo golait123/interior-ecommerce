@@ -105,11 +105,6 @@ export function Header() {
             </div>
 
             <span className="utility-divider">|</span>
-            <Link to="/about" className="utility-link">
-              <PhoneCall size={12} className="inline mr-1" />
-              Expert Consultation
-            </Link>
-            <span className="utility-divider">|</span>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('pwa-install-request'))}

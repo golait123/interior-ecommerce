@@ -214,7 +214,6 @@ export default function Home() {
   return (
     <div className="interiorg-homepage-wrapper">
       <Header />
-      <ThemeSwitcher />
 
       <main>
         {/* ========================================================================= */}
