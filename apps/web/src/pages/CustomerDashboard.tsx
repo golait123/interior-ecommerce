@@ -181,9 +181,12 @@ export default function CustomerDashboard() {
         </nav>
 
         {/* EDITORIAL PAGE HEADER */}
-        <div className="mb-8 pb-6 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div className="mb-8 pb-6 border-b border-[var(--border)] flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0F2444] to-[#1e467d] text-white flex items-center justify-center font-serif text-2xl font-bold shadow-md">
+            <div 
+              className="w-14 h-14 rounded-2xl text-white flex items-center justify-center font-serif text-2xl font-bold shadow-md"
+              style={{ background: 'var(--brand-primary)' }}
+            >
               {user?.name ? user.name.charAt(0).toUpperCase() : 'P'}
             </div>
             <div>
@@ -191,12 +194,12 @@ export default function CustomerDashboard() {
                 <span className="badge badge-green text-xs uppercase tracking-widest font-semibold px-2.5 py-0.5">
                   Private Sanctuary Patron
                 </span>
-                <span className="text-xs text-slate-400 font-mono">ID: {user?.id.slice(-8)}</span>
+                <span className="text-xs text-[var(--text-muted)] font-mono">ID: {user?.id.slice(-8)}</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-serif text-slate-900 tracking-tight m-0">
+              <h1 className="text-3xl sm:text-4xl font-serif text-[var(--text-main)] tracking-tight m-0">
                 Welcome, {user?.name || 'Patron'}
               </h1>
-              <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-2xl font-light">
+              <p className="text-[var(--text-muted)] text-xs sm:text-sm mt-1 max-w-2xl font-light">
                 Manage your home commissions, living nursery setups, Google Maps address book, and milestone celebrations.
               </p>
             </div>
@@ -205,14 +208,14 @@ export default function CustomerDashboard() {
           <div className="flex flex-wrap items-center gap-3">
             <Link 
               to="/packages" 
-              className="px-4 py-2 bg-sky-50 text-sky-800 border border-sky-200 rounded-xl text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-sky-100 transition-colors shadow-xs"
+              className="btn btn-secondary text-xs uppercase tracking-wider px-4 py-2.5 inline-flex items-center gap-2 shadow-xs"
             >
-              <Package size={14} className="text-sky-600" />
+              <Package size={14} style={{ color: 'var(--accent)' }} />
               <span>Decor & Nursery Packages</span>
             </Link>
             <Link 
               to="/cart" 
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors shadow-xs"
+              className="btn btn-primary text-xs uppercase tracking-wider px-4 py-2.5 inline-flex items-center gap-2 shadow-xs"
             >
               <ShoppingBag size={14} />
               <span>Sanctuary Bag ({itemCount})</span>
@@ -221,7 +224,7 @@ export default function CustomerDashboard() {
         </div>
 
         {/* DASHBOARD TAB NAVIGATION BAR */}
-        <div className="flex items-center gap-2 border-b border-slate-200 mb-8 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] mb-8 overflow-x-auto pb-1 scrollbar-none">
           {[
             { id: 'overview', label: 'Overview & Services', icon: Compass },
             { id: 'addresses', label: 'Saved Addresses & Google Map', icon: MapPin, count: addresses?.length },
@@ -238,11 +241,12 @@ export default function CustomerDashboard() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-[#0F2444] text-white shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'text-white shadow-sm'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-secondary)]'
                 }`}
+                style={isActive ? { background: 'var(--brand-primary)', color: '#ffffff' } : {}}
               >
-                <Icon size={14} className={isActive ? 'text-sky-300' : 'text-slate-400'} />
+                <Icon size={14} style={isActive ? { color: 'var(--hero-accent-color, #ffffff)' } : {}} />
                 <span>{tab.label}</span>
                 {typeof tab.count === 'number' && (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
@@ -261,30 +265,40 @@ export default function CustomerDashboard() {
         {/* ========================================================================= */}
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            {/* PRIVILEGE VOUCHER BANNER */}
-            <div className="p-5 rounded-2xl border border-sky-200 bg-gradient-to-r from-[#0F2444] via-[#16335f] to-[#1e467d] text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-lg">
+            {/* PRIVILEGE VOUCHER BANNER (USES THEME GRADIENT) */}
+            <div 
+              className="p-5 rounded-2xl text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-lg border border-[var(--border)]"
+              style={{ background: 'var(--hero-gradient)' }}
+            >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-white/10 text-sky-300 flex items-center justify-center shrink-0 border border-white/20">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-white/20"
+                  style={{ background: 'rgba(255, 255, 255, 0.15)', color: 'var(--hero-accent-color)' }}
+                >
                   <Sparkles size={24} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full bg-white text-[#0F2444]">
+                    <span 
+                      className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full bg-white"
+                      style={{ color: 'var(--brand-primary)' }}
+                    >
                       Exclusive Patron Privilege
                     </span>
-                    <span className="text-xs font-semibold text-sky-300">Flat 15% OFF Active</span>
+                    <span className="text-xs font-semibold" style={{ color: 'var(--hero-accent-color)' }}>Flat 15% OFF Active</span>
                   </div>
                   <p className="text-base font-serif font-medium text-white m-0">
                     Welcome to InteriorG! Use voucher code <span className="font-mono font-bold bg-white/20 px-2 py-0.5 border border-white/30 rounded text-white select-all">WELCOME15</span> for 15% off any New Arrival or Custom Commission.
                   </p>
-                  <p className="text-xs text-sky-100 mt-1 m-0 font-light">
+                  <p className="text-xs mt-1 m-0 font-light opacity-90">
                     Valid on solid Sheesham furniture, acoustic wood paneling, living green walls, and custom wallpaper murals.
                   </p>
                 </div>
               </div>
               <Link
                 to="/packages"
-                className="btn btn-secondary bg-white text-[#0F2444] border-white hover:bg-sky-50 px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider shadow-sm whitespace-nowrap self-stretch md:self-auto justify-center inline-flex items-center gap-2"
+                className="btn btn-secondary bg-white border-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider shadow-sm whitespace-nowrap self-stretch md:self-auto justify-center inline-flex items-center gap-2"
+                style={{ color: 'var(--brand-primary)' }}
               >
                 <span>Explore Packages</span>
                 <ArrowRight size={13} />
@@ -449,7 +463,7 @@ export default function CustomerDashboard() {
               <button
                 type="button"
                 onClick={handleOpenNewAddress}
-                className="px-4 py-2.5 bg-[#0F2444] hover:bg-[#16335f] text-white rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center gap-2 shadow-xs shrink-0"
+                className="btn btn-primary text-xs uppercase tracking-wider px-4 py-2.5 inline-flex items-center gap-2 shadow-xs shrink-0"
               >
                 <Plus size={14} />
                 <span>Add Address with Map</span>
@@ -471,7 +485,7 @@ export default function CustomerDashboard() {
                 <button
                   type="button"
                   onClick={handleOpenNewAddress}
-                  className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-semibold uppercase tracking-wider"
+                  className="btn btn-primary text-xs uppercase tracking-wider px-5 py-2.5"
                 >
                   Add First Address
                 </button>
@@ -674,7 +688,7 @@ export default function CustomerDashboard() {
               <div className="pt-3 border-t border-slate-100 flex justify-end">
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold uppercase tracking-wider shadow-sm flex items-center gap-1.5"
+                  className="btn btn-primary text-xs uppercase tracking-wider px-6 py-2.5 shadow-sm inline-flex items-center gap-1.5"
                 >
                   <Check size={14} />
                   <span>Save Milestones & Dates</span>
