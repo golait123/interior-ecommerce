@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { productsApi, Product } from '../api/products';
@@ -15,6 +15,7 @@ import {
   Search, 
   RotateCcw,
   ChevronRight,
+  ChevronLeft,
   Filter,
   Check,
   Grid3X3,
@@ -22,7 +23,20 @@ import {
   X,
   SlidersHorizontal,
   Sparkles,
-  Plus
+  Plus,
+  Armchair,
+  DoorOpen,
+  Bed,
+  Utensils,
+  CookingPot,
+  BookOpen,
+  Tv,
+  Bath,
+  Baby,
+  Sun,
+  Trees,
+  Compass,
+  Layers
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -54,6 +68,34 @@ export default function Shop() {
   // Quick View State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+
+  // Horizontal scroll ref for Room Spaces track
+  const spacesScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollSpaces = (direction: 'left' | 'right') => {
+    if (spacesScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -260 : 260;
+      spacesScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const getSpaceIcon = (slug: string, isAll = false) => {
+    if (isAll) return <Compass size={15} className="shrink-0 space-icon-svg" />;
+    const s = slug.toLowerCase();
+    if (s.includes('living')) return <Armchair size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('hall') || s.includes('entryway')) return <DoorOpen size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('bedroom')) return <Bed size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('kitchen') || s.includes('pantry')) return <CookingPot size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('dining')) return <Utensils size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('study') || s.includes('office')) return <BookOpen size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('theatre') || s.includes('lounge') || s.includes('media')) return <Tv size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('bath') || s.includes('powder')) return <Bath size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('pooja') || s.includes('mandir')) return <Sparkles size={15} className="shrink-0 space-icon-svg text-amber-500" />;
+    if (s.includes('kids') || s.includes('nursery') || s.includes('child')) return <Baby size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('balcony') || s.includes('patio')) return <Sun size={15} className="shrink-0 space-icon-svg" />;
+    if (s.includes('lawn') || s.includes('garden') || s.includes('terrace')) return <Trees size={15} className="shrink-0 space-icon-svg" />;
+    return <Layers size={15} className="shrink-0 space-icon-svg" />;
+  };
 
   // Fetch Tree Data
   const { data: spacesData } = useQuery({
@@ -339,36 +381,95 @@ export default function Shop() {
         {/* ========================================================================= */}
         <div className="shop-control-center">
           
-          {/* A. CONTEXTUAL ROOM / ZONE SUB-PILLS */}
+          {/* A. CONTEXTUAL ROOM / ZONE ARCHITECTURAL STRIP */}
           {activeDomain !== 'all' && (
-            <div className="mb-4 pb-4 border-b border-[#f0ece4]">
-              <div className="flex items-center gap-2 mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-                <span>Select {activeDomain === 'indoor' ? 'Room Space' : 'Outdoor Zone'}:</span>
+            <div className="room-space-selection-wrapper">
+              {/* Header Bar */}
+              <div className="room-space-header-row">
+                <div className="flex items-center gap-2">
+                  <div className="room-space-title-badge">
+                    <Compass size={13} className="text-primary-green" />
+                    <span>Select {activeDomain === 'indoor' ? 'Room Space' : 'Outdoor Zone'}</span>
+                  </div>
+                  <span className="room-space-subtitle hidden sm:inline">
+                    • Filter furnishings & wall decor by architectural room layout
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* Reset to all rooms if specific space selected */}
+                  {selectedSpace && selectedSpace !== activeDomain && (
+                    <button
+                      type="button"
+                      onClick={() => handleSpaceSelect(activeDomain)}
+                      className="room-space-reset-btn"
+                      title="Clear room filter"
+                    >
+                      <span>Show All {activeDomain === 'indoor' ? 'Indoor Rooms' : 'Outdoor Zones'}</span>
+                      <X size={12} />
+                    </button>
+                  )}
+
+                  {/* Horizontal Scroll Controls */}
+                  <div className="room-space-scroll-nav">
+                    <button
+                      type="button"
+                      onClick={() => scrollSpaces('left')}
+                      className="room-scroll-btn"
+                      aria-label="Scroll left"
+                      title="Scroll left"
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollSpaces('right')}
+                      className="room-scroll-btn"
+                      aria-label="Scroll right"
+                      title="Scroll right"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+
+              {/* Horizontal Scrollable Space Track */}
+              <div className="room-spaces-scroll-track" ref={spacesScrollRef}>
+                {/* 1. All Rooms Option */}
                 <button
                   type="button"
                   onClick={() => handleSpaceSelect(activeDomain)}
-                  className={`shop-subspace-pill ${selectedSpace === activeDomain || !selectedSpace ? 'active' : ''}`}
+                  className={`room-space-card ${selectedSpace === activeDomain || !selectedSpace ? 'active' : ''}`}
                 >
-                  <span>All {activeDomain === 'indoor' ? 'Indoor Rooms' : 'Outdoor Zones'}</span>
-                  <span className="shop-filter-count">
+                  <div className="room-card-icon-box">
+                    {getSpaceIcon(activeDomain, true)}
+                  </div>
+                  <span className="room-card-title">
+                    All {activeDomain === 'indoor' ? 'Indoor Rooms' : 'Outdoor Zones'}
+                  </span>
+                  <span className="room-card-count">
                     {activeDomain === 'indoor' ? (indoorDomain?.count ?? 0) : (outdoorDomain?.count ?? 0)}
                   </span>
                 </button>
 
+                {/* 2. Sub-spaces with Architectural SVGs */}
                 {(activeDomain === 'indoor' ? indoorDomain?.children : outdoorDomain?.children)?.map(leaf => {
                   const isSelected = selectedSpace === leaf.slug;
+                  const isZero = leaf.count === 0;
                   return (
                     <button
                       key={leaf.slug}
                       type="button"
                       onClick={() => handleSpaceSelect(leaf.slug)}
-                      className={`shop-subspace-pill ${isSelected ? 'active' : ''}`}
+                      className={`room-space-card ${isSelected ? 'active' : ''} ${isZero ? 'empty-space' : ''}`}
+                      title={leaf.description}
                     >
-                      <span>{leaf.icon}</span>
-                      <span>{leaf.name}</span>
-                      <span className="shop-filter-count">{leaf.count}</span>
+                      <div className="room-card-icon-box">
+                        {getSpaceIcon(leaf.slug)}
+                      </div>
+                      <span className="room-card-title">{leaf.name}</span>
+                      <span className="room-card-count">{leaf.count}</span>
                     </button>
                   );
                 })}
