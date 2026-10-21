@@ -6150,11 +6150,12 @@ button:active:not(:disabled),
 
 /* 1. Nurserylive Trust Announcement Ribbon */
 .nl-trust-ribbon {
-  background: #0d462b;
-  color: #e2fbe8;
+  background: var(--trust-ribbon-bg, #071529);
+  color: var(--trust-ribbon-text, #E0F2FE);
   font-size: 12px;
   padding: 8px 16px;
-  border-bottom: 1px solid #145938;
+  border-bottom: 1px solid var(--trust-ribbon-border, #1E3A5F);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .nl-trust-ribbon-inner {
@@ -6176,18 +6177,19 @@ button:active:not(:disabled),
 }
 
 .nl-trust-pill svg {
-  color: #4ade80;
+  color: var(--hero-accent-color, #38BDF8);
   flex-shrink: 0;
 }
 
 /* 2. Customizer Hero Header */
 .nl-hero-header {
-  background: linear-gradient(135deg, #09331f 0%, #0f492c 60%, #15623b 100%);
+  background: var(--hero-gradient, linear-gradient(135deg, #071529 0%, #0F2444 60%, #1E40AF 100%));
   color: #ffffff;
   padding: 36px 20px 48px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 12px 30px rgba(9, 51, 31, 0.2);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  transition: background 0.4s ease;
 }
 
 .nl-hero-glow {
@@ -6197,7 +6199,7 @@ button:active:not(:disabled),
   width: 380px;
   height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--navy-glow, rgba(56, 189, 248, 0.2)) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -6220,16 +6222,16 @@ button:active:not(:disabled),
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--hero-badge-bg, rgba(56, 189, 248, 0.18));
   backdrop-filter: blur(8px);
-  color: #bbf7d0;
+  color: var(--hero-badge-text, #7DD3FC);
   font-size: 11.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 5px 14px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--hero-badge-border, rgba(56, 189, 248, 0.35));
   margin-bottom: 12px;
 }
 
@@ -6244,7 +6246,7 @@ button:active:not(:disabled),
 
 .nl-hero-subtitle {
   font-size: 14px;
-  color: #d1fae5;
+  color: var(--hero-subtitle-color, #E2E8F0);
   line-height: 1.6;
   max-width: 680px;
   margin: 0;
@@ -6269,7 +6271,7 @@ button:active:not(:disabled),
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #86efac;
+  color: var(--hero-accent-color, #38BDF8);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 8px;
@@ -6295,8 +6297,8 @@ button:active:not(:disabled),
 }
 
 .nl-pincode-btn {
-  background: #0f492c;
-  color: #ffffff;
+  background: var(--hero-btn-bg, #0284C7);
+  color: #ffffff !important;
   border: none;
   border-radius: 8px;
   padding: 6px 14px;
@@ -6308,12 +6310,13 @@ button:active:not(:disabled),
 }
 
 .nl-pincode-btn:hover {
-  background: #145938;
+  filter: brightness(1.15);
+  transform: translateY(-1px);
 }
 
 .nl-pincode-status {
   font-size: 11.5px;
-  color: #bbf7d0;
+  color: var(--hero-accent-color, #38BDF8);
   margin-top: 8px;
   display: flex;
   align-items: center;
@@ -7787,109 +7790,289 @@ button:active:not(:disabled),
 /* INTERIORG COMPLETE DESIGN SYSTEM & 4 THEMES (WALKTHROUGH POSTER)          */
 /* ========================================================================= */
 
+/* ========================================================================= */
+/* REDESIGNED HIGH-CONTRAST THEME PALETTES (WCAG AAA/AA STANDARD)            */
+/* ========================================================================= */
+
+/* 1. White + Navy Blue & Sky Blue (Architectural Luxury) */
 :root,
-[data-theme="nature-luxe"] {
-  /* Nature Luxe: Default Brand Palette */
-  --brand-primary: #2D5A27;
-  --brand-primary-hover: #23471f;
-  --brand-sage: #6B8F71;
-  --brand-stone: #F8F7F4;
-  --brand-charcoal: #1A1A1A;
-  --brand-gold: #C5A880;
-  --brand-beige: #E9DFD0;
+[data-theme="navy-sky"] {
+  --brand-primary: #0F2444;
+  --brand-primary-hover: #173867;
+  --brand-sage: #0284C7;
+  --brand-stone: #F0F6FC;
+  --brand-charcoal: #0B192C;
+  --brand-gold: #38BDF8;
+  --brand-beige: #E0F2FE;
   --brand-white: #FFFFFF;
   
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F8F7F4;
+  --bg-secondary: #F0F6FC;
   --bg-card: #FFFFFF;
-  --text-main: #1A1A1A;
-  --text-muted: #5A6558;
-  --text-light: #8E998B;
-  --border: #E2DDD5;
-  --border-light: #F0ECE4;
-  --accent: #2D5A27;
-  --accent-hover: #23471f;
-  --navy: #2D5A27;
-  --navy-hover: #23471f;
-  --gold: #C5A880;
+  --text-main: #0B192C;
+  --text-muted: #475569;
+  --text-light: #94A3B8;
+  --border: #CBD5E1;
+  --border-light: #E2E8F0;
+  --accent: #0284C7;
+  --accent-hover: #0369A1;
+  --navy: #0F2444;
+  --navy-hover: #173867;
+  --navy-accent: #0284C7;
+  --navy-glow: rgba(15, 36, 68, 0.16);
+
+  --hero-gradient: linear-gradient(135deg, #071529 0%, #0F2444 60%, #1E40AF 100%);
+  --trust-ribbon-bg: #071529;
+  --trust-ribbon-text: #E0F2FE;
+  --trust-ribbon-border: #1E3A5F;
+  --hero-badge-bg: rgba(56, 189, 248, 0.18);
+  --hero-badge-text: #7DD3FC;
+  --hero-badge-border: rgba(56, 189, 248, 0.35);
+  --hero-subtitle-color: #E2E8F0;
+  --hero-accent-color: #38BDF8;
+  --hero-btn-bg: #0284C7;
 }
 
-[data-theme="urban-modern"] {
-  /* Urban Modern: Architectural Slate & Cool Steel */
-  --brand-primary: #1A1A1A;
-  --brand-primary-hover: #000000;
-  --brand-sage: #4A5568;
-  --brand-stone: #F7FAFC;
-  --brand-charcoal: #1A1A1A;
-  --brand-gold: #2B6CB0;
-  --brand-beige: #EDF2F7;
+/* 2. Black + Crimson Red (Bold Luxury & High Fashion) */
+[data-theme="black-red"] {
+  --brand-primary: #0F172A;
+  --brand-primary-hover: #1E293B;
+  --brand-sage: #DC2626;
+  --brand-stone: #F8FAFC;
+  --brand-charcoal: #030712;
+  --brand-gold: #EF4444;
+  --brand-beige: #FEE2E2;
   --brand-white: #FFFFFF;
 
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F7FAFC;
+  --bg-secondary: #F8FAFC;
   --bg-card: #FFFFFF;
-  --text-main: #1A202C;
-  --text-muted: #718096;
-  --text-light: #A0AEC0;
+  --text-main: #030712;
+  --text-muted: #475569;
+  --text-light: #94A3B8;
   --border: #E2E8F0;
-  --border-light: #EDF2F7;
-  --accent: #2B6CB0;
-  --accent-hover: #1A4971;
-  --navy: #1A1A1A;
-  --navy-hover: #000000;
-  --gold: #2B6CB0;
+  --border-light: #F1F5F9;
+  --accent: #DC2626;
+  --accent-hover: #B91C1C;
+  --navy: #0F172A;
+  --navy-hover: #1E293B;
+  --navy-accent: #DC2626;
+  --navy-glow: rgba(220, 38, 38, 0.22);
+
+  --hero-gradient: linear-gradient(135deg, #0A0E17 0%, #18181B 60%, #991B1B 100%);
+  --trust-ribbon-bg: #0A0E17;
+  --trust-ribbon-text: #FEE2E2;
+  --trust-ribbon-border: #27272A;
+  --hero-badge-bg: rgba(239, 68, 68, 0.18);
+  --hero-badge-text: #FCA5A5;
+  --hero-badge-border: rgba(239, 68, 68, 0.35);
+  --hero-subtitle-color: #F1F5F9;
+  --hero-accent-color: #F87171;
+  --hero-btn-bg: #DC2626;
 }
 
-[data-theme="warm-minimal"] {
-  /* Warm Minimal: Earthy Terracotta & Warm Beige */
-  --brand-primary: #8C533C;
-  --brand-primary-hover: #72402e;
-  --brand-sage: #A07855;
-  --brand-stone: #F4EBE1;
-  --brand-charcoal: #3D2E26;
-  --brand-gold: #C5A880;
-  --brand-beige: #E6D7C3;
-  --brand-white: #FFFDF9;
+/* 3. White + Terracotta Orange (Warm Artisanal & Mediterranean) */
+[data-theme="white-orange"] {
+  --brand-primary: #1C1917;
+  --brand-primary-hover: #292524;
+  --brand-sage: #EA580C;
+  --brand-stone: #FAF6F0;
+  --brand-charcoal: #1C1917;
+  --brand-gold: #F97316;
+  --brand-beige: #FFEDD5;
+  --brand-white: #FFFFFF;
 
-  --bg-primary: #FFFDF9;
-  --bg-secondary: #F4EBE1;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAF6F0;
   --bg-card: #FFFFFF;
-  --text-main: #3D2E26;
-  --text-muted: #7D6B5D;
-  --text-light: #A89585;
-  --border: #E3D3C1;
-  --border-light: #EFE4D6;
-  --accent: #8C533C;
-  --accent-hover: #72402e;
-  --navy: #8C533C;
-  --navy-hover: #72402e;
-  --gold: #C5A880;
+  --text-main: #1C1917;
+  --text-muted: #57534E;
+  --text-light: #A8A29E;
+  --border: #E7DFD5;
+  --border-light: #F5EFEB;
+  --accent: #EA580C;
+  --accent-hover: #C2410C;
+  --navy: #1C1917;
+  --navy-hover: #292524;
+  --navy-accent: #EA580C;
+  --navy-glow: rgba(234, 88, 12, 0.22);
+
+  --hero-gradient: linear-gradient(135deg, #1C1917 0%, #431407 60%, #C2410C 100%);
+  --trust-ribbon-bg: #1C1917;
+  --trust-ribbon-text: #FFEDD5;
+  --trust-ribbon-border: #44403C;
+  --hero-badge-bg: rgba(249, 115, 22, 0.18);
+  --hero-badge-text: #FDBA74;
+  --hero-badge-border: rgba(249, 115, 22, 0.35);
+  --hero-subtitle-color: #FAF6F0;
+  --hero-accent-color: #FB923C;
+  --hero-btn-bg: #EA580C;
 }
 
-[data-theme="dark-premium"] {
-  /* Dark Premium: Onyx Black, Deep Emerald & Metallic Gold */
-  --brand-primary: #1B4D3E;
-  --brand-primary-hover: #246451;
-  --brand-sage: #8BA888;
-  --brand-stone: #1E1E1E;
-  --brand-charcoal: #FFFFFF;
-  --brand-gold: #D4AF37;
-  --brand-beige: #2A2A2A;
-  --brand-white: #121212;
+/* 4. White + Botanical Emerald & Sage (Biophilic Living Green) */
+[data-theme="nature-green"] {
+  --brand-primary: #0C3B24;
+  --brand-primary-hover: #155E39;
+  --brand-sage: #16A34A;
+  --brand-stone: #F0FDF4;
+  --brand-charcoal: #052E16;
+  --brand-gold: #10B981;
+  --brand-beige: #DCFCE7;
+  --brand-white: #FFFFFF;
 
-  --bg-primary: #121212;
-  --bg-secondary: #1E1E1E;
-  --bg-card: #1A1A1A;
-  --text-main: #F3F4F6;
-  --text-muted: #9CA3AF;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F0FDF4;
+  --bg-card: #FFFFFF;
+  --text-main: #052E16;
+  --text-muted: #374151;
   --text-light: #6B7280;
-  --border: #2D3748;
-  --border-light: #374151;
-  --accent: #D4AF37;
-  --accent-hover: #E5C158;
-  --navy: #1B4D3E;
-  --navy-hover: #246451;
-  --gold: #D4AF37;
+  --border: #DCFCE7;
+  --border-light: #E2E8F0;
+  --accent: #15803D;
+  --accent-hover: #166534;
+  --navy: #0C3B24;
+  --navy-hover: #155E39;
+  --navy-accent: #10B981;
+  --navy-glow: rgba(12, 59, 36, 0.22);
+
+  --hero-gradient: linear-gradient(135deg, #09331F 0%, #0F492C 60%, #15623B 100%);
+  --trust-ribbon-bg: #0D462B;
+  --trust-ribbon-text: #E2FBE8;
+  --trust-ribbon-border: #145938;
+  --hero-badge-bg: rgba(74, 222, 128, 0.18);
+  --hero-badge-text: #BBF7D0;
+  --hero-badge-border: rgba(74, 222, 128, 0.35);
+  --hero-subtitle-color: #D1FAE5;
+  --hero-accent-color: #86EFAC;
+  --hero-btn-bg: #15803D;
+}
+
+/* Section Domain Contextual Overrides */
+.domain-theme-indoor {
+  --hero-gradient: linear-gradient(135deg, #071529 0%, #0F2444 60%, #1E40AF 100%);
+  --trust-ribbon-bg: #071529;
+  --trust-ribbon-text: #E0F2FE;
+  --trust-ribbon-border: #1E3A5F;
+  --hero-badge-bg: rgba(56, 189, 248, 0.18);
+  --hero-badge-text: #7DD3FC;
+  --hero-badge-border: rgba(56, 189, 248, 0.35);
+  --hero-accent-color: #38BDF8;
+  --hero-btn-bg: #0284C7;
+}
+
+.domain-theme-outdoor {
+  --hero-gradient: linear-gradient(135deg, #062315 0%, #0C3B24 60%, #155E39 100%);
+  --trust-ribbon-bg: #062315;
+  --trust-ribbon-text: #E2FBE8;
+  --trust-ribbon-border: #145938;
+  --hero-badge-bg: rgba(74, 222, 128, 0.18);
+  --hero-badge-text: #BBF7D0;
+  --hero-badge-border: rgba(74, 222, 128, 0.35);
+  --hero-accent-color: #86EFAC;
+  --hero-btn-bg: #15803D;
+}
+
+/* Selected Theme Propagation across all studios (Interior, Exterior, Nursery) */
+[data-theme="navy-sky"] .nl-hero-header,
+[data-theme="navy-sky"] .domain-theme-indoor,
+[data-theme="navy-sky"] .domain-theme-outdoor,
+[data-theme="navy-sky"] .nl-trust-ribbon {
+  --hero-gradient: linear-gradient(135deg, #071529 0%, #0F2444 60%, #1E40AF 100%);
+  --trust-ribbon-bg: #071529;
+  --trust-ribbon-text: #E0F2FE;
+  --trust-ribbon-border: #1E3A5F;
+  --hero-badge-bg: rgba(56, 189, 248, 0.18);
+  --hero-badge-text: #7DD3FC;
+  --hero-badge-border: rgba(56, 189, 248, 0.35);
+  --hero-subtitle-color: #E2E8F0;
+  --hero-accent-color: #38BDF8;
+  --hero-btn-bg: #0284C7;
+}
+
+[data-theme="black-red"] .nl-hero-header,
+[data-theme="black-red"] .domain-theme-indoor,
+[data-theme="black-red"] .domain-theme-outdoor,
+[data-theme="black-red"] .nl-trust-ribbon {
+  --hero-gradient: linear-gradient(135deg, #0A0E17 0%, #18181B 60%, #991B1B 100%);
+  --trust-ribbon-bg: #0A0E17;
+  --trust-ribbon-text: #FEE2E2;
+  --trust-ribbon-border: #27272A;
+  --hero-badge-bg: rgba(239, 68, 68, 0.18);
+  --hero-badge-text: #FCA5A5;
+  --hero-badge-border: rgba(239, 68, 68, 0.35);
+  --hero-subtitle-color: #F1F5F9;
+  --hero-accent-color: #F87171;
+  --hero-btn-bg: #DC2626;
+}
+
+[data-theme="white-orange"] .nl-hero-header,
+[data-theme="white-orange"] .domain-theme-indoor,
+[data-theme="white-orange"] .domain-theme-outdoor,
+[data-theme="white-orange"] .nl-trust-ribbon {
+  --hero-gradient: linear-gradient(135deg, #1C1917 0%, #431407 60%, #C2410C 100%);
+  --trust-ribbon-bg: #1C1917;
+  --trust-ribbon-text: #FFEDD5;
+  --trust-ribbon-border: #44403C;
+  --hero-badge-bg: rgba(249, 115, 22, 0.18);
+  --hero-badge-text: #FDBA74;
+  --hero-badge-border: rgba(249, 115, 22, 0.35);
+  --hero-subtitle-color: #FAF6F0;
+  --hero-accent-color: #FB923C;
+  --hero-btn-bg: #EA580C;
+}
+
+[data-theme="nature-green"] .nl-hero-header,
+[data-theme="nature-green"] .domain-theme-indoor,
+[data-theme="nature-green"] .domain-theme-outdoor,
+[data-theme="nature-green"] .nl-trust-ribbon {
+  --hero-gradient: linear-gradient(135deg, #09331F 0%, #0F492C 60%, #15623B 100%);
+  --trust-ribbon-bg: #0D462B;
+  --trust-ribbon-text: #E2FBE8;
+  --trust-ribbon-border: #145938;
+  --hero-badge-bg: rgba(74, 222, 128, 0.18);
+  --hero-badge-text: #BBF7D0;
+  --hero-badge-border: rgba(74, 222, 128, 0.35);
+  --hero-subtitle-color: #D1FAE5;
+  --hero-accent-color: #86EFAC;
+  --hero-btn-bg: #15803D;
+}
+
+/* UI/UX High-Contrast Standard Enforcement */
+.btn-primary, button.btn-primary {
+  background-color: var(--navy) !important;
+  color: #ffffff !important;
+  border-color: var(--navy) !important;
+  font-weight: 600 !important;
+}
+
+.btn-primary:hover, button.btn-primary:hover {
+  background-color: var(--navy-hover) !important;
+  border-color: var(--navy-hover) !important;
+  color: #ffffff !important;
+}
+
+.btn-secondary, button.btn-secondary {
+  background-color: #ffffff !important;
+  color: var(--navy) !important;
+  border: 1px solid var(--border) !important;
+  font-weight: 600 !important;
+}
+
+.btn-secondary:hover, button.btn-secondary:hover {
+  background-color: var(--bg-secondary) !important;
+  color: var(--navy-hover) !important;
+  border-color: var(--navy) !important;
+}
+
+.nursery-pill-btn.active {
+  background: var(--navy) !important;
+  color: #ffffff !important;
+  border-color: var(--navy) !important;
+}
+
+.nursery-viewas-btn.active {
+  background: var(--navy) !important;
+  color: #ffffff !important;
 }
 
 /* ========================================================================= */

@@ -615,7 +615,7 @@ export default function Gardening() {
         {/* ========================================================================= */}
         {/* 2. CUSTOMIZER HERO HEADER (NURSERYLIVE LOOK - SCREENSHOT 1)                */}
         {/* ========================================================================= */}
-        <header className="nl-hero-header">
+        <header className="nl-hero-header domain-theme-outdoor">
           <div className="nl-hero-glow" aria-hidden="true" />
           <div className="nl-hero-content">
             {/* Breadcrumb Trail on top of header */}

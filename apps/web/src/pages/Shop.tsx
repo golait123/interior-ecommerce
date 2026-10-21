@@ -391,7 +391,7 @@ export default function Shop() {
         {/* ========================================================================= */}
         {/* 2. HERO STUDIO HEADER WITH CITY PINCODE CHECK (SCREENSHOT 1 DESIGN)        */}
         {/* ========================================================================= */}
-        <header className="nl-hero-header">
+        <header className={`nl-hero-header ${activeDomain === 'indoor' ? 'domain-theme-indoor' : activeDomain === 'outdoor' ? 'domain-theme-outdoor' : ''}`}>
           <div className="nl-hero-glow" aria-hidden="true" />
           <div className="nl-hero-content">
             {/* Breadcrumb Trail on top of header */}

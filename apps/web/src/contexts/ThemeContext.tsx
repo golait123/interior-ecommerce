@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type ThemeMode = 'nature-luxe' | 'urban-modern' | 'warm-minimal' | 'dark-premium';
+export type ThemeMode = 'navy-sky' | 'black-red' | 'white-orange' | 'nature-green';
 
 export interface ThemeOption {
   id: ThemeMode;
@@ -16,47 +16,47 @@ export interface ThemeOption {
 
 export const THEME_OPTIONS: ThemeOption[] = [
   {
-    id: 'nature-luxe',
-    name: 'Nature Luxe',
-    tagline: 'Default • Organic Green & Stone',
+    id: 'navy-sky',
+    name: 'White + Navy & Sky Blue',
+    tagline: 'Deep Royal Navy, Crisp White & Sky Blue Accents',
     colors: {
-      primary: '#2D5A27',
-      secondary: '#6B8F71',
-      accent: '#C5A880',
-      bg: '#F8F7F4'
+      primary: '#0F2444',
+      secondary: '#0284C7',
+      accent: '#38BDF8',
+      bg: '#FFFFFF'
     }
   },
   {
-    id: 'urban-modern',
-    name: 'Urban Modern',
-    tagline: 'Architectural Slate & Crisp Steel',
+    id: 'black-red',
+    name: 'Black + Crimson Red',
+    tagline: 'High-Fashion Onyx Black, Crisp White & Bold Red',
     colors: {
-      primary: '#1A1A1A',
-      secondary: '#4A5568',
-      accent: '#2B6CB0',
-      bg: '#F7FAFC'
+      primary: '#0F172A',
+      secondary: '#DC2626',
+      accent: '#EF4444',
+      bg: '#FFFFFF'
     }
   },
   {
-    id: 'warm-minimal',
-    name: 'Warm Minimal',
-    tagline: 'Earthy Terracotta & Warm Beige',
+    id: 'white-orange',
+    name: 'White + Terracotta Orange',
+    tagline: 'Artisanal Charcoal, Warm White & Sunset Orange',
     colors: {
-      primary: '#8C533C',
-      secondary: '#A07855',
-      accent: '#C5A880',
-      bg: '#F4EBE1'
+      primary: '#1C1917',
+      secondary: '#EA580C',
+      accent: '#F97316',
+      bg: '#FFFFFF'
     }
   },
   {
-    id: 'dark-premium',
-    name: 'Dark Premium',
-    tagline: 'Onyx Black & Metallic Gold',
+    id: 'nature-green',
+    name: 'White + Botanical Green',
+    tagline: 'Biophilic Forest Emerald, Soft Mint & Crisp White',
     colors: {
-      primary: '#121212',
-      secondary: '#1B4D3E',
-      accent: '#D4AF37',
-      bg: '#181818'
+      primary: '#0C3B24',
+      secondary: '#15803D',
+      accent: '#10B981',
+      bg: '#FFFFFF'
     }
   }
 ];
@@ -68,7 +68,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'nature-luxe',
+  theme: 'navy-sky',
   setTheme: () => {},
   themeConfig: THEME_OPTIONS[0]
 });
@@ -83,7 +83,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         return saved;
       }
     } catch {}
-    return 'nature-luxe';
+    return 'navy-sky';
   });
 
   const setTheme = (newTheme: ThemeMode) => {
