@@ -334,8 +334,8 @@ export default function NurseryDesignCustomizer() {
   const [width, setWidth] = useState<number>(currentSpace.defaultW);
   const [length, setLength] = useState<number>(currentSpace.defaultL);
 
-  // Sunlight Preference
-  const [sunlightId, setSunlightId] = useState<string>('partial-shade');
+  // Sunlight Preference (Default)
+  const [sunlightId] = useState<string>('partial-shade');
   const selectedSunlight = SUNLIGHT_OPTIONS.find(s => s.id === sunlightId) || SUNLIGHT_OPTIONS[0];
 
   // Step 2: Plant Pack Selection
@@ -624,7 +624,7 @@ export default function NurseryDesignCustomizer() {
       <nav className="nl-steps-bar" aria-label="Customizer Steps">
         <div className="nl-steps-container">
           {[
-            { num: 1, title: '1. Space & Sunlight', id: 1 },
+            { num: 1, title: '1. Select Living Space', id: 1 },
             { num: 2, title: '2. Curated Plant Packs', id: 2 },
             { num: 3, title: '3. Pots & Planters', id: 3 },
             { num: 4, title: '4. Soil & Care Add-ons', id: 4 }
@@ -688,7 +688,7 @@ export default function NurseryDesignCustomizer() {
             <div className="nl-panel-card">
               <div className="nl-panel-head">
                 <h2 className="nl-panel-title">
-                  <span>1. Choose Living Space & Environment</span>
+                  <span>1. Choose Living Space</span>
                 </h2>
                 <span className="nl-panel-badge">Step 1 of 4</span>
               </div>
@@ -715,76 +715,6 @@ export default function NurseryDesignCustomizer() {
                     </div>
                   );
                 })}
-              </div>
-
-              {/* Dimension Sliders Box */}
-              <div className="nl-dim-box">
-                <div className="nl-panel-head" style={{ border: 'none', padding: 0, marginBottom: 12 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#0f492c' }}>
-                    📐 Custom Space Dimensions ({areaSqFt} sq ft total)
-                  </span>
-                  <span style={{ fontSize: 11, color: '#64748b' }}>
-                    Adjust sliders to match your exact home size
-                  </span>
-                </div>
-
-                <div className="nl-dim-sliders">
-                  <div>
-                    <div className="nl-dim-label-row">
-                      <span>Width:</span>
-                      <strong style={{ color: '#0f492c' }}>{width} feet</strong>
-                    </div>
-                    <input
-                      type="range"
-                      min={4}
-                      max={25}
-                      value={width}
-                      onChange={(e) => setWidth(Number(e.target.value))}
-                      className="nl-range-input"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="nl-dim-label-row">
-                      <span>Length / Depth:</span>
-                      <strong style={{ color: '#0f492c' }}>{length} feet</strong>
-                    </div>
-                    <input
-                      type="range"
-                      min={3}
-                      max={20}
-                      value={length}
-                      onChange={(e) => setLength(Number(e.target.value))}
-                      className="nl-range-input"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Sunlight Orientation Filter */}
-              <div style={{ marginTop: 20 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0f492c', display: 'block', marginBottom: 6 }}>
-                  ☀️ Sunlight & Daily Exposure in this Area
-                </span>
-                <div className="nl-sun-pills">
-                  {SUNLIGHT_OPTIONS.map((sun) => {
-                    const isSelected = sunlightId === sun.id;
-                    const IconComp = sun.icon;
-                    return (
-                      <div
-                        key={sun.id}
-                        onClick={() => setSunlightId(sun.id)}
-                        className={`nl-sun-pill ${isSelected ? 'selected' : ''}`}
-                      >
-                        <div className="nl-sun-name">
-                          <IconComp size={15} color={isSelected ? '#0f492c' : '#eab308'} />
-                          <span>{sun.name}</span>
-                        </div>
-                        <p className="nl-sun-desc">{sun.hours}</p>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
 
               <div style={{ marginTop: 24, textAlign: 'right' }}>
