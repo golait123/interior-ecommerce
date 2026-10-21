@@ -20,10 +20,13 @@ import {
   Check,
   Grid3X3,
   LayoutGrid,
+  List,
   X,
   SlidersHorizontal,
   Sparkles,
   Plus,
+  Minus,
+  Tag,
   Armchair,
   DoorOpen,
   Bed,
@@ -63,55 +66,26 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'discount' | 'name'>('featured');
   const [priceRange, setPriceRange] = useState<'all' | 'under-1500' | '1500-3000' | '3000-7000' | '7000-plus'>('all');
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
-  const [columnCount, setColumnCount] = useState<3 | 4>(4);
+  const [selectedRating, setSelectedRating] = useState<'all' | '4-above' | '3-above'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Accordion toggle states (matching Gardening page design pattern)
+  const [isSpaceOpen, setIsSpaceOpen] = useState<boolean>(true);
+  const [isCategoryOpen, setIsCategoryOpen] = useState<boolean>(true);
+  const [isPriceOpen, setIsPriceOpen] = useState<boolean>(true);
+  const [isAvailabilityOpen, setIsAvailabilityOpen] = useState<boolean>(true);
+  const [isRatingOpen, setIsRatingOpen] = useState<boolean>(false);
+  const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
+  const [categorySearch, setCategorySearch] = useState<string>('');
 
   // Quick View State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
-  // Horizontal scroll ref for Room Spaces track
-  const spacesScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollSpaces = (direction: 'left' | 'right') => {
-    if (spacesScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -260 : 260;
-      spacesScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
-  const getSpaceIcon = (slug: string, isAll = false) => {
-    if (isAll) return <Compass size={15} className="shrink-0 space-icon-svg" />;
-    const s = slug.toLowerCase();
-    if (s.includes('living')) return <Armchair size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('hall') || s.includes('entryway')) return <DoorOpen size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('bedroom')) return <Bed size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('kitchen') || s.includes('pantry')) return <CookingPot size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('dining')) return <Utensils size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('study') || s.includes('office')) return <BookOpen size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('theatre') || s.includes('lounge') || s.includes('media')) return <Tv size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('bath') || s.includes('powder')) return <Bath size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('pooja') || s.includes('mandir')) return <Sparkles size={15} className="shrink-0 space-icon-svg text-amber-500" />;
-    if (s.includes('kids') || s.includes('nursery') || s.includes('child')) return <Baby size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('balcony') || s.includes('patio')) return <Sun size={15} className="shrink-0 space-icon-svg" />;
-    if (s.includes('lawn') || s.includes('garden') || s.includes('terrace')) return <Trees size={15} className="shrink-0 space-icon-svg" />;
-    return <Layers size={15} className="shrink-0 space-icon-svg" />;
-  };
-
   // Fetch Tree Data
   const { data: spacesData } = useQuery({
     queryKey: ['spaces-tree'],
     queryFn: productsApi.spacesTree
-  });
-
-  // Fetch Products
-  const { data: productsData, isLoading } = useQuery({
-    queryKey: ['products', { q: searchQuery, category: selectedCategory, space: selectedSpace }],
-    queryFn: () => productsApi.list({ 
-      q: searchQuery, 
-      category: selectedCategory, 
-      space: selectedSpace, 
-      limit: 50 
-    })
   });
 
   // Fetch Categories
@@ -124,6 +98,17 @@ export default function Shop() {
   const totalProducts = spacesData?.totalProducts || 0;
   const indoorDomain = domains.find(d => d.slug === 'indoor');
   const outdoorDomain = domains.find(d => d.slug === 'outdoor');
+
+  // Fetch Products
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: ['products', { q: searchQuery, category: selectedCategory, space: selectedSpace }],
+    queryFn: () => productsApi.list({ 
+      q: searchQuery, 
+      category: selectedCategory, 
+      space: selectedSpace, 
+      limit: 50 
+    })
+  });
 
   // Sync state if URL query params change
   useEffect(() => {
@@ -138,8 +123,19 @@ export default function Shop() {
     } else if (domainParam) {
       setActiveDomain(domainParam as any);
       setSelectedSpace(domainParam);
+    } else {
+      setActiveDomain('all');
+      setSelectedSpace('');
     }
   }, [spaceParam, domainParam, outdoorDomain]);
+
+  useEffect(() => {
+    setSelectedCategory(categoryParam);
+  }, [categoryParam]);
+
+  useEffect(() => {
+    setSearchQuery(qParam);
+  }, [qParam]);
 
   const handleDomainSelect = (domain: 'all' | 'indoor' | 'outdoor') => {
     setActiveDomain(domain);
@@ -164,8 +160,8 @@ export default function Shop() {
 
   const handleSpaceSelect = (slug: string) => {
     if (selectedSpace === slug) {
-      // Unselect to domain
-      setSelectedSpace(activeDomain === 'all' ? '' : activeDomain);
+      const fallback = activeDomain === 'all' ? '' : activeDomain;
+      setSelectedSpace(fallback);
       setSearchParams(prev => {
         const next = new URLSearchParams(prev);
         if (activeDomain === 'all') {
@@ -180,10 +176,68 @@ export default function Shop() {
       setSearchParams(prev => {
         const next = new URLSearchParams(prev);
         next.set('space', slug);
-        next.set('domain', activeDomain);
+        if (activeDomain !== 'all') {
+          next.set('domain', activeDomain);
+        }
         return next;
       });
     }
+  };
+
+  const handleCategorySelect = (slug: string) => {
+    if (selectedCategory === slug) {
+      setSelectedCategory('');
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete('category');
+        return next;
+      });
+    } else {
+      setSelectedCategory(slug);
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        if (slug) next.set('category', slug);
+        else next.delete('category');
+        return next;
+      });
+    }
+  };
+
+  // Spaces under current domain
+  const activeDomainSpaces = useMemo(() => {
+    if (activeDomain === 'indoor') return indoorDomain?.children || [];
+    if (activeDomain === 'outdoor') return outdoorDomain?.children || [];
+    return [...(indoorDomain?.children || []), ...(outdoorDomain?.children || [])];
+  }, [activeDomain, indoorDomain, outdoorDomain]);
+
+  // Filtered categories in accordion subsearch
+  const visibleCategories = useMemo(() => {
+    if (!categories) return [];
+    if (!categorySearch.trim()) return categories;
+    return categories.filter(c => c.name.toLowerCase().includes(categorySearch.toLowerCase()));
+  }, [categories, categorySearch]);
+
+  const getSpaceEmoji = (slug: string) => {
+    const s = slug.toLowerCase();
+    if (s.includes('living')) return '🛋️';
+    if (s.includes('bed')) return '🛏️';
+    if (s.includes('dining')) return '🍽️';
+    if (s.includes('kitchen')) return '🍳';
+    if (s.includes('bath')) return '🚿';
+    if (s.includes('hall') || s.includes('foyer') || s.includes('entryway')) return '🚪';
+    if (s.includes('office') || s.includes('study')) return '💼';
+    if (s.includes('kids') || s.includes('nursery') || s.includes('child')) return '🧸';
+    if (s.includes('pooja') || s.includes('mandir')) return '✨';
+    if (s.includes('lounge') || s.includes('theatre') || s.includes('media')) return '🍸';
+    if (s.includes('balcony')) return '🌿';
+    if (s.includes('terrace')) return '🌅';
+    if (s.includes('patio')) return '🪴';
+    if (s.includes('courtyard')) return '🏡';
+    if (s.includes('lawn')) return '🌱';
+    if (s.includes('verandah')) return '☕';
+    if (s.includes('pool')) return '🏊';
+    if (s.includes('vertical')) return '🍃';
+    return '✨';
   };
 
   // Client-side filtering & sorting
@@ -211,9 +265,16 @@ export default function Shop() {
     if (inStockOnly) {
       items = items.filter(p => {
         if (!p.inventory) return true;
-        const avail = p.inventory.totalQuantity - p.inventory.reservedQuantity - p.inventory.damagedQuantity;
+        const avail = p.inventory.totalQuantity - p.inventory.reservedQuantity - (p.inventory.damagedQuantity || 0);
         return avail > 0;
       });
+    }
+
+    // Filter by Rating
+    if (selectedRating === '4-above') {
+      items = items.filter(p => (p.rating || 4.8) >= 4);
+    } else if (selectedRating === '3-above') {
+      items = items.filter(p => (p.rating || 4.8) >= 3);
     }
 
     // Sort Products
@@ -232,7 +293,7 @@ export default function Shop() {
     }
 
     return items;
-  }, [productsData?.items, priceRange, inStockOnly, sortBy]);
+  }, [productsData?.items, priceRange, inStockOnly, selectedRating, sortBy]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
     if (!user) {
@@ -247,25 +308,34 @@ export default function Shop() {
     }
   };
 
-  const handleResetFilters = () => {
-    setActiveDomain('all');
-    setSelectedSpace('');
+  const handleClearAllFilters = () => {
+    setSelectedSpace(activeDomain === 'all' ? '' : activeDomain);
     setSelectedCategory('');
     setSearchQuery('');
     setPriceRange('all');
     setInStockOnly(false);
+    setSelectedRating('all');
     setSortBy('featured');
-    setSearchParams({});
+    setSearchParams(prev => {
+      const next = new URLSearchParams();
+      if (activeDomain !== 'all') next.set('domain', activeDomain);
+      return next;
+    });
     toast('Filters reset', { icon: '🔄' });
   };
 
-  const hasActiveFilters = Boolean(
-    selectedSpace || 
-    selectedCategory || 
-    priceRange !== 'all' || 
-    inStockOnly || 
-    searchQuery
-  );
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (searchQuery.trim()) count++;
+    if (selectedSpace && selectedSpace !== activeDomain && selectedSpace !== '') count++;
+    if (selectedCategory) count++;
+    if (priceRange !== 'all') count++;
+    if (inStockOnly) count++;
+    if (selectedRating !== 'all') count++;
+    return count;
+  }, [searchQuery, selectedSpace, activeDomain, selectedCategory, priceRange, inStockOnly, selectedRating]);
+
+  const hasActiveFilters = activeFiltersCount > 0;
 
   // Active space title for display
   const activeSpaceObj = [...(indoorDomain?.children || []), ...(outdoorDomain?.children || [])].find(c => c.slug === selectedSpace);
@@ -275,445 +345,744 @@ export default function Shop() {
     <div className="page-wrapper bg-white min-h-screen">
       <Header />
 
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
-        
+      <main>
         {/* ========================================================================= */}
-        {/* 1. EDITORIAL HEADER WITH LIVE PIECES COUNT                                */}
+        {/* 1. EDITORIAL HEADER WITH LIVE PIECES COUNT & DOMAIN SELECTOR               */}
         {/* ========================================================================= */}
-        <div className="mb-6 pb-5 border-b border-[#eaeaea] flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            {/* Breadcrumb Trail */}
-            <div className="flex items-center gap-1.5 text-xs text-muted mb-2 uppercase tracking-wider">
-              <Link to="/" className="hover:text-dark transition-colors">Home</Link>
-              <ChevronRight size={12} />
-              <span className="text-dark font-medium">Catalog</span>
-              {activeDomain !== 'all' && (
-                <>
-                  <ChevronRight size={12} />
-                  <span className="text-dark font-medium capitalize">{activeDomain === 'indoor' ? 'Indoor Living' : 'Outdoor & Botanical'}</span>
-                </>
-              )}
-              {activeSpaceObj && (
-                <>
-                  <ChevronRight size={12} />
-                  <span className="text-[var(--navy)] font-semibold">{activeSpaceObj.name}</span>
-                </>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl sm:text-4xl font-serif italic font-normal text-dark tracking-tight m-0">
-                {activeSpaceObj ? activeSpaceObj.name : activeDomain === 'indoor' ? 'Indoor Sanctuaries' : activeDomain === 'outdoor' ? 'Outdoor & Botanical Living' : 'The Curated Collection'}
-              </h1>
-              <span className="badge badge-navy text-xs font-mono font-semibold px-2.5 py-0.5 mt-1">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'Piece' : 'Pieces'}
-              </span>
-            </div>
-            
-            <p className="text-xs sm:text-sm text-muted mt-1.5 max-w-2xl font-light leading-relaxed m-0">
-              {activeSpaceObj?.description || 'Authentic solid Sheesham and Teak hardwoods, hand-hammered brass, bespoke wall murals, and NASA-rated air-purifying botanical living pieces.'}
-            </p>
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+          {/* Breadcrumb Trail */}
+          <div className="flex items-center gap-1.5 text-xs text-muted mb-2 uppercase tracking-wider">
+            <Link to="/" className="hover:text-dark transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <Link to="/shop" className="hover:text-dark transition-colors">Catalog</Link>
+            {activeDomain !== 'all' && (
+              <>
+                <ChevronRight size={12} />
+                <span className="text-dark font-medium capitalize">
+                  {activeDomain === 'indoor' ? 'Interior Design' : 'Exterior Design'}
+                </span>
+              </>
+            )}
+            {activeSpaceObj && activeSpaceObj.slug !== activeDomain && (
+              <>
+                <ChevronRight size={12} />
+                <span className="text-[var(--navy)] font-semibold">{activeSpaceObj.name}</span>
+              </>
+            )}
           </div>
 
-          {/* Quick Domain Filter Pills */}
-          <div className="flex items-center gap-2 self-start md:self-end">
-            <button
-              type="button"
-              onClick={() => handleDomainSelect('all')}
-              className={`shop-domain-tab ${activeDomain === 'all' ? 'active' : ''}`}
-            >
-              <span>All Pieces</span>
-              <span className="shop-filter-count">{totalProducts}</span>
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 mb-4 border-b border-[#eaeaea]">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs uppercase tracking-widest font-bold text-[var(--navy)] bg-[#f0f5fc] px-2.5 py-0.5 rounded-full border border-[#cbdceb]">
+                  {activeDomain === 'indoor' ? '🛋️ Interior Living Sanctuaries' : activeDomain === 'outdoor' ? '🌿 Exterior & Botanical Living' : '🏛️ The Curated Architecture & Living Collection'}
+                </span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-serif italic font-normal text-dark tracking-tight m-0">
+                {activeSpaceObj && activeSpaceObj.slug !== activeDomain
+                  ? activeSpaceObj.name
+                  : activeDomain === 'indoor'
+                  ? 'Interior Design Collection'
+                  : activeDomain === 'outdoor'
+                  ? 'Exterior Design Collection'
+                  : 'All Curated Pieces'}
+              </h1>
+              <p className="text-xs sm:text-sm text-muted mt-1.5 max-w-2xl font-light leading-relaxed m-0">
+                {activeSpaceObj?.description || (activeDomain === 'indoor'
+                  ? 'Authentic solid Sheesham and Teak hardwoods, hand-hammered brass, bespoke wall murals, and living interior furnishings tailored to your space.'
+                  : activeDomain === 'outdoor'
+                  ? 'Balcony sanctuaries, terrace gardens, hand-thrown terracotta planters, weather-resistant teak, and biophilic architectural crafts.'
+                  : 'Complete collection of interior living furnishings, artisan wall murals, and outdoor architectural decor.')}
+              </p>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => handleDomainSelect('indoor')}
-              className={`shop-domain-tab ${activeDomain === 'indoor' ? 'active' : ''}`}
-            >
-              <span>🏠 Indoor</span>
-              <span className="shop-filter-count">{indoorDomain?.count ?? 0}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleDomainSelect('outdoor')}
-              className={`shop-domain-tab ${activeDomain === 'outdoor' ? 'active' : ''}`}
-            >
-              <span>🌿 Outdoor</span>
-              <span className="shop-filter-count">{outdoorDomain?.count ?? 0}</span>
-            </button>
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleDomainSelect('all')}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                  activeDomain === 'all'
+                    ? 'bg-[var(--navy)] text-white border-[var(--navy)] shadow-xs'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                All Pieces ({totalProducts})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDomainSelect('indoor')}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                  activeDomain === 'indoor'
+                    ? 'bg-[var(--navy)] text-white border-[var(--navy)] shadow-xs'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                🛋️ Interior ({indoorDomain?.count ?? 0})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDomainSelect('outdoor')}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                  activeDomain === 'outdoor'
+                    ? 'bg-[var(--navy)] text-white border-[var(--navy)] shadow-xs'
+                    : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                🌿 Exterior ({outdoorDomain?.count ?? 0})
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Store Manager Controls Bar (ADMIN / STOCK_MANAGER) */}
         {user && (user.role === 'ADMIN' || user.role === 'STOCK_MANAGER') && (
-          <div className="mb-6 p-4 rounded-xl bg-[#faf7f2] border border-[#e8dfd5] flex flex-wrap items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-3">
-              <span className="badge badge-blue">Store Manager Mode</span>
-              <span className="text-xs text-[#555]">
-                Logged in as <strong>{user.name}</strong> ({user.role}). You have shop data manipulation permissions (insert, update, delete, stock adjust).
-              </span>
-            </div>
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+            <div className="p-3.5 rounded-xl bg-[#faf7f2] border border-[#e8dfd5] flex flex-wrap items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                <span className="badge badge-blue">Store Manager Mode</span>
+                <span className="text-xs text-[#555]">
+                  Logged in as <strong>{user.name}</strong> ({user.role}). You have full catalog management access.
+                </span>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(true)}
-                className="btn btn-primary btn-sm flex items-center gap-1.5"
-              >
-                <Plus size={14} />
-                <span>+ Add Product</span>
-              </button>
-              <Link
-                to="/admin/products"
-                className="btn btn-secondary btn-sm flex items-center gap-1.5"
-              >
-                <SlidersHorizontal size={14} />
-                <span>Manage Store Catalog</span>
-              </Link>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="btn btn-primary btn-sm flex items-center gap-1.5"
+                >
+                  <Plus size={14} />
+                  <span>+ Add Product</span>
+                </button>
+                <Link
+                  to="/admin/products"
+                  className="btn btn-secondary btn-sm flex items-center gap-1.5"
+                >
+                  <SlidersHorizontal size={14} />
+                  <span>Manage Catalog</span>
+                </Link>
+              </div>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* 2. ORGANIZED CONTROL CENTER (SUB-SPACES, SEARCH, CRAFT, BUDGET & SORT)    */}
+        {/* 2. TOP HORIZONTAL CATEGORY/SPACE NAVIGATION PILLS                         */}
         {/* ========================================================================= */}
-        <div className="shop-control-center">
-          
-          {/* A. CONTEXTUAL ROOM / ZONE ARCHITECTURAL STRIP */}
-          {activeDomain !== 'all' && (
-            <div className="room-space-selection-wrapper">
-              {/* Header Bar */}
-              <div className="room-space-header-row">
-                <div className="flex items-center gap-2">
-                  <div className="room-space-title-badge">
-                    <Compass size={13} className="text-primary-green" />
-                    <span>Select {activeDomain === 'indoor' ? 'Room Space' : 'Outdoor Zone'}</span>
-                  </div>
-                  <span className="room-space-subtitle hidden sm:inline">
-                    • Filter furnishings & wall decor by architectural room layout
-                  </span>
-                </div>
+        <section className="nursery-department-nav">
+          <div className="max-w-[1440px] mx-auto px-4">
+            <div className="nursery-pills-scroll">
+              <button
+                type="button"
+                onClick={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)}
+                className={`nursery-pill-btn ${(!selectedSpace || selectedSpace === activeDomain) ? 'active' : ''}`}
+              >
+                <span>All {activeDomain === 'indoor' ? 'Interior' : activeDomain === 'outdoor' ? 'Exterior' : 'Spaces'}</span>
+                <span className="nursery-pill-badge">
+                  {activeDomain === 'indoor' ? (indoorDomain?.count ?? 0) : activeDomain === 'outdoor' ? (outdoorDomain?.count ?? 0) : totalProducts}
+                </span>
+              </button>
 
-                <div className="flex items-center gap-2">
-                  {/* Reset to all rooms if specific space selected */}
-                  {selectedSpace && selectedSpace !== activeDomain && (
-                    <button
-                      type="button"
-                      onClick={() => handleSpaceSelect(activeDomain)}
-                      className="room-space-reset-btn"
-                      title="Clear room filter"
-                    >
-                      <span>Show All {activeDomain === 'indoor' ? 'Indoor Rooms' : 'Outdoor Zones'}</span>
-                      <X size={12} />
-                    </button>
-                  )}
+              {activeDomainSpaces.map(leaf => {
+                const isSelected = selectedSpace === leaf.slug;
+                const emoji = getSpaceEmoji(leaf.slug);
+                return (
+                  <button
+                    key={leaf.slug}
+                    type="button"
+                    onClick={() => handleSpaceSelect(leaf.slug)}
+                    className={`nursery-pill-btn ${isSelected ? 'active' : ''}`}
+                  >
+                    <span>{emoji} {leaf.name}</span>
+                    {leaf.count > 0 && <span className="nursery-pill-badge">{leaf.count}</span>}
+                  </button>
+                );
+              })}
 
-                  {/* Horizontal Scroll Controls */}
-                  <div className="room-space-scroll-nav">
-                    <button
-                      type="button"
-                      onClick={() => scrollSpaces('left')}
-                      className="room-scroll-btn"
-                      aria-label="Scroll left"
-                      title="Scroll left"
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => scrollSpaces('right')}
-                      className="room-scroll-btn"
-                      aria-label="Scroll right"
-                      title="Scroll right"
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Horizontal Scrollable Space Track */}
-              <div className="room-spaces-scroll-track" ref={spacesScrollRef}>
-                {/* 1. All Rooms Option */}
+              {hasActiveFilters && (
                 <button
                   type="button"
-                  onClick={() => handleSpaceSelect(activeDomain)}
-                  className={`room-space-card ${selectedSpace === activeDomain || !selectedSpace ? 'active' : ''}`}
+                  onClick={handleClearAllFilters}
+                  className="ml-auto flex-shrink-0 text-xs text-red-600 hover:text-red-700 font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 hover:bg-red-100 transition-colors"
                 >
-                  <div className="room-card-icon-box">
-                    {getSpaceIcon(activeDomain, true)}
-                  </div>
-                  <span className="room-card-title">
-                    All {activeDomain === 'indoor' ? 'Indoor Rooms' : 'Outdoor Zones'}
+                  <RotateCcw size={12} />
+                  <span>Reset All</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 3. TWO-COLUMN CATALOG LAYOUT WITH FILTERS SIDEBAR AND PRODUCT GRID        */}
+        {/* ========================================================================= */}
+        <section className="nursery-catalog-layout">
+          {/* ======================================================================= */}
+          {/* LEFT SIDEBAR: FILTERS CARD ACCORDIONS                                    */}
+          {/* ======================================================================= */}
+          <aside className="nursery-sidebar-filters">
+            <div className="nursery-sidebar-card">
+              {/* Sidebar Header */}
+              <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-stone-200">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal size={16} className="text-[var(--navy)]" />
+                  <h2 className="text-base font-bold text-stone-900 m-0">Filters</h2>
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-blue-100 text-[var(--navy)] text-[11px] font-bold px-2 py-0.5 rounded-full">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </div>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleClearAllFilters}
+                    className="text-xs text-stone-500 hover:text-red-600 font-semibold transition-colors cursor-pointer"
+                  >
+                    Clear all
+                  </button>
+                )}
+              </div>
+
+              {/* Accordion 1: Living Space / Zone */}
+              <div className="nursery-filter-group">
+                <button
+                  type="button"
+                  onClick={() => setIsSpaceOpen(!isSpaceOpen)}
+                  className="nursery-filter-group-header"
+                >
+                  <span className="font-semibold text-stone-900">
+                    {activeDomain === 'indoor' ? 'Living Room Space' : activeDomain === 'outdoor' ? 'Exterior Living Zone' : 'Living Space'}
                   </span>
-                  <span className="room-card-count">
-                    {activeDomain === 'indoor' ? (indoorDomain?.count ?? 0) : (outdoorDomain?.count ?? 0)}
-                  </span>
+                  {isSpaceOpen ? <Minus size={15} /> : <Plus size={15} />}
                 </button>
 
-                {/* 2. Sub-spaces with Architectural SVGs */}
-                {(activeDomain === 'indoor' ? indoorDomain?.children : outdoorDomain?.children)?.map(leaf => {
-                  const isSelected = selectedSpace === leaf.slug;
-                  const isZero = leaf.count === 0;
-                  return (
-                    <button
-                      key={leaf.slug}
-                      type="button"
-                      onClick={() => handleSpaceSelect(leaf.slug)}
-                      className={`room-space-card ${isSelected ? 'active' : ''} ${isZero ? 'empty-space' : ''}`}
-                      title={leaf.description}
-                    >
-                      <div className="room-card-icon-box">
-                        {getSpaceIcon(leaf.slug)}
-                      </div>
-                      <span className="room-card-title">{leaf.name}</span>
-                      <span className="room-card-count">{leaf.count}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                {isSpaceOpen && (
+                  <div className="pt-2 pl-1 space-y-1">
+                    <label className="nursery-checkbox-item">
+                      <input
+                        type="radio"
+                        name="shop-space-radio"
+                        checked={selectedSpace === '' || selectedSpace === activeDomain}
+                        onChange={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)}
+                        className="accent-[var(--navy)]"
+                      />
+                      <span>All {activeDomain === 'indoor' ? 'Rooms' : activeDomain === 'outdoor' ? 'Zones' : 'Spaces'}</span>
+                      <span className="text-stone-400 text-xs ml-auto font-mono">
+                        ({activeDomain === 'indoor' ? (indoorDomain?.count ?? 0) : activeDomain === 'outdoor' ? (outdoorDomain?.count ?? 0) : totalProducts})
+                      </span>
+                    </label>
 
-          {/* B. STREAMLINED TOOLBAR */}
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            
-            {/* Left Controls: Search, Craft, Budget, In-Stock */}
-            <div className="flex items-center gap-2.5 flex-wrap flex-1 min-w-[280px]">
-              {/* Quick Search */}
-              <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                    {activeDomainSpaces.map(leaf => {
+                      const isChecked = selectedSpace === leaf.slug;
+                      return (
+                        <label key={leaf.slug} className="nursery-checkbox-item">
+                          <input
+                            type="radio"
+                            name="shop-space-radio"
+                            checked={isChecked}
+                            onChange={() => handleSpaceSelect(leaf.slug)}
+                            className="accent-[var(--navy)]"
+                          />
+                          <span className="truncate">{getSpaceEmoji(leaf.slug)} {leaf.name}</span>
+                          <span className="text-stone-400 text-xs ml-auto font-mono">({leaf.count})</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 2: Category & Craft */}
+              <div className="nursery-filter-group">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  className="nursery-filter-group-header"
+                >
+                  <span className="font-semibold text-stone-900">Category & Craft</span>
+                  {isCategoryOpen ? <Minus size={15} /> : <Plus size={15} />}
+                </button>
+
+                {isCategoryOpen && (
+                  <div className="pt-2 pl-1 space-y-1">
+                    <input
+                      type="text"
+                      placeholder="Search categories..."
+                      value={categorySearch}
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      className="nursery-filter-subsearch"
+                    />
+
+                    <label className="nursery-checkbox-item">
+                      <input
+                        type="radio"
+                        name="shop-cat-radio"
+                        checked={!selectedCategory}
+                        onChange={() => handleCategorySelect('')}
+                        className="accent-[var(--navy)]"
+                      />
+                      <span>All Categories</span>
+                    </label>
+
+                    {visibleCategories.map(cat => {
+                      const isChecked = selectedCategory === cat.slug;
+                      return (
+                        <label key={cat.id} className="nursery-checkbox-item">
+                          <input
+                            type="radio"
+                            name="shop-cat-radio"
+                            checked={isChecked}
+                            onChange={() => handleCategorySelect(cat.slug)}
+                            className="accent-[var(--navy)]"
+                          />
+                          <span className="truncate">{cat.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 3: Price Range */}
+              <div className="nursery-filter-group">
+                <button
+                  type="button"
+                  onClick={() => setIsPriceOpen(!isPriceOpen)}
+                  className="nursery-filter-group-header"
+                >
+                  <span className="font-semibold text-stone-900">Price Range</span>
+                  {isPriceOpen ? <Minus size={15} /> : <Plus size={15} />}
+                </button>
+
+                {isPriceOpen && (
+                  <div className="pt-2 pl-1 space-y-1">
+                    {[
+                      { id: 'all', label: 'All Prices' },
+                      { id: 'under-1500', label: `Under ${formatPrice(1500)}` },
+                      { id: '1500-3000', label: `${formatPrice(1500)} - ${formatPrice(3000)}` },
+                      { id: '3000-7000', label: `${formatPrice(3000)} - ${formatPrice(7000)}` },
+                      { id: '7000-plus', label: `Above ${formatPrice(7000)}` },
+                    ].map(p => (
+                      <label key={p.id} className="nursery-checkbox-item">
+                        <input
+                          type="radio"
+                          name="shop-price-bracket"
+                          checked={priceRange === p.id}
+                          onChange={() => setPriceRange(p.id as any)}
+                          className="accent-[var(--navy)]"
+                        />
+                        <span>{p.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 4: Availability */}
+              <div className="nursery-filter-group">
+                <button
+                  type="button"
+                  onClick={() => setIsAvailabilityOpen(!isAvailabilityOpen)}
+                  className="nursery-filter-group-header"
+                >
+                  <span className="font-semibold text-stone-900">Availability</span>
+                  {isAvailabilityOpen ? <Minus size={15} /> : <Plus size={15} />}
+                </button>
+
+                {isAvailabilityOpen && (
+                  <div className="pt-2 pl-1 space-y-1">
+                    <label className="nursery-checkbox-item">
+                      <input
+                        type="checkbox"
+                        checked={inStockOnly}
+                        onChange={(e) => setInStockOnly(e.target.checked)}
+                        className="accent-[var(--navy)]"
+                      />
+                      <span>In stock pieces only</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Accordion 5: Customer Rating */}
+              <div className="nursery-filter-group border-none">
+                <button
+                  type="button"
+                  onClick={() => setIsRatingOpen(!isRatingOpen)}
+                  className="nursery-filter-group-header"
+                >
+                  <span className="font-semibold text-stone-900">Customer Rating</span>
+                  {isRatingOpen ? <Minus size={15} /> : <Plus size={15} />}
+                </button>
+
+                {isRatingOpen && (
+                  <div className="pt-2 pl-1 space-y-1">
+                    {[
+                      { id: 'all', label: 'All Ratings' },
+                      { id: '4-above', label: '4★ & above' },
+                      { id: '3-above', label: '3★ & above' },
+                    ].map(r => (
+                      <label key={r.id} className="nursery-checkbox-item">
+                        <input
+                          type="radio"
+                          name="shop-rating-filter"
+                          checked={selectedRating === r.id}
+                          onChange={() => setSelectedRating(r.id as any)}
+                          className="accent-[var(--navy)]"
+                        />
+                        <span className="flex items-center gap-1">{r.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </aside>
+
+          {/* ======================================================================= */}
+          {/* RIGHT COLUMN: TOOLBAR, ACTIVE CHIPS STRIP & PRODUCT GRID                  */}
+          {/* ======================================================================= */}
+          <div className="flex-1 w-full min-w-0">
+
+            {/* Standard Toolbar */}
+            <div className="nursery-standard-toolbar">
+              {/* Left: Total Count and Mobile Filter Toggle */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileFilters(!showMobileFilters)}
+                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg border border-stone-200 cursor-pointer"
+                >
+                  <SlidersHorizontal size={14} />
+                  <span>Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-[var(--navy)] text-white text-[10px] px-1.5 py-0.2 rounded-full">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </button>
+
+                <div className="text-xs sm:text-sm text-stone-600">
+                  Showing <strong className="text-stone-900 font-semibold">{filteredProducts.length}</strong> of{' '}
+                  <span className="text-stone-500">{productsData?.total ?? filteredProducts.length} pieces</span>
+                </div>
+              </div>
+
+              {/* Center: Search Box */}
+              <div className="nursery-search-box">
+                <Search size={14} className="text-stone-400 shrink-0" />
                 <input
                   type="text"
                   placeholder="Search pieces, wood, brass..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="text-xs pl-8 pr-7 py-2 rounded-lg bg-[#faf9f7] border border-[#ded9d0] focus:border-[var(--navy)] focus:bg-white focus:outline-none w-48 sm:w-56 transition-all"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-black border-none bg-transparent cursor-pointer p-0 text-xs font-bold"
+                    className="text-stone-400 hover:text-stone-600 text-xs p-0 border-none bg-transparent cursor-pointer"
                   >
-                    ✕
+                    <X size={13} />
                   </button>
                 )}
               </div>
 
-              {/* Craft / Category Dropdown */}
-              <div className="relative">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="text-xs bg-[#faf9f7] border border-[#ded9d0] rounded-lg px-3 py-2 pr-8 font-medium text-dark focus:outline-none focus:border-[var(--navy)] focus:bg-white cursor-pointer transition-all"
-                >
-                  <option value="">Artisan Craft: All</option>
-                  {categories?.map(cat => (
-                    <option key={cat.id} value={cat.slug}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Budget Range Dropdown */}
-              <div className="relative">
-                <select
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value as any)}
-                  className="text-xs bg-[#faf9f7] border border-[#ded9d0] rounded-lg px-3 py-2 pr-8 font-medium text-dark focus:outline-none focus:border-[var(--navy)] focus:bg-white cursor-pointer transition-all"
-                >
-                  <option value="all">Budget: All Prices</option>
-                  <option value="under-1500">Under {formatPrice(1500)}</option>
-                  <option value="1500-3000">{formatPrice(1500)} – {formatPrice(3000)}</option>
-                  <option value="3000-7000">{formatPrice(3000)} – {formatPrice(7000)}</option>
-                  <option value="7000-plus">Above {formatPrice(7000)}</option>
-                </select>
-              </div>
-
-              {/* In Stock Toggle Pill */}
-              <label className={`flex items-center gap-1.5 cursor-pointer text-xs font-medium px-3 py-2 rounded-lg border transition-all select-none ${
-                inStockOnly 
-                  ? 'border-[var(--navy)] bg-[#f4f7fb] text-[var(--navy)] font-semibold' 
-                  : 'border-[#ded9d0] bg-[#faf9f7] text-dark hover:border-[#cfcfcf]'
-              }`}>
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                  className="rounded cursor-pointer accent-[var(--navy)]"
-                />
-                <span>In Stock Only</span>
-              </label>
-            </div>
-
-            {/* Right Controls: Sort & Grid Layout */}
-            <div className="flex items-center gap-2.5 flex-wrap ml-auto">
-              {/* Sort Selector */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-muted hidden sm:inline">Sort:</span>
-                <div className="relative">
+              {/* Right: Sort By & View Mode */}
+              <div className="flex items-center gap-3">
+                <div className="nursery-sort-group">
+                  <span className="text-xs font-semibold text-stone-500 hidden sm:inline">Sort by:</span>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="text-xs bg-[#faf9f7] border border-[#ded9d0] rounded-lg px-3 py-2 pr-8 font-medium text-dark focus:outline-none focus:border-[var(--navy)] focus:bg-white cursor-pointer transition-all"
+                    className="nursery-sort-select"
                   >
-                    <option value="featured">Featured Curations</option>
+                    <option value="featured">Best Selling / Featured</option>
                     <option value="price-asc">Price: Low to High</option>
                     <option value="price-desc">Price: High to Low</option>
-                    <option value="discount">Highest Guild Discount</option>
-                    <option value="name">Piece Name: A to Z</option>
+                    <option value="discount">Highest Discount</option>
+                    <option value="name">Alphabetically: A–Z</option>
                   </select>
+                </div>
+
+                <div className="nursery-viewas-group">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('grid')}
+                    className={`nursery-viewas-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                    title="Grid view"
+                  >
+                    <LayoutGrid size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('list')}
+                    className={`nursery-viewas-btn ${viewMode === 'list' ? 'active' : ''}`}
+                    title="List view"
+                  >
+                    <List size={15} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Filter Chips Strip */}
+            {hasActiveFilters && (
+              <div className="nursery-active-chips-strip">
+                <span className="text-xs font-bold text-stone-600 flex items-center gap-1.5 mr-1">
+                  <Filter size={13} className="text-[var(--navy)]" />
+                  Active Filters:
+                </span>
+
+                {searchQuery && (
+                  <div className="nursery-filter-chip">
+                    <span>Search: "{searchQuery}"</span>
+                    <button type="button" onClick={() => setSearchQuery('')}><X size={12} /></button>
+                  </div>
+                )}
+
+                {selectedSpace && selectedSpace !== activeDomain && (
+                  <div className="nursery-filter-chip">
+                    <span>Space: {activeSpaceObj?.name || selectedSpace}</span>
+                    <button type="button" onClick={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)}><X size={12} /></button>
+                  </div>
+                )}
+
+                {selectedCategory && (
+                  <div className="nursery-filter-chip">
+                    <span>Category: {activeCategoryObj?.name || selectedCategory}</span>
+                    <button type="button" onClick={() => handleCategorySelect('')}><X size={12} /></button>
+                  </div>
+                )}
+
+                {priceRange !== 'all' && (
+                  <div className="nursery-filter-chip">
+                    <span>Price: {priceRange.replace('-', ' ')}</span>
+                    <button type="button" onClick={() => setPriceRange('all')}><X size={12} /></button>
+                  </div>
+                )}
+
+                {inStockOnly && (
+                  <div className="nursery-filter-chip">
+                    <span>In Stock Only</span>
+                    <button type="button" onClick={() => setInStockOnly(false)}><X size={12} /></button>
+                  </div>
+                )}
+
+                {selectedRating !== 'all' && (
+                  <div className="nursery-filter-chip">
+                    <span>Rating: {selectedRating === '4-above' ? '4★ & up' : '3★ & up'}</span>
+                    <button type="button" onClick={() => setSelectedRating('all')}><X size={12} /></button>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleClearAllFilters}
+                  className="text-xs text-red-600 hover:text-red-700 font-bold ml-auto flex items-center gap-1 hover:underline cursor-pointer"
+                >
+                  <RotateCcw size={12} />
+                  <span>Clear All</span>
+                </button>
+              </div>
+            )}
+
+            {/* Products Grid */}
+            {isLoading ? (
+              <div className="py-24 text-center">
+                <div className="loading-spinner mx-auto mb-3"></div>
+                <p className="text-sm text-stone-500">Loading catalog pieces...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="py-16 px-6 text-center bg-white border border-dashed border-stone-300 rounded-2xl shadow-xs">
+                <div className="w-14 h-14 bg-blue-50 text-[var(--navy)] rounded-full flex items-center justify-center mx-auto mb-3.5">
+                  <Search size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-stone-900 mb-1.5">No pieces match your filter</h3>
+                <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto mb-5">
+                  We couldn't find any pieces matching your exact combination. Try clearing some filters or exploring all rooms.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleClearAllFilters}
+                    className="px-4 py-2 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div className="catalog-grid-4">
+                {filteredProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
+                    onQuickView={(p) => setQuickViewProduct(p)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filteredProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
+                    onQuickView={(p) => setQuickViewProduct(p)}
+                  />
+                ))}
+              </div>
+            )}
+
+          </div>
+        </section>
+      </main>
+
+      {/* Mobile Filters Drawer Modal */}
+      {showMobileFilters && (
+        <div 
+          className="fixed inset-0 z-50 flex bg-black/50 backdrop-blur-xs lg:hidden"
+          onClick={() => setShowMobileFilters(false)}
+        >
+          <div 
+            className="bg-white w-[320px] max-w-[85vw] h-full overflow-y-auto p-5 shadow-2xl flex flex-col justify-between"
+            onClick={e => e.stopPropagation()}
+          >
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-stone-200 mb-4">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal size={16} className="text-[var(--navy)]" />
+                  <h3 className="text-base font-bold text-stone-900 m-0">Filters</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMobileFilters(false)}
+                  className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Mobile Spaces */}
+              <div className="mb-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Living Space</h4>
+                <div className="space-y-1">
+                  <label className="nursery-checkbox-item">
+                    <input
+                      type="radio"
+                      name="m-shop-space-radio"
+                      checked={selectedSpace === '' || selectedSpace === activeDomain}
+                      onChange={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)}
+                      className="accent-[var(--navy)]"
+                    />
+                    <span>All {activeDomain === 'indoor' ? 'Rooms' : activeDomain === 'outdoor' ? 'Zones' : 'Spaces'}</span>
+                  </label>
+                  {activeDomainSpaces.map(leaf => (
+                    <label key={leaf.slug} className="nursery-checkbox-item">
+                      <input
+                        type="radio"
+                        name="m-shop-space-radio"
+                        checked={selectedSpace === leaf.slug}
+                        onChange={() => handleSpaceSelect(leaf.slug)}
+                        className="accent-[var(--navy)]"
+                      />
+                      <span className="truncate">{getSpaceEmoji(leaf.slug)} {leaf.name}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              {/* Grid Column Layout Switcher (3 vs 4 columns) */}
-              <div className="hidden sm:flex items-center border border-[#ded9d0] rounded-lg bg-[#faf9f7] p-1 gap-1">
-                <button
-                  type="button"
-                  onClick={() => setColumnCount(3)}
-                  className={`p-1.5 rounded-md cursor-pointer border-none transition-all ${
-                    columnCount === 3 ? 'bg-[var(--navy)] text-white shadow-sm' : 'text-muted hover:text-black bg-transparent'
-                  }`}
-                  title="3 Columns Wide View"
-                >
-                  <LayoutGrid size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setColumnCount(4)}
-                  className={`p-1.5 rounded-md cursor-pointer border-none transition-all ${
-                    columnCount === 4 ? 'bg-[var(--navy)] text-white shadow-sm' : 'text-muted hover:text-black bg-transparent'
-                  }`}
-                  title="4 Columns Compact View"
-                >
-                  <Grid3X3 size={14} />
-                </button>
+              {/* Mobile Categories */}
+              <div className="mb-4 pt-3 border-t border-stone-100">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Category & Craft</h4>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  <label className="nursery-checkbox-item">
+                    <input
+                      type="radio"
+                      name="m-shop-cat-radio"
+                      checked={!selectedCategory}
+                      onChange={() => handleCategorySelect('')}
+                      className="accent-[var(--navy)]"
+                    />
+                    <span>All Categories</span>
+                  </label>
+                  {visibleCategories.map(cat => (
+                    <label key={cat.id} className="nursery-checkbox-item">
+                      <input
+                        type="radio"
+                        name="m-shop-cat-radio"
+                        checked={selectedCategory === cat.slug}
+                        onChange={() => handleCategorySelect(cat.slug)}
+                        className="accent-[var(--navy)]"
+                      />
+                      <span className="truncate">{cat.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile Price */}
+              <div className="mb-4 pt-3 border-t border-stone-100">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Price Range</h4>
+                <div className="space-y-1">
+                  {[
+                    { id: 'all', label: 'All Prices' },
+                    { id: 'under-1500', label: `Under ${formatPrice(1500)}` },
+                    { id: '1500-3000', label: `${formatPrice(1500)} - ${formatPrice(3000)}` },
+                    { id: '3000-7000', label: `${formatPrice(3000)} - ${formatPrice(7000)}` },
+                    { id: '7000-plus', label: `Above ${formatPrice(7000)}` },
+                  ].map(p => (
+                    <label key={p.id} className="nursery-checkbox-item">
+                      <input
+                        type="radio"
+                        name="m-shop-price-bracket"
+                        checked={priceRange === p.id}
+                        onChange={() => setPriceRange(p.id as any)}
+                        className="accent-[var(--navy)]"
+                      />
+                      <span>{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile In Stock */}
+              <div className="mb-4 pt-3 border-t border-stone-100">
+                <label className="nursery-checkbox-item">
+                  <input
+                    type="checkbox"
+                    checked={inStockOnly}
+                    onChange={(e) => setInStockOnly(e.target.checked)}
+                    className="accent-[var(--navy)]"
+                  />
+                  <span className="font-semibold text-stone-800">In stock pieces only</span>
+                </label>
               </div>
             </div>
 
-          </div>
-
-          {/* C. ACTIVE FILTER TAGS & RESET */}
-          {hasActiveFilters && (
-            <div className="mt-3 pt-3 border-t border-[#f0ece4] flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-muted font-medium">Active Filters:</span>
-
-              {selectedSpace && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f2f0eb] text-dark border border-[#ded9d0] font-medium">
-                  <span>Space: {activeSpaceObj?.name || selectedSpace}</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setSelectedSpace('')} 
-                    className="hover:text-red-600 border-none bg-transparent cursor-pointer p-0 font-bold text-xs"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-
-              {activeCategoryObj && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f2f0eb] text-dark border border-[#ded9d0] font-medium">
-                  <span>Craft: {activeCategoryObj.name}</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setSelectedCategory('')} 
-                    className="hover:text-red-600 border-none bg-transparent cursor-pointer p-0 font-bold text-xs"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-
-              {priceRange !== 'all' && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f2f0eb] text-dark border border-[#ded9d0] font-medium">
-                  <span>Budget: {priceRange}</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setPriceRange('all')} 
-                    className="hover:text-red-600 border-none bg-transparent cursor-pointer p-0 font-bold text-xs"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-
-              {inStockOnly && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f2f0eb] text-dark border border-[#ded9d0] font-medium">
-                  <span>In Stock Only</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setInStockOnly(false)} 
-                    className="hover:text-red-600 border-none bg-transparent cursor-pointer p-0 font-bold text-xs"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-
-              {searchQuery && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f2f0eb] text-dark border border-[#ded9d0] font-medium">
-                  <span>"{searchQuery}"</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setSearchQuery('')} 
-                    className="hover:text-red-600 border-none bg-transparent cursor-pointer p-0 font-bold text-xs"
-                  >
-                    ✕
-                  </button>
-                </span>
-              )}
-
+            <div className="pt-4 border-t border-stone-200 mt-4 flex items-center gap-2">
               <button
                 type="button"
-                onClick={handleResetFilters}
-                className="text-xs text-red-600 hover:underline border-none bg-transparent cursor-pointer font-semibold ml-2 flex items-center gap-1"
+                onClick={handleClearAllFilters}
+                className="btn btn-secondary btn-sm flex-1"
               >
-                <RotateCcw size={12} /> Reset All
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(false)}
+                className="btn btn-primary btn-sm flex-1"
+              >
+                View ({filteredProducts.length})
               </button>
             </div>
-          )}
-
+          </div>
         </div>
-
-        {/* ========================================================================= */}
-        {/* 3. PRODUCT GRID (STANDARDIZED TEMPLATE PROPORTIONS)                       */}
-        {/* ========================================================================= */}
-        {isLoading ? (
-          <div className="loading-spinner mx-auto my-24"></div>
-        ) : filteredProducts.length > 0 ? (
-          <div className={columnCount === 4 ? 'catalog-grid-4' : 'catalog-grid-3'}>
-            {filteredProducts.map(product => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
-                onQuickView={(p) => setQuickViewProduct(p)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-[#faf9f7] rounded-xl border border-[#ded9d0]">
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-muted mx-auto mb-3 border border-[#ded9d0] shadow-sm">
-              <Search size={22} />
-            </div>
-            <h3 className="text-xl font-serif italic font-normal text-dark m-0 mb-1">
-              No Pieces Match Your Active Selection
-            </h3>
-            <p className="text-xs text-muted mb-5 max-w-sm mx-auto font-light leading-relaxed">
-              Try choosing a different room space, clearing the craft filter, or adjusting your budget range.
-            </p>
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="btn btn-sm btn-primary text-xs px-5 py-2.5 font-semibold uppercase tracking-wider"
-            >
-              Reset All Filters
-            </button>
-          </div>
-        )}
-      </main>
+      )}
 
       {/* Quick View Modal */}
       {quickViewProduct && (
