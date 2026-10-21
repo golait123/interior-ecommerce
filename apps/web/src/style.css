@@ -8556,22 +8556,41 @@ button:active:not(:disabled),
   min-width: 0;
 }
 
+/* Sticky Sidebar that moves parallel with the left selection steps */
 .pkg-combo-sidebar {
-  position: relative;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 125px;
+  align-self: flex-start;
   min-width: 0;
+  z-index: 30;
+  transition: top 0.2s ease;
 }
 
-/* Sticky Summary Card running parallel to the plan selection */
+/* Summary Card styled for optimal parallel view */
 .pkg-summary-sticky-card {
-  position: sticky;
-  top: 96px;
   background: var(--bg-card, #ffffff);
   border: 1.5px solid var(--border, #CBD5E1);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  z-index: 20;
+  max-height: calc(100vh - 145px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, #CBD5E1) transparent;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar {
+  width: 5px;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar-thumb {
+  background: var(--border, #CBD5E1);
+  border-radius: 9999px;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .pkg-summary-header {
@@ -9161,22 +9180,41 @@ button:active:not(:disabled),
   min-width: 0;
 }
 
+/* Sticky Sidebar that moves parallel with the left selection steps */
 .pkg-combo-sidebar {
-  position: relative;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 125px;
+  align-self: flex-start;
   min-width: 0;
+  z-index: 30;
+  transition: top 0.2s ease;
 }
 
-/* Sticky Summary Card running parallel to the plan selection */
+/* Summary Card styled for optimal parallel view */
 .pkg-summary-sticky-card {
-  position: sticky;
-  top: 96px;
   background: var(--bg-card, #ffffff);
   border: 1.5px solid var(--border, #CBD5E1);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  z-index: 20;
+  max-height: calc(100vh - 145px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, #CBD5E1) transparent;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar {
+  width: 5px;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar-thumb {
+  background: var(--border, #CBD5E1);
+  border-radius: 9999px;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .pkg-summary-header {
@@ -9814,22 +9852,41 @@ button:active:not(:disabled),
   min-width: 0;
 }
 
+/* Sticky Sidebar that moves parallel with the left selection steps */
 .pkg-combo-sidebar {
-  position: relative;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 125px;
+  align-self: flex-start;
   min-width: 0;
+  z-index: 30;
+  transition: top 0.2s ease;
 }
 
-/* Sticky Summary Card running parallel to the plan selection */
+/* Summary Card styled for optimal parallel view */
 .pkg-summary-sticky-card {
-  position: sticky;
-  top: 96px;
   background: var(--bg-card, #ffffff);
   border: 1.5px solid var(--border, #CBD5E1);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  z-index: 20;
+  max-height: calc(100vh - 145px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, #CBD5E1) transparent;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar {
+  width: 5px;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar-thumb {
+  background: var(--border, #CBD5E1);
+  border-radius: 9999px;
+}
+
+.pkg-summary-sticky-card::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .pkg-summary-header {
