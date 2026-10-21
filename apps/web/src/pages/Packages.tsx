@@ -8,6 +8,7 @@ import {
   Package, 
   Sparkles, 
   Check, 
+  X,
   ArrowRight, 
   Leaf, 
   Home, 
@@ -256,12 +257,33 @@ export default function Packages() {
     'nur-airpure': 1
   });
 
-  // Calculate combo total price
-  const comboTotal = useMemo(() => {
-    return Object.entries(selectedItems).reduce((sum, [id, qty]) => {
+  // Calculate combo totals & itemized list
+  const { homeSubtotal, nurserySubtotal, servicesSubtotal, selectedItemsList, comboTotal } = useMemo(() => {
+    let home = 0;
+    let nursery = 0;
+    let service = 0;
+    let total = 0;
+    const list: (ComboOptionItem & { qty: number })[] = [];
+
+    Object.entries(selectedItems).forEach(([id, qty]) => {
       const item = COMBO_CATALOG.find(i => i.id === id);
-      return sum + (item ? item.price * qty : 0);
-    }, 0);
+      if (item) {
+        list.push({ ...item, qty });
+        const linePrice = item.price * qty;
+        total += linePrice;
+        if (item.category === 'home') home += linePrice;
+        else if (item.category === 'nursery') nursery += linePrice;
+        else if (item.category === 'service') service += linePrice;
+      }
+    });
+
+    return {
+      homeSubtotal: home,
+      nurserySubtotal: nursery,
+      servicesSubtotal: service,
+      selectedItemsList: list,
+      comboTotal: total
+    };
   }, [selectedItems]);
 
   const MIN_COMBO_THRESHOLD = 3000;
@@ -546,329 +568,382 @@ export default function Packages() {
           )}
 
           {/* ------------------------------------------------------------- */}
-          {/* TAB 2: CUSTOM COMBO BUILDER (MINIMUM ₹3,000 THRESHOLD)        */}
+          {/* TAB 2: CUSTOM COMBO BUILDER (PARALLEL 2-COLUMN LAYOUT)        */}
           {/* ------------------------------------------------------------- */}
           {activeTab === 'custom' && (
             <section>
               <div className="pkg-combo-intro">
-                <div className="max-w-3xl">
-                  <span 
-                    className="text-xs font-bold uppercase tracking-wider block mb-1"
-                    style={{ color: 'var(--accent)' }}
-                  >
-                    Interactive Combo Customizer
-                  </span>
-                  <h2 className="text-2xl sm:text-3xl font-serif text-[var(--text-main)] m-0">
-                    Design Your Own Decor & Nursery Package
-                  </h2>
-                  <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-2">
-                    Pick your desired accent walls, wood consoles, and living nursery foliage. As per logistics and white-glove setup standards, custom combo packages must be <span className="font-bold text-[var(--text-main)]">greater than ₹3,000</span>.
-                  </p>
-                </div>
+                <span 
+                  className="text-xs font-bold uppercase tracking-wider block mb-1"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  Interactive Combo Customizer
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-serif text-[var(--text-main)] m-0">
+                  Design Your Own Decor & Nursery Package
+                </h2>
+                <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-2 max-w-3xl leading-relaxed">
+                  Select your bespoke interior elements on the left, while your live package summary, threshold qualification, and itemized totals update in real-time on the right.
+                </p>
+              </div>
 
-                {/* Real-Time Threshold Banner */}
-                <div className={`pkg-threshold-banner ${isThresholdMet ? 'pkg-threshold-unlocked' : 'pkg-threshold-locked'}`}>
-                  <div className="flex items-start gap-3">
-                    {isThresholdMet ? (
-                      <CheckCircle2 size={24} style={{ color: 'var(--brand-sage, #15803D)' }} className="shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertCircle size={24} className="text-amber-600 shrink-0 mt-0.5" />
-                    )}
-                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)] m-0">
-                        {isThresholdMet ? 'Minimum Order Threshold Unlocked!' : 'Minimum Combo Value: ₹3,000 Required'}
-                      </h4>
-                      <p className="text-xs text-[var(--text-muted)] mt-0.5 m-0">
-                        {isThresholdMet 
-                          ? `Your current combo total is ₹${comboTotal.toLocaleString('en-IN')}. Eligible for white-glove delivery & warranty.` 
-                          : `Current combo total is ₹${comboTotal.toLocaleString('en-IN')}. Add ₹${(MIN_COMBO_THRESHOLD - comboTotal).toLocaleString('en-IN')} more to unlock booking.`}
-                      </p>
+              {/* 2-COLUMN PARALLEL LAYOUT: Left Steps + Right Sticky Summary */}
+              <div className="pkg-combo-layout">
+                
+                {/* ======================================================== */}
+                {/* LEFT COLUMN: Plan & Component Selection Steps            */}
+                {/* ======================================================== */}
+                <div className="pkg-combo-main space-y-10">
+                  
+                  {/* Step 1: Home Decor */}
+                  <div>
+                    <div className="pkg-step-heading">
+                      <Home size={18} />
+                      <h3>Step 1: Choose Home Decoration Elements</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {COMBO_CATALOG.filter(c => c.category === 'home').map(item => {
+                        const isSelected = !!selectedItems[item.id];
+                        const qty = selectedItems[item.id] || 0;
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => handleToggleItem(item.id)}
+                            className={`pkg-combo-card ${isSelected ? 'selected' : ''}`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-main)] border border-[var(--border)]">
+                                  {item.tag}
+                                </span>
+                                <div className="pkg-combo-check">
+                                  {isSelected && <Check size={13} />}
+                                </div>
+                              </div>
+                              <h4 className="font-serif text-sm font-semibold text-[var(--text-main)] m-0">
+                                {item.name}
+                              </h4>
+                              <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">
+                                {item.description}
+                              </p>
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-[var(--border-light)] flex items-center justify-between">
+                              <span className="font-serif font-bold text-[var(--text-main)] text-base">
+                                ₹{item.price.toLocaleString('en-IN')}
+                              </span>
+
+                              {isSelected && (
+                                <div 
+                                  className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-lg p-0.5 shadow-xs"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateQty(item.id, -1)}
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
+                                  >
+                                    <Minus size={12} />
+                                  </button>
+                                  <span className="text-xs font-bold w-4 text-center text-[var(--text-main)]">{qty}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateQty(item.id, 1)}
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
+                                  >
+                                    <Plus size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-right">
-                      <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block">Estimated Total</span>
-                      <span className="text-2xl font-serif font-bold text-[var(--text-main)]">
-                        ₹{comboTotal.toLocaleString('en-IN')}
-                      </span>
+                  {/* Step 2: Nursery Botanical Decor */}
+                  <div>
+                    <div className="pkg-step-heading">
+                      <Leaf size={18} />
+                      <h3>Step 2: Choose Nursery Decor & Botanical Plants</h3>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {COMBO_CATALOG.filter(c => c.category === 'nursery').map(item => {
+                        const isSelected = !!selectedItems[item.id];
+                        const qty = selectedItems[item.id] || 0;
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => handleToggleItem(item.id)}
+                            className={`pkg-combo-card ${isSelected ? 'selected' : ''}`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-main)] border border-[var(--border)]">
+                                  {item.tag}
+                                </span>
+                                <div className="pkg-combo-check">
+                                  {isSelected && <Check size={13} />}
+                                </div>
+                              </div>
+                              <h4 className="font-serif text-sm font-semibold text-[var(--text-main)] m-0">
+                                {item.name}
+                              </h4>
+                              <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">
+                                {item.description}
+                              </p>
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-[var(--border-light)] flex items-center justify-between">
+                              <span className="font-serif font-bold text-[var(--text-main)] text-base">
+                                ₹{item.price.toLocaleString('en-IN')}
+                              </span>
+
+                              {isSelected && (
+                                <div 
+                                  className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-lg p-0.5 shadow-xs"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateQty(item.id, -1)}
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
+                                  >
+                                    <Minus size={12} />
+                                  </button>
+                                  <span className="text-xs font-bold w-4 text-center text-[var(--text-main)]">{qty}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateQty(item.id, 1)}
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
+                                  >
+                                    <Plus size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Step 3: Professional Execution, Plumbing & Plant Care */}
+                  <div>
+                    <div className="pkg-step-heading">
+                      <ShieldCheck size={18} />
+                      <h3>Step 3: Professional Execution, Plumbing & Plant Care</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {COMBO_CATALOG.filter(c => c.category === 'service').map(item => {
+                        const isSelected = !!selectedItems[item.id];
+                        const qty = selectedItems[item.id] || 0;
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => handleToggleItem(item.id)}
+                            className={`pkg-combo-card ${isSelected ? 'selected' : ''}`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-main)] border border-[var(--border)]">
+                                  {item.tag}
+                                </span>
+                                <div className="pkg-combo-check">
+                                  {isSelected && <Check size={13} />}
+                                </div>
+                              </div>
+                              <h4 className="font-serif text-sm font-semibold text-[var(--text-main)] m-0">
+                                {item.name}
+                              </h4>
+                              <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">
+                                {item.description}
+                              </p>
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-[var(--border-light)] flex items-center justify-between">
+                              <span className="font-serif font-bold text-[var(--text-main)] text-base">
+                                ₹{item.price.toLocaleString('en-IN')}
+                              </span>
+
+                              {isSelected && (
+                                <div 
+                                  className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-lg p-0.5 shadow-xs"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateQty(item.id, -1)}
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
+                                  >
+                                    <Minus size={12} />
+                                  </button>
+                                  <span className="text-xs font-bold w-4 text-center text-[var(--text-main)]">{qty}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateQty(item.id, 1)}
+                                    className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
+                                  >
+                                    <Plus size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* ======================================================== */}
+                {/* RIGHT COLUMN: Sticky Parallel Summary Sidebar            */}
+                {/* ======================================================== */}
+                <aside className="pkg-combo-sidebar">
+                  <div className="pkg-summary-sticky-card">
+                    {/* Header */}
+                    <div className="pkg-summary-header">
+                      <div className="pkg-summary-icon">
+                        <Package size={22} />
+                      </div>
+                      <div>
+                        <h3 className="pkg-summary-title">Custom Sanctuary Combo</h3>
+                        <span className="pkg-summary-count">
+                          {selectedItemsList.length} element{selectedItemsList.length === 1 ? '' : 's'} selected
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Minimum Threshold Requirement Box */}
+                    <div className={`pkg-summary-threshold ${isThresholdMet ? 'unlocked' : 'locked'}`}>
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span>{isThresholdMet ? 'Threshold Unlocked' : 'Minimum ₹3,000 Order'}</span>
+                        <span>₹{comboTotal.toLocaleString('en-IN')} / ₹3,000</span>
+                      </div>
+                      <div className="pkg-threshold-bar-bg">
+                        <div 
+                          className="pkg-threshold-bar-fill" 
+                          style={{
+                            width: `${Math.min(100, (comboTotal / MIN_COMBO_THRESHOLD) * 100)}%`,
+                            background: isThresholdMet ? 'var(--brand-sage, #15803D)' : '#F59E0B'
+                          }}
+                        />
+                      </div>
+                      <p className="text-[11px] mt-2 m-0 opacity-90 leading-tight">
+                        {isThresholdMet 
+                          ? '✨ Valid combo. Eligible for instant booking with ₹3,000+ privilege warranty.'
+                          : `⚠️ Add ₹${(MIN_COMBO_THRESHOLD - comboTotal).toLocaleString('en-IN')} more to unlock package booking.`}
+                      </p>
+                    </div>
+
+                    {/* Itemized Picked Components */}
+                    <div className="mb-2">
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1.5">
+                        Selected Components:
+                      </span>
+                      {selectedItemsList.length === 0 ? (
+                        <p className="text-xs text-[var(--text-muted)] italic py-3 text-center">
+                          No items picked. Select items on the left to build your combo.
+                        </p>
+                      ) : (
+                        <div className="pkg-picked-items-list">
+                          {selectedItemsList.map(item => (
+                            <div key={item.id} className="pkg-picked-item-row">
+                              <div className="min-w-0 flex-1">
+                                <div className="pkg-picked-item-title truncate">{item.name}</div>
+                                <div className="pkg-picked-item-tag">{item.tag} • ₹{item.price.toLocaleString('en-IN')} ea</div>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateQty(item.id, -1)}
+                                  className="w-5 h-5 flex items-center justify-center rounded bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
+                                >
+                                  -
+                                </button>
+                                <span className="font-bold text-xs w-3 text-center">{item.qty}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateQty(item.id, 1)}
+                                  className="w-5 h-5 flex items-center justify-center rounded bg-white border border-slate-200 text-xs text-slate-700 hover:bg-slate-100"
+                                >
+                                  +
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleItem(item.id)}
+                                  className="pkg-picked-item-del ml-1"
+                                  title="Remove item"
+                                >
+                                  <X size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cost Breakdown Table */}
+                    <div className="pkg-breakdown-table">
+                      <div className="pkg-breakdown-row">
+                        <span>Home Decor Elements</span>
+                        <span>₹{homeSubtotal.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="pkg-breakdown-row">
+                        <span>Nursery Foliage & Planters</span>
+                        <span>₹{nurserySubtotal.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="pkg-breakdown-row">
+                        <span>Execution & Care Services</span>
+                        <span>₹{servicesSubtotal.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="pkg-breakdown-row">
+                        <span>Site Survey & CAD Layout</span>
+                        <span className="text-emerald-600 font-semibold">FREE (Package Perk)</span>
+                      </div>
+                      <div className="pkg-breakdown-row total">
+                        <span>Total Combo Package</span>
+                        <span className="total-amount">₹{comboTotal.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+
+                    {/* Booking Action Button */}
                     <button
                       type="button"
                       onClick={handleBookCustomCombo}
                       disabled={!isThresholdMet}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
+                      className={`w-full py-3.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
                         isThresholdMet
-                          ? 'pkg-btn-book-popular shadow-md cursor-pointer'
+                          ? 'pkg-btn-book-popular shadow-md cursor-pointer scale-101'
                           : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                       }`}
                     >
-                      <span>{isThresholdMet ? 'Book Custom Combo' : `Add ₹${MIN_COMBO_THRESHOLD - comboTotal} More`}</span>
-                      <ArrowRight size={13} />
+                      <span>{isThresholdMet ? 'Book Custom Combo Package' : `Add ₹${MIN_COMBO_THRESHOLD - comboTotal} More to Book`}</span>
+                      <ArrowRight size={14} />
                     </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Selection Catalog */}
-              <div className="space-y-10">
-                {/* Step 1: Home Decor */}
-                <div>
-                  <div className="pkg-step-heading">
-                    <Home size={18} />
-                    <h3>Step 1: Choose Home Decoration Elements</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {COMBO_CATALOG.filter(c => c.category === 'home').map(item => {
-                      const isSelected = !!selectedItems[item.id];
-                      const qty = selectedItems[item.id] || 0;
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => handleToggleItem(item.id)}
-                          className={`pkg-combo-card ${isSelected ? 'selected' : ''}`}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-main)] border border-[var(--border)]">
-                                {item.tag}
-                              </span>
-                              <div className="pkg-combo-check">
-                                {isSelected && <Check size={13} />}
-                              </div>
-                            </div>
-                            <h4 className="font-serif text-sm font-semibold text-[var(--text-main)] m-0">
-                              {item.name}
-                            </h4>
-                            <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">
-                              {item.description}
-                            </p>
-                          </div>
-
-                          <div className="mt-4 pt-3 border-t border-[var(--border-light)] flex items-center justify-between">
-                            <span className="font-serif font-bold text-[var(--text-main)] text-base">
-                              ₹{item.price.toLocaleString('en-IN')}
-                            </span>
-
-                            {isSelected && (
-                              <div 
-                                className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-lg p-0.5 shadow-xs"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateQty(item.id, -1)}
-                                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
-                                >
-                                  <Minus size={12} />
-                                </button>
-                                <span className="text-xs font-bold w-4 text-center text-[var(--text-main)]">{qty}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateQty(item.id, 1)}
-                                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
-                                >
-                                  <Plus size={12} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Step 2: Nursery Botanical Decor */}
-                <div>
-                  <div className="pkg-step-heading">
-                    <Leaf size={18} />
-                    <h3>Step 2: Choose Nursery Decor & Botanical Plants</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {COMBO_CATALOG.filter(c => c.category === 'nursery').map(item => {
-                      const isSelected = !!selectedItems[item.id];
-                      const qty = selectedItems[item.id] || 0;
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => handleToggleItem(item.id)}
-                          className={`pkg-combo-card ${isSelected ? 'selected' : ''}`}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-main)] border border-[var(--border)]">
-                                {item.tag}
-                              </span>
-                              <div className="pkg-combo-check">
-                                {isSelected && <Check size={13} />}
-                              </div>
-                            </div>
-                            <h4 className="font-serif text-sm font-semibold text-[var(--text-main)] m-0">
-                              {item.name}
-                            </h4>
-                            <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">
-                              {item.description}
-                            </p>
-                          </div>
-
-                          <div className="mt-4 pt-3 border-t border-[var(--border-light)] flex items-center justify-between">
-                            <span className="font-serif font-bold text-[var(--text-main)] text-base">
-                              ₹{item.price.toLocaleString('en-IN')}
-                            </span>
-
-                            {isSelected && (
-                              <div 
-                                className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-lg p-0.5 shadow-xs"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateQty(item.id, -1)}
-                                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
-                                >
-                                  <Minus size={12} />
-                                </button>
-                                <span className="text-xs font-bold w-4 text-center text-[var(--text-main)]">{qty}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateQty(item.id, 1)}
-                                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
-                                >
-                                  <Plus size={12} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Step 3: Professional Care & White Glove Services */}
-                <div>
-                  <div className="pkg-step-heading">
-                    <ShieldCheck size={18} />
-                    <h3>Step 3: Professional Execution, Plumbing & Plant Care</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {COMBO_CATALOG.filter(c => c.category === 'service').map(item => {
-                      const isSelected = !!selectedItems[item.id];
-                      const qty = selectedItems[item.id] || 0;
-                      return (
-                        <div
-                          key={item.id}
-                          onClick={() => handleToggleItem(item.id)}
-                          className={`pkg-combo-card ${isSelected ? 'selected' : ''}`}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-main)] border border-[var(--border)]">
-                                {item.tag}
-                              </span>
-                              <div className="pkg-combo-check">
-                                {isSelected && <Check size={13} />}
-                              </div>
-                            </div>
-                            <h4 className="font-serif text-sm font-semibold text-[var(--text-main)] m-0">
-                              {item.name}
-                            </h4>
-                            <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">
-                              {item.description}
-                            </p>
-                          </div>
-
-                          <div className="mt-4 pt-3 border-t border-[var(--border-light)] flex items-center justify-between">
-                            <span className="font-serif font-bold text-[var(--text-main)] text-base">
-                              ₹{item.price.toLocaleString('en-IN')}
-                            </span>
-
-                            {isSelected && (
-                              <div 
-                                className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-lg p-0.5 shadow-xs"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateQty(item.id, -1)}
-                                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
-                                >
-                                  <Minus size={12} />
-                                </button>
-                                <span className="text-xs font-bold w-4 text-center text-[var(--text-main)]">{qty}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateQty(item.id, 1)}
-                                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 text-[var(--text-main)]"
-                                >
-                                  <Plus size={12} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Sticky Bottom Tray for Custom Combo */}
-              <div className="pkg-sticky-tray">
-                <div className="flex items-center gap-4">
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'var(--brand-primary)', color: '#ffffff' }}
-                  >
-                    <Package size={22} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-serif text-base font-semibold text-[var(--text-main)]">
-                        Custom Sanctuary Combo Summary
-                      </span>
-                      <span className="text-xs text-[var(--text-muted)]">
-                        ({Object.keys(selectedItems).length} elements picked)
-                      </span>
+                    {/* Guarantees & Perks */}
+                    <div className="pkg-summary-perks">
+                      <div className="pkg-summary-perk-item">
+                        <ShieldCheck size={13} />
+                        <span>White-glove doorstep delivery & professional setup</span>
+                      </div>
+                      <div className="pkg-summary-perk-item">
+                        <Leaf size={13} />
+                        <span>60-day living plant health & replacement warranty</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-[var(--text-muted)] m-0">
-                      {isThresholdMet 
-                        ? '✨ Valid combo. Eligible for instant booking with ₹3,000+ privilege warranty.' 
-                        : `⚠️ Total is below ₹3,000 threshold. Add ₹${(MIN_COMBO_THRESHOLD - comboTotal).toLocaleString('en-IN')} more to proceed.`}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                  <div className="text-right">
-                    <span className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block">Combo Package Total</span>
-                    <span className="text-2xl font-serif font-bold text-[var(--text-main)]">
-                      ₹{comboTotal.toLocaleString('en-IN')}
-                    </span>
                   </div>
+                </aside>
 
-                  <button
-                    type="button"
-                    onClick={handleBookCustomCombo}
-                    disabled={!isThresholdMet}
-                    className={`px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all ${
-                      isThresholdMet
-                        ? 'pkg-btn-book-popular shadow-lg scale-102 cursor-pointer'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <span>{isThresholdMet ? 'Book Custom Combo' : `Add ₹${MIN_COMBO_THRESHOLD - comboTotal} More`}</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
               </div>
-
             </section>
           )}
 
