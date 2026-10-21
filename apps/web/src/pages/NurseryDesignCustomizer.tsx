@@ -31,7 +31,8 @@ import {
   Clock,
   HeartHandshake,
   Share2,
-  BookmarkCheck
+  BookmarkCheck,
+  ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { mongoApi } from '../api/mongoServices';
@@ -579,6 +580,35 @@ export default function NurseryDesignCustomizer() {
           </div>
         </div>
       </header>
+
+      {/* Turnkey Home Decor + Nursery Combo Packages Callout */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-2">
+        <div className="p-4 rounded-xl bg-gradient-to-r from-[#0F2444] via-[#16335f] to-[#1e467d] text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 text-sky-300 flex items-center justify-center shrink-0">
+              <Package size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-sky-400 text-[#0F2444]">
+                  Package Available
+                </span>
+                <span className="font-semibold text-xs sm:text-sm">Looking for Combined Home Decor & Nursery Packages?</span>
+              </div>
+              <p className="text-xs text-slate-200 mt-0.5 m-0 font-light">
+                Combine accent wall styling, solid wood furniture, and balcony nursery landscaping with Basic, Standard & Pro tiers or build custom combo packages (Min. ₹3,000).
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/packages"
+            className="px-4 py-2 bg-white text-[#0F2444] hover:bg-sky-50 rounded-lg text-xs font-semibold uppercase tracking-wider whitespace-nowrap shadow-xs inline-flex items-center gap-1.5 shrink-0"
+          >
+            <span>View Packages & Combos</span>
+            <ArrowRight size={13} />
+          </Link>
+        </div>
+      </div>
 
       {/* ========================================================================= */}
       {/* 3. STEPPER PROGRESS NAVIGATION                                            */}

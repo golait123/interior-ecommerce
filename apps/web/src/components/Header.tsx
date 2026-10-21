@@ -15,7 +15,8 @@ import {
   MapPin,
   Box,
   Compass,
-  Sprout
+  Sprout,
+  Package
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -281,6 +282,17 @@ export function Header() {
             </li>
             <li className="nav-item">
               <Link 
+                to="/packages" 
+                className={`nav-link nav-curved-square-btn ${location.pathname === '/packages' ? 'active' : ''}`}
+                title="Home Decor + Nursery Combo Packages"
+              >
+                <Package size={13} className="text-[#8c6f52]" />
+                <span>Packages</span>
+                <span className="nav-package-badge">Combos</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link 
                 to="/shop?tag=sale" 
                 className={`nav-link sale-link ${location.pathname === '/shop' && searchParams.get('tag') === 'sale' ? 'active' : ''}`}
               >
@@ -352,6 +364,13 @@ export function Header() {
               </Link>
               <Link to="/gardening" onClick={closeMenu} className="mobile-nav-item">
                 Nursery Decor
+              </Link>
+              <Link to="/packages" onClick={closeMenu} className="mobile-nav-item flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Package size={14} className="text-[#8c6f52]" />
+                  <span>Packages (Home + Nursery)</span>
+                </span>
+                <span className="text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded-full">Combos</span>
               </Link>
               <Link to="/shop?tag=sale" onClick={closeMenu} className="mobile-nav-item sale-item">
                 Sale (Up to 40% Off)

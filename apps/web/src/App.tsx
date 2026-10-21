@@ -11,6 +11,7 @@ import Shop from './pages/Shop';
 import RoomStudio from './pages/RoomStudio';
 import Gardening from './pages/Gardening';
 import NurseryDesignCustomizer from './pages/NurseryDesignCustomizer';
+import Packages from './pages/Packages';
 import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -80,6 +81,7 @@ export default function App() {
                 <Route path="/gardening" element={<Gardening />} />
                 <Route path="/gardening/customize" element={<NurseryDesignCustomizer />} />
                 <Route path="/nursery-customizer" element={<NurseryDesignCustomizer />} />
+                <Route path="/packages" element={<Packages />} />
                 <Route path="/nursery" element={<Navigate to="/gardening" replace />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
