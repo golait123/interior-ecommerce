@@ -8,6 +8,8 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { ProductCard } from '../components/ProductCard';
 import { ProductQuickViewModal } from '../components/ProductQuickViewModal';
+import { CategoryFilterTree } from '../components/CategoryFilterTree';
+import { getHierarchyForDomain } from '../data/categoryHierarchy';
 import { 
   NURSERY_MAIN_MENU, 
   NURSERY_PRODUCT_TYPES, 
@@ -236,6 +238,13 @@ export default function Gardening() {
   const [activeMenuDropdown, setActiveMenuDropdown] = useState<string | null>(null);
   const [selectedMainMenuCat, setSelectedMainMenuCat] = useState<string | null>(null);
   const [selectedSubCat, setSelectedSubCat] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedColorKeyword, setSelectedColorKeyword] = useState<string | null>(null);
+  const [subCategoryKeywords, setSubCategoryKeywords] = useState<string[]>([]);
+
+  const categoryTree = useMemo(() => {
+    return getHierarchyForDomain('outdoor');
+  }, []);
 
   // Category-Specific Dynamic Sub-Filters (e.g. 'air purifier', 'ceramic', 'plastic')
   const [selectedSubFilters, setSelectedSubFilters] = useState<string[]>([]);
@@ -249,9 +258,6 @@ export default function Gardening() {
 
   // Product Type internal search inside sidebar
   const [productTypeSearch, setProductTypeSearch] = useState('');
-
-  // Mobile sidebar filter drawer toggle
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Accordion toggle states (- / + toggles)
   const [isCategoryOpen, setIsCategoryOpen] = useState(true);
@@ -398,6 +404,22 @@ export default function Gardening() {
       });
     }
 
+    // 3b. Filter by SubCategory Keywords (Screenshot 3 Hierarchical Dropdowns)
+    if (subCategoryKeywords.length > 0) {
+      result = result.filter(p => {
+        const text = `${p.name} ${p.description || ''} ${p.material || ''} ${p.finish || ''} ${p.productType || ''} ${p.category?.name || ''}`.toLowerCase();
+        return subCategoryKeywords.some(kw => text.includes(kw.toLowerCase()));
+      });
+    }
+
+    // 3c. Filter by Flower / Plant Color (Screenshot 3 Hierarchical Swatches)
+    if (selectedColorKeyword) {
+      result = result.filter(p => {
+        const text = `${p.name} ${p.description || ''} ${p.material || ''} ${p.finish || ''}`.toLowerCase();
+        return text.includes(selectedColorKeyword.toLowerCase());
+      });
+    }
+
     // 4. Filter by Category-Specific Dynamic Sub-Filters (Keywords)
     if (selectedSubFilters.length > 0) {
       result = result.filter(p => {
@@ -484,6 +506,9 @@ export default function Gardening() {
     setSearchQuery('');
     setSelectedMainMenuCat(null);
     setSelectedSubCat(null);
+    setSelectedColor(null);
+    setSelectedColorKeyword(null);
+    setSubCategoryKeywords([]);
     setSelectedProductTypes([]);
     setSelectedSubFilters([]);
     setSelectedAvailability('all');
@@ -497,13 +522,15 @@ export default function Gardening() {
     if (searchQuery.trim()) count++;
     if (selectedMainMenuCat) count++;
     if (selectedSubCat) count++;
+    if (selectedColor) count++;
+    if (subCategoryKeywords.length > 0) count++;
     if (selectedProductTypes.length > 0) count += selectedProductTypes.length;
     if (selectedSubFilters.length > 0) count += selectedSubFilters.length;
     if (selectedAvailability !== 'all') count++;
     if (priceFilter !== 'all') count++;
     if (selectedRating !== 'all') count++;
     return count;
-  }, [searchQuery, selectedMainMenuCat, selectedSubCat, selectedProductTypes, selectedSubFilters, selectedAvailability, priceFilter, selectedRating]);
+  }, [searchQuery, selectedMainMenuCat, selectedSubCat, selectedColor, subCategoryKeywords, selectedProductTypes, selectedSubFilters, selectedAvailability, priceFilter, selectedRating]);
 
   const hasActiveFilters = activeFiltersCount > 0;
 
@@ -797,47 +824,43 @@ export default function Gardening() {
                 </>
               ) : (
                 <>
-                  {/* Accordion 1: Department / Category */}
+                  {/* Accordion 1: Department & Subsections (Screenshot 3 Hierarchical Dropdowns) */}
                   <div className="nursery-filter-group">
                     <button
                       type="button"
                       onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                       className="nursery-filter-group-header"
                     >
-                      <span className="font-semibold text-stone-900">Category</span>
+                      <span className="font-semibold text-stone-900">Category & Subsections</span>
                       {isCategoryOpen ? <Minus size={15} /> : <Plus size={15} />}
                     </button>
 
                     {isCategoryOpen && (
-                      <div className="pt-2 pl-1 space-y-1">
-                        <label className="nursery-checkbox-item">
-                          <input
-                            type="radio"
-                            name="main-cat-radio"
-                            checked={!selectedMainMenuCat}
-                            onChange={() => handleSelectHorizontalCategory(null)}
-                            className="accent-[var(--navy)]"
-                          />
-                          <span>All Categories</span>
-                          <span className="text-stone-400 text-xs ml-auto font-mono">({masterNurseryCatalog.length})</span>
-                        </label>
-
-                        {NURSERY_MAIN_MENU.map(cat => {
-                          const isChecked = selectedMainMenuCat === cat.slug;
-                          return (
-                            <label key={cat.id} className="nursery-checkbox-item">
-                              <input
-                                type="radio"
-                                name="main-cat-radio"
-                                checked={isChecked}
-                                onChange={() => handleSelectHorizontalCategory(cat.slug)}
-                                className="accent-[var(--navy)]"
-                              />
-                              <span>{cat.name}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                      <CategoryFilterTree
+                        categories={categoryTree}
+                        selectedCategory={selectedMainMenuCat || ''}
+                        onSelectCategory={(slug) => {
+                          handleSelectHorizontalCategory(slug || null);
+                          setSelectedSubCat(null);
+                          setSubCategoryKeywords([]);
+                          setSelectedColor(null);
+                          setSelectedColorKeyword(null);
+                        }}
+                        selectedSubCategory={selectedSubCat}
+                        onSelectSubCategory={(slug, keywords) => {
+                          setSelectedSubCat(slug);
+                          setSubCategoryKeywords(keywords);
+                          if (!slug) {
+                            setSelectedColor(null);
+                            setSelectedColorKeyword(null);
+                          }
+                        }}
+                        selectedColor={selectedColor}
+                        onSelectColor={(colorId, keyword) => {
+                          setSelectedColor(colorId);
+                          setSelectedColorKeyword(keyword);
+                        }}
+                      />
                     )}
                   </div>
 
@@ -997,22 +1020,8 @@ export default function Gardening() {
 
             {/* Standard Redesigned Toolbar */}
             <div className="nursery-standard-toolbar">
-              {/* Left: Total Count and Mobile Filter Toggle */}
+              {/* Left: Total Count (Clean standard toolbar - Screenshot 1 updated) */}
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowMobileFilters(!showMobileFilters)}
-                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg border border-stone-200 cursor-pointer"
-                >
-                  <SlidersHorizontal size={14} />
-                  <span>Filters</span>
-                  {activeFiltersCount > 0 && (
-                    <span className="bg-[var(--navy)] text-white text-[10px] px-1.5 py-0.2 rounded-full">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </button>
-
                 <div className="text-xs sm:text-sm text-stone-600">
                   Showing <strong className="text-stone-900 font-semibold">{filteredProducts.length}</strong> of{' '}
                   <span className="text-stone-500">{masterNurseryCatalog.length} products</span>
@@ -1104,6 +1113,21 @@ export default function Gardening() {
                   <div className="nursery-filter-chip">
                     <span>{selectedSubCat.replace(/-/g, ' ')}</span>
                     <button type="button" onClick={() => setSelectedSubCat(null)}><X size={12} /></button>
+                  </div>
+                )}
+
+                {selectedColor && (
+                  <div className="nursery-filter-chip">
+                    <span>Colour: {selectedColor}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setSelectedColor(null);
+                        setSelectedColorKeyword(null);
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
                   </div>
                 )}
 

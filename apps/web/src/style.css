@@ -7785,6 +7785,228 @@ button:active:not(:disabled),
   box-shadow: 0 14px 28px -3px rgba(255, 82, 82, 0.5);
 }
 
+/* ========================================================================= */
+/* NESTED ACCORDION FILTER DROPDOWNS & ATTRIBUTE SWATCHES (SCREENSHOT 3)      */
+/* ========================================================================= */
+
+.nursery-nested-parent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.nursery-nested-parent-item:hover {
+  background-color: #f1f5f9;
+  color: var(--navy);
+}
+.nursery-nested-parent-item.active {
+  background-color: #f0f6fc;
+  color: var(--navy);
+  font-weight: 600;
+}
+
+.nursery-nested-toggle-btn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: transform 0.15s ease;
+}
+.nursery-nested-toggle-btn:hover {
+  color: var(--navy);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nursery-nested-children-list {
+  padding-left: 18px;
+  margin-top: 3px;
+  margin-bottom: 6px;
+  border-left: 1.5px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nursery-nested-child-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.nursery-nested-child-item:hover {
+  background-color: #f8fafc;
+  color: var(--navy);
+}
+.nursery-nested-child-item.active {
+  background-color: var(--navy);
+  color: #ffffff !important;
+  font-weight: 600;
+}
+.nursery-nested-child-item.active .nested-count-badge {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.nested-count-badge {
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+  color: #64748b;
+  font-family: monospace;
+}
+
+/* Color Attribute Swatches Grid (e.g. Flower Seed Colors) */
+.nursery-color-swatches-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-top: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.nursery-color-swatch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #334155;
+}
+.nursery-color-swatch-btn:hover {
+  border-color: var(--navy);
+  transform: translateY(-1px);
+}
+.nursery-color-swatch-btn.active {
+  background: var(--navy);
+  color: #ffffff !important;
+  border-color: var(--navy);
+  font-weight: 700;
+  box-shadow: 0 1px 4px var(--navy-glow);
+}
+
+.swatch-color-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+/* ========================================================================= */
+/* PRODUCT CARD +/- STEPPER & AUTO-ADD (SCREENSHOT 2)                        */
+/* ========================================================================= */
+
+.product-qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1.5px solid var(--navy);
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(15, 36, 68, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 32px;
+}
+.product-qty-stepper:hover {
+  box-shadow: 0 4px 10px rgba(15, 36, 68, 0.16);
+}
+
+.product-qty-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  padding: 0;
+}
+.product-qty-btn:hover:not(:disabled) {
+  background-color: var(--navy);
+  color: #ffffff;
+}
+.product-qty-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.product-qty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.product-qty-count {
+  min-width: 24px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  user-select: none;
+  padding: 0 4px;
+}
+
+.product-qty-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: var(--navy);
+  border: 1.5px solid var(--navy);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(15, 36, 68, 0.08);
+}
+.product-qty-add-btn:hover:not(:disabled) {
+  background-color: var(--navy);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 36, 68, 0.18);
+}
+.product-qty-add-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Image Hover Action Bar Stepper Variant */
+.product-card-actions .product-qty-stepper {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  height: 30px;
+}
+
 
 /* ========================================================================= */
 /* INTERIORG COMPLETE DESIGN SYSTEM & 4 THEMES (WALKTHROUGH POSTER)          */

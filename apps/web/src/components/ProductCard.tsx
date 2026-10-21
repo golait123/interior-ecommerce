@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
-import { ShoppingBag, Eye, Sliders, Ban } from 'lucide-react';
+import { Eye, Ban, Plus, Minus } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+import toast from 'react-hot-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -10,6 +13,66 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardProps) {
+  const { user } = useAuth();
+  const { cart, addItem, updateItem, removeItem } = useCart();
+  const navigate = useNavigate();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Cart item lookup & quantity count
+  const cartItem = cart?.items?.find((item) => item.product.id === product.id);
+  const itemCount = cartItem ? cartItem.quantity : 0;
+
+  const handleIncrement = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!user) {
+      toast.error('Please sign in to add items to your cart');
+      navigate('/login');
+      return;
+    }
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      if (itemCount === 0) {
+        if (onAddToCart) {
+          onAddToCart(product);
+        } else {
+          await addItem(product.id, 1);
+          toast.success(`Added ${product.name} to cart`);
+        }
+      } else if (cartItem) {
+        await updateItem(cartItem.id, itemCount + 1);
+      }
+    } catch {
+      toast.error('Could not update cart quantity');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDecrement = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!user || isUpdating) return;
+    setIsUpdating(true);
+    try {
+      if (itemCount === 1 && cartItem) {
+        await removeItem(cartItem.id);
+        toast('Removed from cart', { icon: '🗑️' });
+      } else if (itemCount > 1 && cartItem) {
+        await updateItem(cartItem.id, itemCount - 1);
+      }
+    } catch {
+      toast.error('Could not update cart quantity');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const isDiscounted = product.discountPrice !== null;
   const curPrice = Number(product.discountPrice || product.price);
   const origPrice = Number(product.price);
@@ -121,30 +184,43 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
               <Ban size={13} />
               <span>Sold Out</span>
             </div>
-          ) : onAddToCart ? (
+          ) : itemCount > 0 ? (
+            <div 
+              className="product-qty-stepper product-qty-stepper-overlay"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            >
+              <button
+                type="button"
+                onClick={handleDecrement}
+                className="product-qty-btn product-qty-minus"
+                title="Decrease quantity"
+                disabled={isUpdating}
+              >
+                <Minus size={13} />
+              </button>
+              <span className="product-qty-count">{itemCount} in Bag</span>
+              <button
+                type="button"
+                onClick={handleIncrement}
+                className="product-qty-btn product-qty-plus"
+                title="Increase quantity"
+                disabled={isUpdating}
+              >
+                <Plus size={13} />
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onAddToCart(product);
-              }}
-              className="product-btn-addtocart"
+              onClick={handleIncrement}
+              className="product-btn-addtocart flex items-center gap-1"
               title="Add to cart"
+              disabled={isUpdating}
             >
-              <ShoppingBag size={13} />
-              <span>Add</span>
+              <Plus size={13} />
+              <span>Add to Bag</span>
             </button>
-          ) : product.isCustomizable ? (
-            <Link
-              to={`/products/${product.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="product-btn-addtocart"
-            >
-              <Sliders size={13} />
-              <span>Customize</span>
-            </Link>
-          ) : null}
+          )}
         </div>
       </div>
       
@@ -208,7 +284,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
             </span>
           </div>
 
-          {/* Quick Footer Action Button */}
+          {/* Quick Footer Action Button: Interactive +/- Stepper (Screenshot 2) */}
           {isOutOfStock ? (
             <span 
               className="product-footer-action-btn flex items-center justify-center"
@@ -217,31 +293,48 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
             >
               <Ban size={14} />
             </span>
-          ) : onAddToCart ? (
+          ) : itemCount > 0 ? (
+            <div 
+              className="product-qty-stepper"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            >
+              <button
+                type="button"
+                onClick={handleDecrement}
+                className="product-qty-btn product-qty-minus"
+                title="Decrease quantity"
+                disabled={isUpdating}
+                aria-label="Decrease quantity"
+              >
+                <Minus size={13} />
+              </button>
+              <span className="product-qty-count">{itemCount}</span>
+              <button
+                type="button"
+                onClick={handleIncrement}
+                className="product-qty-btn product-qty-plus"
+                title="Increase quantity"
+                disabled={isUpdating}
+                aria-label="Increase quantity"
+              >
+                <Plus size={13} />
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onAddToCart(product);
-              }}
-              className="product-footer-action-btn"
+              onClick={handleIncrement}
+              className="product-qty-add-btn"
               title="Add to cart"
+              disabled={isUpdating}
+              aria-label="Add to cart"
             >
-              <ShoppingBag size={14} />
+              <Plus size={13} />
+              <span>Add</span>
             </button>
-          ) : product.isCustomizable ? (
-            <Link
-              to={`/products/${product.id}`}
-              className="product-footer-action-btn"
-              title="Customize product"
-            >
-              <Sliders size={14} />
-            </Link>
-          ) : null}
+          )}
         </div>
       </div>
     </div>
   );
 }
-

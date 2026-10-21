@@ -9,6 +9,8 @@ import { Footer } from '../components/Footer';
 import { ProductCard } from '../components/ProductCard';
 import { ProductQuickViewModal } from '../components/ProductQuickViewModal';
 import { AddProductModal } from '../components/AddProductModal';
+import { CategoryFilterTree } from '../components/CategoryFilterTree';
+import { getHierarchyForDomain } from '../data/categoryHierarchy';
 import { useLocationContext } from '../contexts/LocationContext';
 import { 
   ArrowUpDown, 
@@ -68,6 +70,10 @@ export default function Shop() {
   );
   const [selectedSpace, setSelectedSpace] = useState<string>(spaceParam);
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [subCategoryKeywords, setSubCategoryKeywords] = useState<string[]>([]);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedColorKeyword, setSelectedColorKeyword] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>(qParam);
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'discount' | 'name'>('featured');
   const [priceRange, setPriceRange] = useState<'all' | 'under-1500' | '1500-3000' | '3000-7000' | '7000-plus'>('all');
@@ -246,9 +252,29 @@ export default function Shop() {
     return '✨';
   };
 
+  const categoryTree = useMemo(() => {
+    return getHierarchyForDomain(activeDomain);
+  }, [activeDomain]);
+
   // Client-side filtering & sorting
   const filteredProducts = useMemo(() => {
     let items = productsData?.items ? [...productsData.items] : [];
+
+    // Filter by SubCategory Keywords (Screenshot 3)
+    if (subCategoryKeywords.length > 0) {
+      items = items.filter(p => {
+        const text = `${p.name} ${p.description || ''} ${p.material || ''} ${p.finish || ''} ${p.category?.name || ''}`.toLowerCase();
+        return subCategoryKeywords.some(kw => text.includes(kw.toLowerCase()));
+      });
+    }
+
+    // Filter by Color (Screenshot 3)
+    if (selectedColorKeyword) {
+      items = items.filter(p => {
+        const text = `${p.name} ${p.description || ''} ${p.finish || ''} ${p.material || ''}`.toLowerCase();
+        return text.includes(selectedColorKeyword.toLowerCase());
+      });
+    }
 
     // Filter by Price Range
     if (priceRange === 'under-1500') {
@@ -299,7 +325,7 @@ export default function Shop() {
     }
 
     return items;
-  }, [productsData?.items, priceRange, inStockOnly, selectedRating, sortBy]);
+  }, [productsData?.items, subCategoryKeywords, selectedColorKeyword, priceRange, inStockOnly, selectedRating, sortBy]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
     if (!user) {
@@ -317,6 +343,10 @@ export default function Shop() {
   const handleClearAllFilters = () => {
     setSelectedSpace(activeDomain === 'all' ? '' : activeDomain);
     setSelectedCategory('');
+    setSelectedSubCategory(null);
+    setSubCategoryKeywords([]);
+    setSelectedColor(null);
+    setSelectedColorKeyword(null);
     setSearchQuery('');
     setPriceRange('all');
     setInStockOnly(false);
@@ -335,11 +365,13 @@ export default function Shop() {
     if (searchQuery.trim()) count++;
     if (selectedSpace && selectedSpace !== activeDomain && selectedSpace !== '') count++;
     if (selectedCategory) count++;
+    if (selectedSubCategory) count++;
+    if (selectedColor) count++;
     if (priceRange !== 'all') count++;
     if (inStockOnly) count++;
     if (selectedRating !== 'all') count++;
     return count;
-  }, [searchQuery, selectedSpace, activeDomain, selectedCategory, priceRange, inStockOnly, selectedRating]);
+  }, [searchQuery, selectedSpace, activeDomain, selectedCategory, selectedSubCategory, selectedColor, priceRange, inStockOnly, selectedRating]);
 
   const hasActiveFilters = activeFiltersCount > 0;
 
@@ -556,54 +588,49 @@ export default function Shop() {
                 )}
               </div>
 
-              {/* Accordion 1: Category & Craft */}
+              {/* Accordion 1: Category & Subsections (Screenshot 3 Hierarchical Dropdowns) */}
               <div className="nursery-filter-group">
                 <button
                   type="button"
                   onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                   className="nursery-filter-group-header"
                 >
-                  <span className="font-semibold text-stone-900">Category & Craft</span>
+                  <span className="font-semibold text-stone-900">Category & Subsections</span>
                   {isCategoryOpen ? <Minus size={15} /> : <Plus size={15} />}
                 </button>
 
                 {isCategoryOpen && (
-                  <div className="pt-2 pl-1 space-y-1">
-                    <input
-                      type="text"
-                      placeholder="Search categories..."
-                      value={categorySearch}
-                      onChange={(e) => setCategorySearch(e.target.value)}
-                      className="nursery-filter-subsearch"
-                    />
-
-                    <label className="nursery-checkbox-item">
-                      <input
-                        type="radio"
-                        name="shop-cat-radio"
-                        checked={!selectedCategory}
-                        onChange={() => handleCategorySelect('')}
-                        className="accent-[var(--navy)]"
-                      />
-                      <span>All Categories</span>
-                    </label>
-
-                    {visibleCategories.map(cat => {
-                      const isChecked = selectedCategory === cat.slug;
-                      return (
-                        <label key={cat.id} className="nursery-checkbox-item">
-                          <input
-                            type="radio"
-                            name="shop-cat-radio"
-                            checked={isChecked}
-                            onChange={() => handleCategorySelect(cat.slug)}
-                            className="accent-[var(--navy)]"
-                          />
-                          <span className="truncate">{cat.name}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
+                  <CategoryFilterTree
+                    categories={categoryTree}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={(slug) => {
+                      setSelectedCategory(slug);
+                      setSelectedSubCategory(null);
+                      setSubCategoryKeywords([]);
+                      setSelectedColor(null);
+                      setSelectedColorKeyword(null);
+                      setSearchParams(prev => {
+                        const next = new URLSearchParams(prev);
+                        if (slug) next.set('category', slug);
+                        else next.delete('category');
+                        return next;
+                      });
+                    }}
+                    selectedSubCategory={selectedSubCategory}
+                    onSelectSubCategory={(slug, keywords) => {
+                      setSelectedSubCategory(slug);
+                      setSubCategoryKeywords(keywords);
+                      if (!slug) {
+                        setSelectedColor(null);
+                        setSelectedColorKeyword(null);
+                      }
+                    }}
+                    selectedColor={selectedColor}
+                    onSelectColor={(colorId, keyword) => {
+                      setSelectedColor(colorId);
+                      setSelectedColorKeyword(keyword);
+                    }}
+                  />
                 )}
               </div>
 
@@ -711,22 +738,8 @@ export default function Shop() {
 
             {/* Standard Toolbar */}
             <div className="nursery-standard-toolbar">
-              {/* Left: Total Count and Mobile Filter Toggle */}
+              {/* Left: Total Count (Clean standard toolbar - Screenshot 1 updated) */}
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowMobileFilters(!showMobileFilters)}
-                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg border border-stone-200 cursor-pointer"
-                >
-                  <SlidersHorizontal size={14} />
-                  <span>Filters</span>
-                  {activeFiltersCount > 0 && (
-                    <span className="bg-[var(--navy)] text-white text-[10px] px-1.5 py-0.2 rounded-full">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </button>
-
                 <div className="text-xs sm:text-sm text-stone-600">
                   Showing <strong className="text-stone-900 font-semibold">{filteredProducts.length}</strong> of{' '}
                   <span className="text-stone-500">{productsData?.total ?? filteredProducts.length} pieces</span>
@@ -817,6 +830,38 @@ export default function Shop() {
                   <div className="nursery-filter-chip">
                     <span>Category: {activeCategoryObj?.name || selectedCategory}</span>
                     <button type="button" onClick={() => handleCategorySelect('')}><X size={12} /></button>
+                  </div>
+                )}
+
+                {selectedSubCategory && (
+                  <div className="nursery-filter-chip">
+                    <span>Sub-Section: {selectedSubCategory.replace(/-/g, ' ')}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setSelectedSubCategory(null);
+                        setSubCategoryKeywords([]);
+                        setSelectedColor(null);
+                        setSelectedColorKeyword(null);
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                {selectedColor && (
+                  <div className="nursery-filter-chip">
+                    <span>Colour: {selectedColor}</span>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setSelectedColor(null);
+                        setSelectedColorKeyword(null);
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
                   </div>
                 )}
 
@@ -930,32 +975,35 @@ export default function Shop() {
                 </button>
               </div>
 
-              {/* Mobile Categories */}
+              {/* Mobile Categories (Screenshot 3 Hierarchical Dropdowns) */}
               <div className="mb-4 pt-3 border-t border-stone-100">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Category & Craft</h4>
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                  <label className="nursery-checkbox-item">
-                    <input
-                      type="radio"
-                      name="m-shop-cat-radio"
-                      checked={!selectedCategory}
-                      onChange={() => handleCategorySelect('')}
-                      className="accent-[var(--navy)]"
-                    />
-                    <span>All Categories</span>
-                  </label>
-                  {visibleCategories.map(cat => (
-                    <label key={cat.id} className="nursery-checkbox-item">
-                      <input
-                        type="radio"
-                        name="m-shop-cat-radio"
-                        checked={selectedCategory === cat.slug}
-                        onChange={() => handleCategorySelect(cat.slug)}
-                        className="accent-[var(--navy)]"
-                      />
-                      <span className="truncate">{cat.name}</span>
-                    </label>
-                  ))}
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Category & Subsections</h4>
+                <div className="max-h-72 overflow-y-auto">
+                  <CategoryFilterTree
+                    categories={categoryTree}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={(slug) => {
+                      setSelectedCategory(slug);
+                      setSelectedSubCategory(null);
+                      setSubCategoryKeywords([]);
+                      setSelectedColor(null);
+                      setSelectedColorKeyword(null);
+                    }}
+                    selectedSubCategory={selectedSubCategory}
+                    onSelectSubCategory={(slug, keywords) => {
+                      setSelectedSubCategory(slug);
+                      setSubCategoryKeywords(keywords);
+                      if (!slug) {
+                        setSelectedColor(null);
+                        setSelectedColorKeyword(null);
+                      }
+                    }}
+                    selectedColor={selectedColor}
+                    onSelectColor={(colorId, keyword) => {
+                      setSelectedColor(colorId);
+                      setSelectedColorKeyword(keyword);
+                    }}
+                  />
                 </div>
               </div>
 
