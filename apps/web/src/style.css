@@ -6818,10 +6818,50 @@ button:active:not(:disabled),
   font-family: var(--font-mono, monospace);
 }
 
-/* RIGHT COLUMN: STICKY 360 VISUALIZER & QUOTATION CARD */
-.nl-sticky-summary-wrap {
+/* RIGHT COLUMN: PARALLEL STICKY SUMMARY & QUOTATION CARD */
+.nl-customizer-summary {
   position: sticky;
-  top: 24px;
+  top: 96px;
+  align-self: start;
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.nl-customizer-summary::-webkit-scrollbar {
+  width: 5px;
+}
+.nl-customizer-summary::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nl-customizer-summary::-webkit-scrollbar-thumb {
+  background: #cbdceb;
+  border-radius: 10px;
+}
+
+.nl-sticky-summary-wrap {
+  position: static;
+  width: 100%;
+}
+
+.nl-selected-service-card {
+  background: #f7faf7;
+  border: 1px solid #d2e4d4;
+  border-radius: 20px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(15, 73, 44, 0.04);
+  transition: all 0.2s ease;
+}
+
+.nl-breakdown-row.nl-row-active {
+  background: #f0fdf4;
+  color: #166534;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 5px 10px;
+  margin: 2px -10px;
+  border-left: 3px solid #16a34a;
 }
 
 .nl-visualizer-card {
@@ -7204,6 +7244,13 @@ button:active:not(:disabled),
 
   .nl-steps-container {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nl-customizer-summary {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .nl-sticky-summary-wrap {

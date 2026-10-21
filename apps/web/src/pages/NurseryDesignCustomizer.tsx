@@ -635,6 +635,13 @@ export default function NurseryDesignCustomizer() {
               onClick={() => {
                 setActiveStep(step.id);
                 setMobileView('options');
+                const stageEl = document.querySelector('.nl-studio-layout');
+                if (stageEl) {
+                  const rect = stageEl.getBoundingClientRect();
+                  if (rect.top < 80) {
+                    window.scrollTo({ top: window.scrollY + rect.top - 96, behavior: 'smooth' });
+                  }
+                }
               }}
               className={`nl-step-btn ${activeStep === step.id ? 'active' : ''}`}
             >
@@ -1026,6 +1033,33 @@ export default function NurseryDesignCustomizer() {
 
             {/* Quotation & Reservation Card */}
             <div className="nl-quote-card">
+
+              {/* Active Selected Service Spotlight */}
+              <div className="nl-selected-service-card flex items-center gap-3">
+                <img
+                  src={selectedPack.image}
+                  alt={selectedPack.name}
+                  className="w-13 h-13 rounded-xl object-cover border border-[#cbdceb] shrink-0"
+                  style={{ width: '52px', height: '52px' }}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full">
+                      Step {activeStep} Service Active
+                    </span>
+                    <span className="text-[10px] font-semibold text-muted truncate">
+                      {currentSpace.name}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-[#0a192f] truncate m-0 leading-tight">
+                    {activeStep === 1 ? currentSpace.name : activeStep === 2 ? selectedPack.name : activeStep === 3 ? selectedPlanter.name : `${Object.values(addons).filter(Boolean).length} Care Add-ons Selected`}
+                  </h4>
+                  <div className="text-[11px] text-[#475569] truncate mt-0.5">
+                    {selectedPack.name} • {selectedPlanter.name} ({areaSqFt} sq ft)
+                  </div>
+                </div>
+              </div>
+
               <div className="nl-price-row">
                 <div>
                   <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
@@ -1064,22 +1098,22 @@ export default function NurseryDesignCustomizer() {
                 </div>
               </div>
 
-              {/* Itemized Breakdown */}
+              {/* Itemized Breakdown with Dynamic Selection Highlight */}
               <div className="nl-breakdown">
-                <div className="nl-breakdown-row">
+                <div className={`nl-breakdown-row ${activeStep === 1 ? 'nl-row-active' : ''}`}>
                   <span>{currentSpace.name} ({areaSqFt} sq ft):</span>
                   <span>{formatPrice(Math.round(basePrice * dimensionMultiplier))}</span>
                 </div>
-                <div className="nl-breakdown-row">
+                <div className={`nl-breakdown-row ${activeStep === 2 ? 'nl-row-active' : ''}`}>
                   <span>{selectedPack.name}:</span>
                   <span>{selectedPack.priceDelta === 0 ? 'Included' : `+${formatPrice(selectedPack.priceDelta)}`}</span>
                 </div>
-                <div className="nl-breakdown-row">
+                <div className={`nl-breakdown-row ${activeStep === 3 ? 'nl-row-active' : ''}`}>
                   <span>{selectedPlanter.name}:</span>
                   <span>{selectedPlanter.priceDelta === 0 ? 'Standard Clay' : `+${formatPrice(selectedPlanter.priceDelta)}`}</span>
                 </div>
                 {addonsTotal > 0 && (
-                  <div className="nl-breakdown-row">
+                  <div className={`nl-breakdown-row ${activeStep === 4 ? 'nl-row-active' : ''}`}>
                     <span>Care Essentials & Add-ons:</span>
                     <span>+{formatPrice(addonsTotal)}</span>
                   </div>
