@@ -973,25 +973,61 @@ button, input[type="button"], input[type="submit"], .btn {
 }
 
 /* ========================================================================= */
-/* MAJESTIC PRODUCT CARD & GRID (IMAGE 2 TEMPLATE)                           */
+/* STANDARDIZED LUXURY CATALOG GRID & CARD SIZING (TEMPLATE ALIGNED)        */
 /* ========================================================================= */
-.product-grid { 
+.product-grid,
+.catalog-grid-4 { 
   display: grid; 
   grid-template-columns: repeat(4, minmax(0, 1fr)); 
-  gap: 28px; 
-}
-@media (max-width: 1024px) {
-  .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-}
-@media (max-width: 768px) {
-  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-}
-@media (max-width: 480px) {
-  .product-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 20px; }
+  gap: 20px; 
+  width: 100%;
 }
 
-/* ========================================================================= */
-/* PREMIUM ORGANIZED PRODUCT BOX DESIGN                                       */
+@media (max-width: 1200px) {
+  .product-grid,
+  .catalog-grid-4 { 
+    grid-template-columns: repeat(3, minmax(0, 1fr)); 
+    gap: 18px; 
+  }
+}
+
+@media (max-width: 768px) {
+  .product-grid,
+  .catalog-grid-4 { 
+    grid-template-columns: repeat(2, minmax(0, 1fr)); 
+    gap: 14px; 
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid,
+  .catalog-grid-4 { 
+    grid-template-columns: repeat(2, minmax(0, 1fr)); 
+    gap: 10px; 
+  }
+}
+
+.catalog-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .catalog-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .catalog-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
 /* ========================================================================= */
 /* PREMIUM TOP-TIER PRODUCT BOX DESIGN (LUXURY INTERIOR STANDARDS)           */
 /* ========================================================================= */
@@ -1006,6 +1042,7 @@ button, input[type="button"], input[type="submit"], .btn {
   text-decoration: none;
   position: relative;
   height: 100%;
+  width: 100%;
 }
 
 .product-card:hover {
@@ -1020,9 +1057,22 @@ button, input[type="button"], input[type="submit"], .btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1 / 1; 
+  height: 240px; 
+  width: 100%;
   background: #fbf9f6;
   border-bottom: 1px solid #f3f0ea;
+}
+
+@media (max-width: 768px) {
+  .product-card-image-wrapper {
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-card-image-wrapper {
+    height: 165px;
+  }
 }
 
 .product-image-placeholder { 

@@ -678,12 +678,12 @@ export default function Shop() {
         </div>
 
         {/* ========================================================================= */}
-        {/* 3. PRODUCT GRID (ORGANIZED 3-COL / 4-COL PROPORTIONS)                     */}
+        {/* 3. PRODUCT GRID (STANDARDIZED TEMPLATE PROPORTIONS)                       */}
         {/* ========================================================================= */}
         {isLoading ? (
           <div className="loading-spinner mx-auto my-24"></div>
         ) : filteredProducts.length > 0 ? (
-          <div className={`grid gap-6 ${columnCount === 4 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'}`}>
+          <div className={columnCount === 4 ? 'catalog-grid-4' : 'catalog-grid-3'}>
             {filteredProducts.map(product => (
               <ProductCard
                 key={product.id}
