@@ -18,7 +18,6 @@ import {
   Check,
   Truck,
   Package,
-  RotateCw,
   Search,
   MapPin,
   ChevronLeft,
@@ -359,11 +358,6 @@ export default function NurseryDesignCustomizer() {
   // Quantity Stepper
   const [quantity, setQuantity] = useState<number>(1);
 
-  // 360 Visualizer Controls
-  const [rotationAngle, setRotationAngle] = useState<number>(0);
-  const [sunlightMode, setSunlightMode] = useState<'day' | 'filtered' | 'ambient'>('day');
-  const [activeThumbIdx, setActiveThumbIdx] = useState<number>(0);
-
   // Pincode Checker
   const [pincode, setPincode] = useState<string>('400001');
   const [pincodeVerified, setPincodeVerified] = useState<boolean>(true);
@@ -391,15 +385,6 @@ export default function NurseryDesignCustomizer() {
     setSelectedSpaceId(space.id);
     setWidth(space.defaultW);
     setLength(space.defaultL);
-  };
-
-  // 360 Rotation Controls
-  const handleRotateLeft = () => {
-    setRotationAngle(prev => (prev - 45 + 360) % 360);
-  };
-
-  const handleRotateRight = () => {
-    setRotationAngle(prev => (prev + 45) % 360);
   };
 
   // Pricing Model
@@ -679,7 +664,7 @@ export default function NurseryDesignCustomizer() {
             onClick={() => setMobileView('visualizer')}
             className={`nl-mobile-tab-btn ${mobileView === 'visualizer' ? 'active' : ''}`}
           >
-            🪴 360 Preview & Quote ({formatPrice(finalTotalPrice)})
+            📋 Order Summary & Quote ({formatPrice(finalTotalPrice)})
           </button>
         </div>
 
@@ -1021,7 +1006,7 @@ export default function NurseryDesignCustomizer() {
                   className="nl-reserve-btn"
                   style={{ display: 'inline-flex', width: 'auto', padding: '12px 24px' }}
                 >
-                  <span>Review 360 Visualizer & Price</span>
+                  <span>Review Order & Price</span>
                   <ChevronRight size={16} />
                 </button>
               </div>
@@ -1031,148 +1016,13 @@ export default function NurseryDesignCustomizer() {
         </section>
 
         {/* --------------------------------------------------------------------- */}
-        {/* RIGHT COLUMN: 360 VISUALIZER & QUOTATION CARD                          */}
+        {/* RIGHT COLUMN: QUOTATION CARD                                          */}
         {/* --------------------------------------------------------------------- */}
         <aside
           className="nl-customizer-summary"
           style={{ display: mobileView === 'options' ? 'block' : 'block' }}
         >
           <div className="nl-sticky-summary-wrap">
-
-            {/* 360 Live Visualizer Stage */}
-            <div className="nl-visualizer-card">
-              <div className="nl-visualizer-header">
-                <div>
-                  <div className="nl-visualizer-tag">Live Botanical Studio</div>
-                  <h3 className="nl-visualizer-title">{currentSpace.name}</h3>
-                </div>
-
-                {/* Sun Light Mode Toggles */}
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button
-                    type="button"
-                    onClick={() => setSunlightMode('day')}
-                    title="Day Full Sun"
-                    style={{
-                      border: 'none',
-                      background: sunlightMode === 'day' ? '#0f492c' : '#f1f5f9',
-                      color: sunlightMode === 'day' ? '#ffffff' : '#64748b',
-                      borderRadius: 6,
-                      padding: 4,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Sun size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSunlightMode('filtered')}
-                    title="Filtered Golden Hour"
-                    style={{
-                      border: 'none',
-                      background: sunlightMode === 'filtered' ? '#0f492c' : '#f1f5f9',
-                      color: sunlightMode === 'filtered' ? '#ffffff' : '#64748b',
-                      borderRadius: 6,
-                      padding: 4,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <CloudSun size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSunlightMode('ambient')}
-                    title="Ambient Evening Glow"
-                    style={{
-                      border: 'none',
-                      background: sunlightMode === 'ambient' ? '#0f492c' : '#f1f5f9',
-                      color: sunlightMode === 'ambient' ? '#ffffff' : '#64748b',
-                      borderRadius: 6,
-                      padding: 4,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Moon size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Visualizer Viewport */}
-              <div className={`nl-stage-viewport nl-stage-sun-${sunlightMode}`}>
-                <img
-                  src={selectedPack.image}
-                  alt={selectedPack.name}
-                  className="nl-stage-plant-img"
-                  style={{
-                    transform: `rotate(${rotationAngle * 0.05}deg) scale(1.03)`
-                  }}
-                />
-
-                <div className="nl-stage-rotator-ring" />
-
-                {/* Stage Rotation Controls */}
-                <div className="nl-stage-ctrls-bar">
-                  <button
-                    type="button"
-                    onClick={handleRotateLeft}
-                    className="nl-stage-ctrl-btn"
-                    title="Rotate Left 45°"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <span className="nl-stage-angle-text">
-                    <RotateCw size={11} style={{ display: 'inline', marginRight: 3 }} />
-                    {rotationAngle}° 3D View
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleRotateRight}
-                    className="nl-stage-ctrl-btn"
-                    title="Rotate Right 45°"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Perspectives Thumbnails Strip */}
-              <div className="nl-thumb-strip">
-                {[
-                  { label: 'Overview', img: selectedPack.image },
-                  { label: 'Foliage', img: currentSpace.image },
-                  { label: 'Pot Angle', img: '/images/indoor-sanctuary.jpg' },
-                  { label: 'Roots', img: '/images/outdoor-garden.jpg' },
-                  { label: 'Balcony', img: '/images/interiorg-hero-banner.jpg' }
-                ].map((thumb, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      setActiveThumbIdx(idx);
-                      setRotationAngle(idx * 72);
-                    }}
-                    className={`nl-thumb-btn ${activeThumbIdx === idx ? 'active' : ''}`}
-                    title={thumb.label}
-                  >
-                    <img src={thumb.img} alt={thumb.label} />
-                  </button>
-                ))}
-              </div>
-
-              {/* Included Roster in this Pack */}
-              <div className="nl-included-roster">
-                <div className="nl-roster-title">
-                  {selectedPack.name} ({selectedPack.plants.length} Botanical Specimens)
-                </div>
-                <div className="nl-roster-chips">
-                  {selectedPack.plants.map((plant, idx) => (
-                    <span key={idx} className="nl-roster-chip">
-                      <Leaf size={11} /> {plant}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
 
             {/* Quotation & Reservation Card */}
             <div className="nl-quote-card">
