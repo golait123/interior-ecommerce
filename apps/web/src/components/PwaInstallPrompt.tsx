@@ -12,9 +12,12 @@ export function PwaInstallPrompt() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [isIos, setIsIos] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const networkUrl = 'http://192.168.1.13:5173/';
+  const [networkUrl, setNetworkUrl] = useState(() => typeof window !== 'undefined' ? window.location.origin : '');
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setNetworkUrl(window.location.origin);
+    }
     // 1. Check if already running in standalone PWA mode
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches || 
