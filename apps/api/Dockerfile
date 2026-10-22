@@ -1,10 +1,16 @@
 FROM node:22-alpine
 WORKDIR /app
-COPY package*.json ./
+
+# Copy API package definition
+COPY apps/api/package*.json ./
 RUN npm install
-COPY tsconfig.json ./
-COPY prisma ./prisma
-COPY src ./src
+
+# Copy configuration, prisma schema and source files
+COPY apps/api/tsconfig.json ./
+COPY apps/api/prisma ./prisma
+COPY apps/api/src ./src
+
 RUN npx prisma generate && npm run build
+
 EXPOSE 4000
-CMD ["sh","-c","npx prisma migrate deploy && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

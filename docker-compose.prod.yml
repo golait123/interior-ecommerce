@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: interior-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-interior}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-interior_prod_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-interior_ecommerce}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - interior-net
+  mongodb:
+    image: mongo:7.0
+    container_name: interior-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - interior-net
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: interior-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://interior:${POSTGRES_PASSWORD:-interior_prod_secure_password}@postgres:5432/interior_ecommerce?schema=public
+      MONGODB_URI: mongodb://mongodb:27017/interior_ecommerce
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - postgres
+      - mongodb
+    networks:
+      - interior-net
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: https://api.yourdomain.com/api/v1
+    container_name: interior-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - interior-net
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: interior-cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - web
+      - api
+    networks:
+      - interior-net
+volumes:
+  postgres_data:
+  mongo_data:
+networks:
+  interior-net:
+    driver: bridge
