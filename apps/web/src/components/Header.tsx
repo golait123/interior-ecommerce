@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Search, 
@@ -33,8 +33,31 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLuckyModalOpen, setIsLuckyModalOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const currencyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsUserMenuOpen(false);
+    setIsCurrencyOpen(false);
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+      if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
+        setIsCurrencyOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +102,7 @@ export function Header() {
 
           <div className="utility-right">
             {/* Country / Currency Selector */}
-            <div className="currency-selector-dropdown">
+            <div className="currency-selector-dropdown" ref={currencyRef}>
               <button
                 type="button"
                 className="currency-btn"
@@ -214,33 +237,58 @@ export function Header() {
 
             {/* Account / User Menu */}
             {user ? (
-              <div className="user-account-dropdown">
-                <button className="header-action-item user-btn">
+              <div className="user-account-dropdown" ref={userMenuRef}>
+                <button
+                  type="button"
+                  className="header-action-item user-btn"
+                  onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                  aria-expanded={isUserMenuOpen}
+                  aria-label="User account menu"
+                >
                   <div className="action-icon-wrapper">
                     <UserIcon size={20} />
                   </div>
                   <span className="action-label">{user.name ? user.name.split(' ')[0] : 'Account'}</span>
                 </button>
-                <div className="user-flyout-menu">
+                <div className={`user-flyout-menu ${isUserMenuOpen ? 'open' : ''}`}>
                   <div className="flyout-header">
                     <strong>{user.name}</strong>
                     <small>{user.email}</small>
                     <span className="flyout-role-tag">{user.role}</span>
                   </div>
                   <div className="flyout-links">
-                    <Link to="/customer/dashboard" className="flyout-link">
+                    <Link
+                      to="/customer/dashboard"
+                      className="flyout-link"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
                       Customer Dashboard
                     </Link>
-                    <Link to="/orders" className="flyout-link">
+                    <Link
+                      to="/orders"
+                      className="flyout-link"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
                       My Orders
                     </Link>
                     {['ADMIN', 'STOCK_MANAGER'].includes(user.role) && (
-                      <Link to="/dashboard" className="flyout-link highlight">
+                      <Link
+                        to="/dashboard"
+                        className="flyout-link highlight"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
                         <LayoutDashboard size={14} className="inline mr-1" />
                         Admin Workspace
                       </Link>
                     )}
-                    <button type="button" onClick={logout} className="flyout-logout-btn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="flyout-logout-btn"
+                    >
                       Sign Out
                     </button>
                   </div>
