@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const apiProxyTarget = process.env.API_PROXY_TARGET || process.env.VITE_API_PROXY_TARGET || (process.env.NODE_ENV === 'production' ? 'http://api:4000' : 'http://localhost:4000');
+
 export default defineConfig({
   plugins: [
     react(),
@@ -30,7 +32,11 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: apiProxyTarget,
         changeOrigin: true,
       },
     },
@@ -39,5 +45,15 @@ export default defineConfig({
     host: true,
     port: 5173,
     allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+    },
   },
 });
