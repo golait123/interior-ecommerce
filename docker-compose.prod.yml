@@ -55,9 +55,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: interior-cloudflared
     restart: unless-stopped
-    command: tunnel run
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate --url http://web:5173
     depends_on:
       - web
       - api
