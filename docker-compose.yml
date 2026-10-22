@@ -1,33 +1,93 @@
 services:
+  # 1. PostgreSQL Database (Relational Data & E-Commerce Core)
   postgres:
     image: postgres:17-alpine
     container_name: interior-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: interior
-      POSTGRES_PASSWORD: interior_dev
-      POSTGRES_DB: interior_ecommerce
+      POSTGRES_USER: ${POSTGRES_USER:-interior}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-interior_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-interior_ecommerce}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - interior-net
+
+  # 2. MongoDB Database (Customizer Models, Audit, & Flexible Documents)
+  mongodb:
+    image: mongo:7.0
+    container_name: interior-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - interior-net
+
+  # 3. Backend REST API Server (Node / Express / Prisma / Mongoose)
   api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    container_name: interior-api
+    restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://interior:interior_dev@postgres:5432/interior_ecommerce?schema=public
-      JWT_SECRET: change-me-in-production
+      NODE_ENV: ${NODE_ENV:-production}
       PORT: 4000
-    depends_on: [postgres]
-    ports: ["4000:4000"]
+      DATABASE_URL: postgresql://${POSTGRES_USER:-interior}:${POSTGRES_PASSWORD:-interior_dev}@postgres:5432/${POSTGRES_DB:-interior_ecommerce}?schema=public
+      MONGODB_URI: mongodb://mongodb:27017/${POSTGRES_DB:-interior_ecommerce}
+      JWT_SECRET: ${JWT_SECRET:-dev-super-secure-jwt-secret-key-at-least-32-chars!}
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - mongodb
+    networks:
+      - interior-net
+
+  # 4. Frontend Web Application (React 18 / Vite / PWA)
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: /api/v1
+    container_name: interior-web
+    restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:4000/api/v1
-    depends_on: [api]
-    ports: ["5173:5173"]
+      NODE_ENV: ${NODE_ENV:-production}
+      API_PROXY_TARGET: http://api:4000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    networks:
+      interior-net:
+        aliases:
+          - web
+
+  # 5. Cloudflare Tunnel Service (Side-by-side with Web Application)
+  # Provides public HTTPS access over the internet without opening router ports
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: interior-cloudflared
+    restart: unless-stopped
+    command: ${CLOUDFLARED_COMMAND:-tunnel --no-autoupdate --url http://web:5173}
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - web
+      - api
+    networks:
+      - interior-net
+
 volumes:
   postgres_data:
+  mongo_data:
+
+networks:
+  interior-net:
+    driver: bridge
