@@ -102,6 +102,9 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
   // Media
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [directImageUrls, setDirectImageUrls] = useState<string[]>([]);
+  const [newDirectUrl, setNewDirectUrl] = useState('');
+  const [newDirectRole, setNewDirectRole] = useState<'cover' | 'dimensions' | 'room' | 'angle' | 'texture'>('dimensions');
   const [isUploading, setIsUploading] = useState(false);
 
   // Categories
@@ -175,6 +178,22 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
     setPreviewUrls(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const handleAddDirectUrl = () => {
+    if (!newDirectUrl.trim()) return;
+    try {
+      new URL(newDirectUrl.trim());
+      setDirectImageUrls(prev => [...prev, newDirectUrl.trim()]);
+      setNewDirectUrl('');
+      toast.success('Added dimension/perspective image URL');
+    } catch {
+      toast.error('Please enter a valid image web URL (https://...)');
+    }
+  };
+
+  const handleRemoveDirectUrl = (idx: number) => {
+    setDirectImageUrls(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const resetForm = () => {
     setName('');
     setSku('');
@@ -198,6 +217,8 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
     previewUrls.forEach(url => URL.revokeObjectURL(url));
     setSelectedFiles([]);
     setPreviewUrls([]);
+    setDirectImageUrls([]);
+    setNewDirectUrl('');
     if (fileInputRef.current) fileInputRef.current.value = '';
     setActiveStep('identity');
   };
@@ -269,7 +290,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
       initialStock: Number(initialStock) || 0,
       reorderLevel: Number(reorderLevel) || 10,
       warehouseLocation: warehouseLocation.trim() || 'Sector 58 Guild Bay',
-      images: uploadedUrls,
+      images: [...uploadedUrls, ...directImageUrls],
       spaces: selectedSpaces,
       primaryDomain,
       botanicalBenefits: selectedBenefits,
@@ -829,6 +850,54 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                     ))}
                   </div>
                 )}
+
+                {/* Direct Image URL for Dimensions, Room Scale & Angle Views */}
+                <div className="mt-4 pt-3 border-t border-stone-200">
+                  <span className="text-xs font-semibold text-stone-700 block mb-1">
+                    Or Add Image via Web URL (Dimensions schematic, room mockup, angle view):
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://images.unsplash.com/... or cloud image URL"
+                      value={newDirectUrl}
+                      onChange={(e) => setNewDirectUrl(e.target.value)}
+                      className="input input-sm flex-1 text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddDirectUrl}
+                      className="btn btn-secondary btn-sm text-xs font-bold shrink-0"
+                    >
+                      + Add URL
+                    </button>
+                  </div>
+
+                  {directImageUrls.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {directImageUrls.map((url, idx) => (
+                        <div
+                          key={idx}
+                          className="relative border border-stone-300 rounded-lg overflow-hidden bg-white shadow-2xs"
+                          style={{ width: '84px', height: '84px' }}
+                        >
+                          <img src={url} alt={`URL ${idx + 1}`} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 inset-x-0 bg-black/75 text-white text-[9px] font-bold text-center py-0.5 uppercase tracking-wider">
+                            {idx === 0 ? 'DIMENSIONS' : `VIEW #${idx + 1}`}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDirectUrl(idx)}
+                            className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-0.5 shadow hover:bg-red-700 transition cursor-pointer border-none"
+                            title="Remove picture"
+                          >
+                            <X size={11} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Specifications & Description */}

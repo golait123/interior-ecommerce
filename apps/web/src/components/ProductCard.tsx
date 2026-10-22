@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
-import { Eye, Ban, Plus, Minus } from 'lucide-react';
+import { Eye, Ban, Plus, Minus, Ruler, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
@@ -10,13 +10,15 @@ interface ProductCardProps {
   product: Product;
   onAddToCart?: (product: Product) => void;
   onQuickView?: (product: Product) => void;
+  onOpenDimensions?: (product: Product) => void;
 }
 
-export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardProps) {
+export function ProductCard({ product, onAddToCart, onQuickView, onOpenDimensions }: ProductCardProps) {
   const { user } = useAuth();
   const { cart, addItem, updateItem, removeItem } = useCart();
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [activeImgIdx, setActiveImgIdx] = useState(0);
 
   // Cart item lookup & quantity count
   const cartItem = cart?.items?.find((item) => item.product.id === product.id);
@@ -87,14 +89,16 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
       : 10;
   const isOutOfStock = product.inStock === false || availableStock <= 0;
 
-  // Safe Image handling with fallback to avoid broken icons & alt text leak
+  // Multi-image handling with fallback
   const fallbackImg = '/images/outdoor-garden.jpg';
-  const initialImg = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : fallbackImg;
-  const [imgSrc, setImgSrc] = useState(initialImg);
+  const rawImages = product.images && product.images.length > 0 ? product.images : [fallbackImg];
+  const activeImg = rawImages[activeImgIdx % rawImages.length] || fallbackImg;
+  const [imgSrc, setImgSrc] = useState(activeImg);
 
   useEffect(() => {
-    setImgSrc((product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : fallbackImg);
-  }, [product.images]);
+    const nextImg = rawImages[activeImgIdx % rawImages.length] || fallbackImg;
+    setImgSrc(nextImg);
+  }, [activeImgIdx, product.images]);
 
   // Space / Room information
   const spaceItem = product.spaces && product.spaces.length > 0 ? product.spaces[0] : null;
@@ -142,23 +146,82 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
           )}
         </div>
 
-        {/* Top-Right Badge: Frosted Space/Domain Pill */}
-        {product.primaryDomain === 'outdoor' ? (
-          <div className="product-badge-domain">
+        {/* Top-Right Badge: Dimensions & Blueprint Pill or Frosted Space Pill */}
+        <div className="product-badge-domain flex items-center gap-1">
+          {onOpenDimensions ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onOpenDimensions(product);
+              }}
+              className="bg-white/95 hover:bg-white text-stone-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs border border-stone-300 flex items-center gap-1 cursor-pointer transition-transform hover:scale-105"
+              title="View dimensions and room perspectives"
+            >
+              <Ruler size={11} className="text-[#8c6f52]" />
+              <span>Dimensions</span>
+            </button>
+          ) : product.primaryDomain === 'outdoor' ? (
             <span>🌿 Outdoor</span>
-          </div>
-        ) : product.primaryDomain === 'indoor' ? (
-          <div className="product-badge-domain">
+          ) : product.primaryDomain === 'indoor' ? (
             <span>🏠 Indoor</span>
-          </div>
-        ) : spaceLabel ? (
-          <div className="product-badge-domain">
+          ) : spaceLabel ? (
             <span>{spaceLabel}</span>
+          ) : null}
+        </div>
+
+        {/* Multi-Image Dots & Flip for Article Dimensions */}
+        {rawImages.length > 1 && (
+          <div 
+            className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-1 bg-black/60 px-1.5 py-0.5 rounded-full backdrop-blur-xs">
+              {rawImages.slice(0, 4).map((_, i) => (
+                <span
+                  key={i}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                    (activeImgIdx % rawImages.length) === i ? 'bg-amber-400 w-2.5' : 'bg-white/60'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveImgIdx((prev) => (prev + 1) % rawImages.length);
+              }}
+              className="pointer-events-auto bg-black/60 hover:bg-black/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-full cursor-pointer border-none flex items-center gap-0.5 shadow-sm"
+              title="Switch dimension angle"
+            >
+              <span>Angle {((activeImgIdx % rawImages.length) + 1)}/{rawImages.length}</span>
+              <ChevronRight size={10} />
+            </button>
           </div>
-        ) : null}
+        )}
 
         {/* Hover Action Bar: Centered slide up */}
         <div className="product-card-actions">
+          {onOpenDimensions && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onOpenDimensions(product);
+              }}
+              className="product-btn-quickview"
+              title="View Article Dimensions & Blueprints"
+            >
+              <Ruler size={13} />
+              <span>Dimensions</span>
+            </button>
+          )}
+
           {onQuickView && (
             <button
               type="button"

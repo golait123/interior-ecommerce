@@ -13240,3 +13240,38 @@ img, video, canvas, iframe, picture, svg {
   }
 }
 
+/* ========================================================================= */
+/* DEDICATED MOBILE QUICK CATALOG & MULTI-IMAGE DIMENSION BLUEPRINT STYLES   */
+/* High-density dual-pane mobile commerce layout for Interior & Exterior     */
+/* ========================================================================= */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.mobile-quick-catalog-wrapper {
+  min-height: calc(100vh - 120px);
+}
+
+.quick-catalog-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.quick-catalog-card:active {
+  transform: scale(0.985);
+}
+
+/* Landscape orientation optimization for mobile quick catalog */
+@media (orientation: landscape) and (max-height: 540px) {
+  .mobile-quick-catalog-wrapper aside {
+    width: 86px !important;
+  }
+  .mobile-quick-catalog-wrapper main .grid-cols-2 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+

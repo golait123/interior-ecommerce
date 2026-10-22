@@ -11,6 +11,7 @@ import { WallpaperCalculator } from '../components/WallpaperCalculator';
 import { ImageZoomViewer } from '../components/ImageZoomViewer';
 import { ProductCard } from '../components/ProductCard';
 import { ProductQuickViewModal } from '../components/ProductQuickViewModal';
+import { ArticleDimensionViewer } from '../components/ArticleDimensionViewer';
 import { 
   ChevronRight, 
   ChevronDown,
@@ -24,6 +25,7 @@ import {
   Award,
   Star,
   Layers,
+  Ruler,
   RotateCcw,
   Sliders,
   Minus,
@@ -45,6 +47,7 @@ export default function ProductDetail() {
   const { addItem } = useCart();
   const [activeImage, setActiveImage] = useState(0);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [showDimensionModal, setShowDimensionModal] = useState(false);
 
   // Accordion state
   const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({
@@ -310,6 +313,16 @@ export default function ProductDetail() {
                 ))}
               </div>
             )}
+
+            {/* Inspect Dimensions Blueprint & Multi-Angle Scale Trigger */}
+            <button
+              type="button"
+              onClick={() => setShowDimensionModal(true)}
+              className="w-full mt-3 mb-1 py-2.5 px-3 bg-amber-50 hover:bg-amber-100/90 border border-amber-300 text-amber-950 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
+            >
+              <Ruler size={15} className="text-[#8c6f52]" />
+              <span>Inspect Dimensions Blueprint & Architectural Scale</span>
+            </button>
 
             {/* Quality Guarantees & White-Glove Service Bar */}
             <div className="product-trust-bar">
@@ -973,6 +986,16 @@ export default function ProductDetail() {
           }}
         />
       )}
+
+      {/* Interactive Multi-Image Dimension & Angle Viewer Modal */}
+      <ArticleDimensionViewer
+        product={p || null}
+        isOpen={showDimensionModal}
+        onClose={() => setShowDimensionModal(false)}
+        onAddToCart={async (prod, quantity) => {
+          await handleAddToCart();
+        }}
+      />
 
       <Footer />
     </div>

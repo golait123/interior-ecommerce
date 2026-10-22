@@ -9,34 +9,37 @@ import { Footer } from '../components/Footer';
 import { ProductCard } from '../components/ProductCard';
 import { ProductQuickViewModal } from '../components/ProductQuickViewModal';
 import { AddProductModal } from '../components/AddProductModal';
+import { MobileQuickCatalog } from '../components/MobileQuickCatalog';
+import { ArticleDimensionViewer } from '../components/ArticleDimensionViewer';
 import { CategoryFilterTree } from '../components/CategoryFilterTree';
 import { getHierarchyForDomain } from '../data/categoryHierarchy';
 import { useLocationContext } from '../contexts/LocationContext';
 import { 
   ArrowUpDown, 
   Search, 
-  RotateCcw,
-  ChevronRight,
-  ChevronLeft,
-  Filter,
-  Check,
-  Grid3X3,
-  LayoutGrid,
-  List,
-  X,
-  SlidersHorizontal,
-  Sparkles,
-  Plus,
-  Minus,
-  Tag,
-  Truck,
-  Package,
-  ShieldCheck,
-  Star,
-  Leaf,
-  MapPin,
-  Armchair,
-  DoorOpen,
+  RotateCcw, 
+  ChevronRight, 
+  ChevronLeft, 
+  Filter, 
+  Check, 
+  Grid3X3, 
+  LayoutGrid, 
+  List, 
+  Smartphone,
+  X, 
+  SlidersHorizontal, 
+  Sparkles, 
+  Plus, 
+  Minus, 
+  Tag, 
+  Truck, 
+  Package, 
+  ShieldCheck, 
+  Star, 
+  Leaf, 
+  MapPin, 
+  Armchair, 
+  DoorOpen, 
   Bed,
   Utensils,
   CookingPot,
@@ -90,9 +93,28 @@ export default function Shop() {
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [categorySearch, setCategorySearch] = useState<string>('');
 
-  // Quick View State
+  // Quick View & Dimensions State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [dimensionProduct, setDimensionProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+
+  // Dedicated Mobile Layout detection and view state
+  const [activeLayoutView, setActiveLayoutView] = useState<'mobile-catalog' | 'desktop-studio'>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1024 ? 'mobile-catalog' : 'desktop-studio';
+    }
+    return 'desktop-studio';
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setActiveLayoutView('mobile-catalog');
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Fetch Tree Data
   const { data: spacesData } = useQuery({
@@ -121,6 +143,13 @@ export default function Shop() {
       limit: 50 
     })
   });
+
+  // Fetch Full Catalog for Mobile Quick View
+  const { data: allCatalogData } = useQuery({
+    queryKey: ['products-full-quick-catalog'],
+    queryFn: () => productsApi.list({ limit: 100 })
+  });
+  const allCatalogProducts = allCatalogData?.items || productsData?.items || [];
 
   // Sync state if URL query params change
   useEffect(() => {
@@ -557,10 +586,53 @@ export default function Shop() {
           </div>
         </section>
 
-        {/* ========================================================================= */}
-        {/* 3. TWO-COLUMN CATALOG LAYOUT WITH FILTERS SIDEBAR AND PRODUCT GRID        */}
-        {/* ========================================================================= */}
-        <section className="nursery-catalog-layout">
+        {/* Layout View Selector Bar (Mobile Quick Catalog vs Desktop Studio) */}
+        <div className="max-w-[1440px] mx-auto px-4 mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 p-1 bg-stone-200/70 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setActiveLayoutView('mobile-catalog')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border-none ${
+                activeLayoutView === 'mobile-catalog'
+                  ? 'bg-[#0f2444] text-white shadow-xs'
+                  : 'text-stone-700 hover:text-stone-900 bg-transparent'
+              }`}
+            >
+              <Smartphone size={14} />
+              <span>📱 Express Mobile Catalog</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveLayoutView('desktop-studio')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border-none ${
+                activeLayoutView === 'desktop-studio'
+                  ? 'bg-white text-stone-900 shadow-xs'
+                  : 'text-stone-700 hover:text-stone-900 bg-transparent'
+              }`}
+            >
+              <LayoutGrid size={14} />
+              <span>🖥️ Studio Grid</span>
+            </button>
+          </div>
+
+          <span className="text-xs text-stone-500 hidden sm:inline">
+            {activeLayoutView === 'mobile-catalog' 
+              ? '⚡ Viewing fast dual-pane mobile shopping layout with dimension blueprints' 
+              : 'Viewing comprehensive architectural studio'}
+          </span>
+        </div>
+
+        {activeLayoutView === 'mobile-catalog' ? (
+          <MobileQuickCatalog
+            products={allCatalogProducts}
+            onAddToCart={(p, q) => handleAddToCart(p, q)}
+            onOpenQuickView={(p) => setQuickViewProduct(p)}
+          />
+        ) : (
+          /* ========================================================================= */
+          /* 3. TWO-COLUMN CATALOG LAYOUT WITH FILTERS SIDEBAR AND PRODUCT GRID        */
+          /* ========================================================================= */
+          <section className="nursery-catalog-layout">
           {/* ======================================================================= */}
           {/* LEFT SIDEBAR: FILTERS CARD ACCORDIONS                                    */}
           {/* ======================================================================= */}
@@ -930,6 +1002,7 @@ export default function Shop() {
                     product={product}
                     onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
                     onQuickView={(p) => setQuickViewProduct(p)}
+                    onOpenDimensions={(p) => setDimensionProduct(p)}
                   />
                 ))}
               </div>
@@ -941,6 +1014,7 @@ export default function Shop() {
                     product={product}
                     onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
                     onQuickView={(p) => setQuickViewProduct(p)}
+                    onOpenDimensions={(p) => setDimensionProduct(p)}
                   />
                 ))}
               </div>
@@ -948,6 +1022,7 @@ export default function Shop() {
 
           </div>
         </section>
+      )}
       </main>
 
       {/* Mobile Filters Drawer Modal */}
@@ -1080,6 +1155,14 @@ export default function Shop() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         defaultRole="ADMIN"
+      />
+
+      {/* Interactive Multi-Image Dimension & Angle Viewer Modal */}
+      <ArticleDimensionViewer
+        product={dimensionProduct}
+        isOpen={Boolean(dimensionProduct)}
+        onClose={() => setDimensionProduct(null)}
+        onAddToCart={(product, qty) => handleAddToCart(product, qty)}
       />
 
       <Footer />
