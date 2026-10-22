@@ -34,6 +34,7 @@ export function Header() {
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isLuckyModalOpen, setIsLuckyModalOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +189,20 @@ export function Header() {
 
           {/* Right Action Icons */}
           <div className="header-action-group">
+            {/* Mobile Search Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="header-action-item mobile-search-btn"
+              aria-label="Search catalog"
+              title="Search"
+            >
+              <div className="action-icon-wrapper">
+                <Search size={20} />
+              </div>
+              <span className="action-label">Search</span>
+            </button>
+
             {/* Wishlist Link */}
             <Link to="/customer/dashboard?tab=wishlist" className="header-action-item" title="Wishlist">
               <div className="action-icon-wrapper">
@@ -251,6 +266,38 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Expandable Search Bar */}
+      {isMobileSearchOpen && (
+        <div className="mobile-search-bar-drawer">
+          <form className="mobile-search-form" onSubmit={handleSearch}>
+            <div className="mobile-search-input-box">
+              <Search size={16} className="text-[var(--text-muted)]" />
+              <input
+                type="text"
+                placeholder="Search wallpapers, decor, plants..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="mobile-search-input"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mobile-search-clear"
+                  aria-label="Clear"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            <button type="submit" className="mobile-search-submit">
+              Search
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* 3. PRIMARY PRODUCT NAVIGATION BAR */}
       <nav className="header-nav-bar">

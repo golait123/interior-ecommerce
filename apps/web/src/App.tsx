@@ -34,6 +34,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { ExpertConsultationChat } from './components/ExpertConsultationChat';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
+import { MobileBottomNav } from './components/MobileBottomNav';
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
@@ -66,6 +67,7 @@ export default function App() {
                 <PwaInstallPrompt />
                 <ExpertConsultationChat />
                 <ThemeSwitcher />
+                <MobileBottomNav />
                 <Routes>
                 {/* Public */}
                 <Route path="/" element={<Home />} />

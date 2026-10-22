@@ -12721,4 +12721,237 @@ img, video, canvas, iframe {
   input, select, textarea, button {
     max-width: 100%;
   }
+
+  /* Dedicated Mobile Layout padding to avoid Bottom Nav overlap */
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 12px)) !important;
+  }
 }
+
+/* ========================================================================= */
+/* DEDICATED MOBILE BOTTOM NAVIGATION BAR & MOBILE APP EXPANDERS             */
+/* ========================================================================= */
+.mobile-bottom-nav {
+  display: none;
+}
+
+.mobile-search-btn {
+  display: none;
+}
+
+.mobile-search-bar-drawer {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-search-btn {
+    display: flex !important;
+  }
+
+  .mobile-search-bar-drawer {
+    display: block !important;
+    background: var(--bg-primary, #ffffff);
+    border-bottom: 1px solid var(--border, #e2e8f0);
+    padding: 10px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    animation: mobileSearchSlideDown 0.2s ease-out;
+  }
+
+  @keyframes mobileSearchSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mobile-search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .mobile-search-input-box {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary, #f8fafc);
+    border: 1.5px solid var(--border, #cbd5e1);
+    border-radius: 9999px;
+    padding: 2px 12px;
+    gap: 8px;
+  }
+
+  .mobile-search-input-box:focus-within {
+    border-color: var(--brand-primary, #0f2444);
+    box-shadow: 0 0 0 2px rgba(15, 36, 68, 0.12);
+  }
+
+  .mobile-search-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    padding: 8px 0;
+    font-size: 13.5px;
+    color: var(--text-main, #0f172a);
+    outline: none;
+  }
+
+  .mobile-search-clear {
+    background: none;
+    border: none;
+    color: var(--text-muted, #64748b);
+    padding: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-search-submit {
+    background: var(--brand-primary, #0f2444);
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+  }
+
+  .mobile-search-submit:active {
+    opacity: 0.85;
+  }
+
+  /* Native Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    display: block !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 150 !important;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+  }
+
+  .mobile-bottom-nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 58px;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 0 8px;
+  }
+
+  .mobile-bottom-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-muted, #64748b);
+    padding: 4px 2px;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tab-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+  }
+
+  .mobile-tab-icon {
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .mobile-tab-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .mobile-tab-badge {
+    position: absolute;
+    top: -3px;
+    right: -7px;
+    background: var(--brand-primary, #0f2444);
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: 800;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .mobile-tab-pill-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: #f59e0b;
+    color: #0f172a;
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    border-radius: 6px;
+    line-height: 1;
+    letter-spacing: 0.2px;
+  }
+
+  /* Active state */
+  .mobile-bottom-tab.active {
+    color: var(--brand-primary, #0f2444);
+  }
+
+  .mobile-bottom-tab.active .mobile-tab-icon {
+    transform: translateY(-2px) scale(1.1);
+    color: var(--brand-primary, #0f2444);
+  }
+
+  .mobile-bottom-tab.active .mobile-tab-label {
+    color: var(--brand-primary, #0f2444);
+    font-weight: 700;
+  }
+
+  .mobile-tab-active-indicator {
+    position: absolute;
+    bottom: -2px;
+    width: 14px;
+    height: 2.5px;
+    border-radius: 9999px;
+    background: var(--brand-primary, #0f2444);
+  }
+
+  /* Ensure floating action buttons (like consultation or pwa prompt) don't clash with bottom nav */
+  .chat-widget-trigger, .theme-switcher-pill {
+    bottom: calc(72px + env(safe-area-inset-bottom, 12px)) !important;
+  }
+}
+
