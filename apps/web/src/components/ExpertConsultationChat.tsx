@@ -15,7 +15,8 @@ import {
   RotateCcw,
   Calendar,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Bot
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -192,16 +193,18 @@ export function ExpertConsultationChat() {
 
   return (
     <div className="expert-chat-widget">
-      {/* 1. FLOATING ACTION TRIGGER PILL (Bottom Right Corner) */}
+      {/* 1. FLOATING ACTION TRIGGER PILL / CIRCULAR FAB (Bottom Right Corner) */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
           className="expert-chat-trigger"
-          aria-label="Open Expert Consultation AI Chat"
+          aria-label="Open 1-on-1 AI Architect Consultation"
+          title="1-on-1 AI Architect Consultation"
         >
           <div className="chat-trigger-icon-box">
-            <Sparkles size={16} className="text-gold" />
+            <Bot size={20} className="chat-trigger-bot-icon text-[#f59e0b]" />
+            <span className="online-pulsing-dot-badge" />
           </div>
           <div className="chat-trigger-text">
             <span className="chat-trigger-title">Expert Consultation</span>
