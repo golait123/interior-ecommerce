@@ -28,7 +28,8 @@ export const adminApi = {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-  }
+  },
+  trafficStats: () => api.get('/admin/traffic').then(unwrap<TrafficStatsResponse>),
 };
 export type FinancialSummary = {
   totalGrossRevenue: number;
@@ -117,4 +118,26 @@ export type LocationAnalyticsResponse = {
   totalOrdersWithLocation: number;
   states: StateLocationItem[];
   cities: CityLocationItem[];
+};
+
+export type TrafficStatsResponse = {
+  totalPageviews: number;
+  uniqueVisitors: number;
+  activeNow: number;
+  deviceBreakdown: {
+    mobilePortrait: number;
+    mobileLandscape: number;
+    tablet: number;
+    desktop: number;
+  };
+  topPages: { path: string; views: number; title: string }[];
+  referrers: { source: string; count: number }[];
+  recentVisitors: {
+    id: string;
+    path: string;
+    device: string;
+    orientation: string;
+    timeAgo: string;
+    location: string;
+  }[];
 };

@@ -25,6 +25,7 @@ import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminCustomers } from './pages/admin/AdminCustomers';
 import { AdminLocations } from './pages/admin/AdminLocations';
+import { AdminTraffic } from './pages/admin/AdminTraffic';
 import { StockDashboard } from './pages/stock/StockDashboard';
 import { StockProducts } from './pages/stock/StockProducts';
 import { StockInventory } from './pages/stock/StockInventory';
@@ -36,12 +37,15 @@ import { ExpertConsultationChat } from './components/ExpertConsultationChat';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { MobileBottomNav } from './components/MobileBottomNav';
 
+import { trackPageView } from './utils/analytics';
+
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 
-function ScrollToTop() {
+function RouteTracker() {
   const { pathname } = useLocation();
   React.useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    trackPageView(pathname, document.title);
   }, [pathname]);
   return null;
 }
@@ -62,7 +66,7 @@ export default function App() {
           <LocationProvider>
             <CartProvider>
               <BrowserRouter>
-                <ScrollToTop />
+                <RouteTracker />
                 <Toaster position="top-right" toastOptions={{ style: { fontFamily: 'DM Sans, sans-serif', borderRadius: 0 } }} />
                 <PwaInstallPrompt />
                 <ExpertConsultationChat />
@@ -96,6 +100,7 @@ export default function App() {
                 <Route path="/orders" element={<ProtectedRoute roles={['CUSTOMER']}><Orders /></ProtectedRoute>} />
                 {/* Admin */}
                 <Route path="/admin" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/traffic" element={<ProtectedRoute roles={['ADMIN']}><AdminTraffic /></ProtectedRoute>} />
                 <Route path="/admin/products" element={<ProtectedRoute roles={['ADMIN']}><AdminProducts /></ProtectedRoute>} />
                 <Route path="/admin/orders" element={<ProtectedRoute roles={['ADMIN']}><AdminOrders /></ProtectedRoute>} />
                 <Route path="/admin/customers" element={<ProtectedRoute roles={['ADMIN']}><AdminCustomers /></ProtectedRoute>} />

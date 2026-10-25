@@ -40,7 +40,7 @@
         <button id="app-force-reload-btn" type="button" style="display: none; margin-top: 1.5rem; padding: 0.6rem 1.2rem; background: #0f2444; color: #ffffff; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">
           Clear Stale Cache & Refresh
         </button>
-              </div>
+      </div>
     </div>
     <script>
       // Diagnostic timeout: if React hasn't replaced #root within 3.5s (due to old service worker caching), reveal recovery action
@@ -69,7 +69,8 @@
         }
       }, 3500);
     </script>
+    <!-- Cloudflare Web Analytics -->
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "interiorg-insights"}'></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
