@@ -16,7 +16,9 @@ import {
   Box,
   Compass,
   Sprout,
-  Package
+  Package,
+  Settings,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -226,82 +228,175 @@ export function Header() {
               <span className="action-label">Search</span>
             </button>
 
-            {/* Wishlist Link */}
-            <Link to="/customer/dashboard?tab=wishlist" className="header-action-item" title="Wishlist">
-              <div className="action-icon-wrapper">
-                <Heart size={20} />
-                <span className="action-badge-dot">3</span>
-              </div>
-              <span className="action-label">Wishlist</span>
-            </Link>
-
-            {/* Account / User Menu */}
-            {user ? (
-              <div className="user-account-dropdown" ref={userMenuRef}>
-                <button
-                  type="button"
-                  className="header-action-item user-btn"
-                  onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                  aria-expanded={isUserMenuOpen}
-                  aria-label="User account menu"
-                >
-                  <div className="action-icon-wrapper">
-                    <UserIcon size={20} />
-                  </div>
-                  <span className="action-label">{user.name ? user.name.split(' ')[0] : 'Account'}</span>
-                </button>
-                <div className={`user-flyout-menu ${isUserMenuOpen ? 'open' : ''}`}>
-                  <div className="flyout-header">
-                    <strong>{user.name}</strong>
-                    <small>{user.email}</small>
-                    <span className="flyout-role-tag">{user.role}</span>
-                  </div>
-                  <div className="flyout-links">
-                    <Link
-                      to="/customer/dashboard"
-                      className="flyout-link"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Customer Dashboard
-                    </Link>
-                    <Link
-                      to="/orders"
-                      className="flyout-link"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      My Orders
-                    </Link>
-                    {['ADMIN', 'STOCK_MANAGER'].includes(user.role) && (
-                      <Link
-                        to="/dashboard"
-                        className="flyout-link highlight"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <LayoutDashboard size={14} className="inline mr-1" />
-                        Admin Workspace
-                      </Link>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        logout();
-                      }}
-                      className="flyout-logout-btn"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <Link to="/login" className="header-action-item" title="Sign In">
+            {/* Unified User Account & Wishlist Dropdown */}
+            <div className="user-account-dropdown" ref={userMenuRef}>
+              <button
+                type="button"
+                className="header-action-item user-btn"
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                aria-expanded={isUserMenuOpen}
+                aria-label="User account and profile menu"
+                title={user ? `Signed in as ${user.name}` : 'Account & Wishlist'}
+              >
                 <div className="action-icon-wrapper">
                   <UserIcon size={20} />
+                  <span className="action-badge-dot">3</span>
                 </div>
-                <span className="action-label">Sign In</span>
-              </Link>
-            )}
+                <div className="action-user-label-wrap">
+                  <span className="action-label">{user?.name ? user.name.split(' ')[0] : 'Account'}</span>
+                  <ChevronDown size={11} className={`action-chevron ${isUserMenuOpen ? 'rotated' : ''}`} />
+                </div>
+              </button>
+
+              <div className={`user-flyout-menu ${isUserMenuOpen ? 'open' : ''}`}>
+                {user ? (
+                  <>
+                    <div className="flyout-header">
+                      <div className="flyout-avatar-row">
+                        <div className="flyout-avatar">
+                          {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                        <div className="flyout-user-meta">
+                          <strong className="flyout-user-name">{user.name}</strong>
+                          <small className="flyout-user-email">{user.email}</small>
+                        </div>
+                      </div>
+                      <span className="flyout-role-tag">{user.role}</span>
+                    </div>
+
+                    <div className="flyout-links">
+                      {/* Option 1: Account Settings */}
+                      <Link
+                        to="/customer/dashboard?tab=settings"
+                        className="flyout-link"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Settings size={15} className="flyout-link-icon" />
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">Account Settings</span>
+                          <span className="flyout-link-sub">Profile, password & preferences</span>
+                        </div>
+                      </Link>
+
+                      {/* Option 2: Wishlist (Merged into dropdown) */}
+                      <Link
+                        to="/customer/dashboard?tab=wishlist"
+                        className="flyout-link"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Heart size={15} className="flyout-link-icon text-red-500" />
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">Wishlist</span>
+                          <span className="flyout-link-sub">Saved designs & decor</span>
+                        </div>
+                        <span className="flyout-badge-pill">3</span>
+                      </Link>
+
+                      {/* Option 3: My Orders */}
+                      <Link
+                        to="/orders"
+                        className="flyout-link"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Package size={15} className="flyout-link-icon" />
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">My Orders</span>
+                          <span className="flyout-link-sub">Track delivery & invoices</span>
+                        </div>
+                      </Link>
+
+                      {/* Option 4: Customer Dashboard */}
+                      <Link
+                        to="/customer/dashboard"
+                        className="flyout-link"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Compass size={15} className="flyout-link-icon" />
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">Customer Dashboard</span>
+                          <span className="flyout-link-sub">Milestone rewards & sanctuary overview</span>
+                        </div>
+                      </Link>
+
+                      {/* Option 5: Admin Workspace (If applicable) */}
+                      {['ADMIN', 'STOCK_MANAGER'].includes(user.role) && (
+                        <Link
+                          to="/dashboard"
+                          className="flyout-link highlight"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <LayoutDashboard size={15} className="flyout-link-icon text-indigo-600" />
+                          <div className="flyout-link-text">
+                            <span className="flyout-link-title">Admin Workspace</span>
+                            <span className="flyout-link-sub">Inventory, orders & analytics</span>
+                          </div>
+                        </Link>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="flyout-logout-btn"
+                      >
+                        <LogOut size={14} className="inline mr-2" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flyout-header guest">
+                      <strong>Welcome to InteriorG</strong>
+                      <small>Sign in to sync your sanctuary bag & custom wall designs</small>
+                      <div className="flyout-guest-actions">
+                        <Link
+                          to="/login"
+                          className="flyout-btn-primary"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Sign In
+                        </Link>
+                        <Link
+                          to="/register"
+                          className="flyout-btn-outline"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          Register
+                        </Link>
+                      </div>
+                    </div>
+                    <div className="flyout-links">
+                      <Link
+                        to="/customer/dashboard?tab=wishlist"
+                        className="flyout-link"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Heart size={15} className="flyout-link-icon text-red-500" />
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">Wishlist</span>
+                          <span className="flyout-link-sub">Saved designs & wallpapers</span>
+                        </div>
+                        <span className="flyout-badge-pill">3</span>
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="flyout-link"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <Package size={15} className="flyout-link-icon" />
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">Track Order</span>
+                          <span className="flyout-link-sub">Check live shipping status</span>
+                        </div>
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
 
             {/* Cart Bag */}
             <Link to="/cart" className="header-action-item cart-action-btn" title="View Cart">

@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const r = await authApi.login({ email, password });
+      const r = await authApi.login({ email: email.trim().toLowerCase(), password });
       persist(r.user, r.accessToken);
     } finally { setLoading(false); }
   };
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     setLoading(true);
     try {
-      const r = await authApi.register({ name, email, password });
+      const r = await authApi.register({ name: name.trim(), email: email.trim().toLowerCase(), password });
       persist(r.user, r.accessToken);
     } finally { setLoading(false); }
   };

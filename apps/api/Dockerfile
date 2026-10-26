@@ -13,4 +13,5 @@ COPY apps/api/src ./src
 RUN npx prisma generate && npm run build
 
 EXPOSE 4000
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node dist/src/server.js"]
+CMD ["node", "dist/src/server.js"]
+

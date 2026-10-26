@@ -127,6 +127,9 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
                   type="email" 
                   placeholder="Email Address" 
                   required 
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   value={loginEmail}
                   onChange={e => setLoginEmail(e.target.value)}
                 />
@@ -138,6 +141,9 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
                   type={showLoginPassword ? 'text' : 'password'} 
                   placeholder="Password" 
                   required 
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   value={loginPassword}
                   onChange={e => setLoginPassword(e.target.value)}
                 />
@@ -263,6 +269,9 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
                   type="email" 
                   placeholder="Email Address" 
                   required 
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   value={regEmail}
                   onChange={e => setRegEmail(e.target.value)}
                 />
@@ -275,6 +284,9 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
                     type={showRegPassword ? 'text' : 'password'} 
                     placeholder="Password" 
                     required 
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     value={regPassword}
                     onChange={e => setRegPassword(e.target.value)}
                   />
@@ -294,6 +306,9 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
                     type={showRegPassword ? 'text' : 'password'} 
                     placeholder="Confirm" 
                     required 
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     value={regConfirm}
                     onChange={e => setRegConfirm(e.target.value)}
                   />

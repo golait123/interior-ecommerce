@@ -10553,6 +10553,145 @@ button:active:not(:disabled),
   background: #fef2f2;
 }
 
+/* Enhanced User Profile & Wishlist Merged Dropdown */
+.action-user-label-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.action-chevron {
+  transition: transform 0.2s ease;
+  color: var(--text-muted, #64748b);
+}
+.action-chevron.rotated {
+  transform: rotate(180deg);
+}
+.user-flyout-menu {
+  width: 270px;
+  min-width: 270px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.flyout-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.flyout-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--brand-primary, #0f2444);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(15, 36, 68, 0.2);
+}
+.flyout-user-meta {
+  flex: 1;
+  min-width: 0;
+}
+.flyout-user-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.flyout-user-email {
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.flyout-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.flyout-link-icon {
+  flex-shrink: 0;
+  color: var(--text-muted, #64748b);
+}
+.flyout-link:hover .flyout-link-icon {
+  color: var(--brand-primary, #0f2444);
+}
+.flyout-link-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.flyout-link-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-main, #0f172a);
+}
+.flyout-link-sub {
+  font-size: 10px;
+  color: var(--text-muted, #64748b);
+}
+.flyout-badge-pill {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.flyout-header.guest {
+  background: var(--bg-secondary, #f8fafc);
+  padding: 12px 16px;
+}
+.flyout-guest-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.flyout-btn-primary {
+  background: var(--brand-primary, #0f2444);
+  color: #ffffff;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.flyout-btn-primary:hover {
+  opacity: 0.9;
+}
+.flyout-btn-outline {
+  border: 1px solid var(--border, #cbd5e1);
+  color: var(--text-main, #0f172a);
+  background: #ffffff;
+  text-align: center;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.flyout-btn-outline:hover {
+  background: var(--bg-secondary, #f8fafc);
+}
+
 /* Primary Product Navigation Bar */
 .header-nav-bar {
   background-color: var(--bg-secondary);

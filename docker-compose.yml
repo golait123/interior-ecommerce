@@ -34,6 +34,7 @@ services:
       dockerfile: apps/api/Dockerfile
     container_name: interior-api
     restart: unless-stopped
+    command: node dist/src/server.js
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 4000
@@ -41,7 +42,7 @@ services:
       MONGODB_URI: mongodb://mongodb:27017/${POSTGRES_DB:-interior_ecommerce}
       JWT_SECRET: ${JWT_SECRET:-dev-super-secure-jwt-secret-key-at-least-32-chars!}
     ports:
-      - "4000:4000"
+      - "4001:4000"
     depends_on:
       - postgres
       - mongodb
