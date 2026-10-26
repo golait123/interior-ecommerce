@@ -18,8 +18,11 @@ import {
   Sprout,
   Package,
   Settings,
-  LogOut
+  LogOut,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { LuckyBookingModal } from './LuckyBookingModal';
@@ -247,6 +250,14 @@ export function Header() {
                   <ChevronDown size={11} className={`action-chevron ${isUserMenuOpen ? 'rotated' : ''}`} />
                 </div>
               </button>
+
+              {isUserMenuOpen && (
+                <div 
+                  className="user-flyout-backdrop" 
+                  onClick={() => setIsUserMenuOpen(false)} 
+                  aria-hidden="true"
+                />
+              )}
 
               <div className={`user-flyout-menu ${isUserMenuOpen ? 'open' : ''}`}>
                 {user ? (
@@ -529,6 +540,78 @@ export function Header() {
                 <X size={22} />
               </button>
             </div>
+
+            {/* Mobile User Authentication / Account Card */}
+            {user ? (
+              <div className="mobile-drawer-auth-card logged-in">
+                <div className="mobile-auth-user-info">
+                  <div className="mobile-auth-avatar">
+                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div className="mobile-auth-meta">
+                    <div className="mobile-auth-name-row">
+                      <span className="mobile-auth-name">{user.name}</span>
+                      <span className="mobile-auth-role">{user.role}</span>
+                    </div>
+                    <span className="mobile-auth-email">{user.email}</span>
+                  </div>
+                </div>
+                <div className="mobile-auth-quick-actions">
+                  <Link to="/customer/dashboard?tab=settings" onClick={closeMenu} className="mobile-auth-action-btn">
+                    <Settings size={13} />
+                    <span>Account Settings</span>
+                  </Link>
+                  <Link to="/customer/dashboard?tab=wishlist" onClick={closeMenu} className="mobile-auth-action-btn">
+                    <Heart size={13} className="text-red-500" />
+                    <span>Wishlist (3)</span>
+                  </Link>
+                  <Link to="/orders" onClick={closeMenu} className="mobile-auth-action-btn">
+                    <Package size={13} />
+                    <span>My Orders</span>
+                  </Link>
+                  {['ADMIN', 'STOCK_MANAGER'].includes(user.role) && (
+                    <Link to="/dashboard" onClick={closeMenu} className="mobile-auth-action-btn admin">
+                      <LayoutDashboard size={13} />
+                      <span>Admin</span>
+                    </Link>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMenu();
+                    logout();
+                    toast.success('Signed out successfully');
+                  }}
+                  className="mobile-auth-logout-btn"
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <div className="mobile-drawer-auth-card guest">
+                <div className="mobile-auth-guest-header">
+                  <div className="mobile-auth-guest-title">
+                    <UserIcon size={16} className="text-[#8c6f52]" />
+                    <span>Welcome to InteriorG</span>
+                  </div>
+                  <p className="mobile-auth-guest-subtitle">
+                    Sign in or register to sync your sanctuary bag, save room designs & access members-only perks.
+                  </p>
+                </div>
+                <div className="mobile-auth-guest-buttons">
+                  <Link to="/login" onClick={closeMenu} className="mobile-auth-btn-primary">
+                    <LogIn size={14} />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link to="/register" onClick={closeMenu} className="mobile-auth-btn-outline">
+                    <UserPlus size={14} />
+                    <span>Register</span>
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* Mobile Search */}
             <form onSubmit={handleSearch} className="mobile-search-box">

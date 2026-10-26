@@ -36,7 +36,8 @@ import {
   Mail,
   Home,
   CheckCircle2,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -232,6 +233,19 @@ export default function CustomerDashboard() {
               <ShoppingBag size={14} />
               <span>Sanctuary Bag ({itemCount})</span>
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                toast.success('Signed out successfully');
+                navigate('/login');
+              }}
+              className="btn btn-secondary text-xs uppercase tracking-wider px-3.5 py-2.5 inline-flex items-center gap-1.5 shadow-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              title="Sign Out from this account"
+            >
+              <LogOut size={14} />
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
 
@@ -919,6 +933,39 @@ export default function CustomerDashboard() {
               <p className="text-xs text-slate-500 mt-1">
                 Manage your credentials, notification preferences, and account lifecycle.
               </p>
+            </div>
+
+            {/* ACTIVE SESSION CARD WITH SIGN OUT */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-12 h-12 rounded-xl text-white flex items-center justify-center font-bold text-lg shrink-0"
+                  style={{ background: 'var(--brand-primary, #0f2444)' }}
+                >
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'P'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-900 text-sm">{user?.name}</span>
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                      {user?.role}
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-500">{user?.email}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  toast.success('Signed out successfully');
+                  navigate('/login');
+                }}
+                className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-semibold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer self-start sm:self-auto"
+              >
+                <LogOut size={14} />
+                <span>Sign Out from this Device</span>
+              </button>
             </div>
 
             {/* PREFERENCES CARD */}

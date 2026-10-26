@@ -1,5 +1,5 @@
 // InteriorG Progressive Web App Service Worker
-const CACHE_NAME = 'interiorg-pwa-v2';
+const CACHE_NAME = 'interiorg-pwa-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

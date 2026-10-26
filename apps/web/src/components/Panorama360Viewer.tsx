@@ -420,12 +420,12 @@ export function Panorama360Viewer({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onWheel={handleWheel}
-      className={`relative bg-dark overflow-hidden select-none border ${
+      className={`panorama-viewer-container relative bg-dark overflow-hidden select-none border ${
         isPlacingItem ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'
       } ${isFullscreen ? 'fixed inset-0 z-50 w-screen h-screen' : 'w-full'}`}
       style={{ 
-        height: isFullscreen ? '100vh' : '560px',
-        borderRadius: isFullscreen ? '0' : '6px'
+        height: isFullscreen ? '100vh' : undefined,
+        borderRadius: isFullscreen ? '0' : '8px'
       }}
     >
       {/* Loading Overlay */}
