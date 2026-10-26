@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Role } from '@prisma/client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-change-me';
+const JWT_SECRET = process.env.JWT_SECRET || 'interiorg-edge-secret-key-at-least-32-chars-long!';
 
 export type AuthReq = Request & { user?: { id: string; role: Role } };
 

@@ -7,7 +7,7 @@ import { auth, AuthReq } from '../middleware/auth';
 import { Role } from '@prisma/client';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-change-me';
+const JWT_SECRET = process.env.JWT_SECRET || 'interiorg-edge-secret-key-at-least-32-chars-long!';
 
 const signToken = (u: {id: string, role: Role}) => jwt.sign({sub: u.id, role: u.role}, JWT_SECRET, {expiresIn: '7d'});
 

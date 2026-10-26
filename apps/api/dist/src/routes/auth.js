@@ -11,7 +11,7 @@ const prisma_1 = require("../lib/prisma");
 const auth_1 = require("../middleware/auth");
 const client_1 = require("@prisma/client");
 const router = (0, express_1.Router)();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-change-me';
+const JWT_SECRET = process.env.JWT_SECRET || 'interiorg-edge-secret-key-at-least-32-chars-long!';
 const signToken = (u) => jsonwebtoken_1.default.sign({ sub: u.id, role: u.role }, JWT_SECRET, { expiresIn: '7d' });
 router.post('/register', async (req, res, next) => {
     try {

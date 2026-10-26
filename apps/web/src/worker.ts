@@ -13,6 +13,9 @@
 // JWT Secret for Cloudflare Edge
 const JWT_SECRET = 'interiorg-edge-secret-key-at-least-32-chars-long!';
 
+// Live Backend API Bridge via Cloudflare Tunnel (Real PostgreSQL & MongoDB)
+const LIVE_BACKEND_URL = 'https://tone-twenty-collectables-european.trycloudflare.com';
+
 // Web Crypto Helpers
 async function getCryptoKey(): Promise<CryptoKey> {
   const enc = new TextEncoder();
@@ -380,6 +383,53 @@ export default {
     // Only process /api/ routes on the Edge Worker
     if (url.pathname.startsWith('/api/')) {
       const path = url.pathname;
+
+      // Primary: Forward to live backend connected to PostgreSQL & MongoDB
+      if (LIVE_BACKEND_URL) {
+        try {
+          const targetUrl = new URL(path + url.search, LIVE_BACKEND_URL);
+          const fwdHeaders = new Headers();
+          for (const [k, v] of request.headers.entries()) {
+            fwdHeaders.set(k, v);
+          }
+          const authHeader = request.headers.get('authorization');
+          if (authHeader) {
+            fwdHeaders.set('authorization', authHeader);
+          }
+          const contentType = request.headers.get('content-type');
+          if (contentType) {
+            fwdHeaders.set('content-type', contentType);
+          }
+          fwdHeaders.set('x-forwarded-host', url.host);
+
+          let reqBody: ArrayBuffer | undefined = undefined;
+          if (!['GET', 'HEAD'].includes(request.method)) {
+            reqBody = await request.clone().arrayBuffer();
+          }
+
+          const fwdReq = new Request(targetUrl.toString(), {
+            method: request.method,
+            headers: fwdHeaders,
+            body: reqBody,
+          });
+
+          const resp = await fetch(fwdReq);
+          // Forward response from real database (200, 201, 400, 401, 409, 422, etc.)
+          if (resp.status < 500) {
+            const respHeaders = new Headers(resp.headers);
+            respHeaders.set('access-control-allow-origin', '*');
+            respHeaders.set('access-control-allow-credentials', 'true');
+            respHeaders.set('x-data-source', 'real-postgresql-db');
+            return new Response(resp.body, {
+              status: resp.status,
+              statusText: resp.statusText,
+              headers: respHeaders,
+            });
+          }
+        } catch (proxyErr) {
+          console.warn('Real backend proxy fetch failed, falling back to edge worker:', proxyErr);
+        }
+      }
 
       // 1. Health Endpoint
       if (path === '/api/v1/health' || path === '/api/health') {

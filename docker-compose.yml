@@ -40,7 +40,7 @@ services:
       PORT: 4000
       DATABASE_URL: postgresql://${POSTGRES_USER:-interior}:${POSTGRES_PASSWORD:-interior_dev}@postgres:5432/${POSTGRES_DB:-interior_ecommerce}?schema=public
       MONGODB_URI: mongodb://mongodb:27017/${POSTGRES_DB:-interior_ecommerce}
-      JWT_SECRET: ${JWT_SECRET:-dev-super-secure-jwt-secret-key-at-least-32-chars!}
+      JWT_SECRET: ${JWT_SECRET:-interiorg-edge-secret-key-at-least-32-chars-long!}
     ports:
       - "4001:4000"
     depends_on:
