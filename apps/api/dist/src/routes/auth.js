@@ -15,9 +15,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'interiorg-edge-secret-key-at-least
 const signToken = (u) => jsonwebtoken_1.default.sign({ sub: u.id, role: u.role }, JWT_SECRET, { expiresIn: '7d' });
 router.post('/register', async (req, res, next) => {
     try {
-        const schema = zod_1.z.object({ name: zod_1.z.string().min(2), email: zod_1.z.string().email(), password: zod_1.z.string().min(8) });
-        const { name, email, password } = schema.parse(req.body);
-        const normalizedEmail = email.toLowerCase().trim();
+        const rawEmail = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+        const rawName = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+        const schema = zod_1.z.object({ name: zod_1.z.string().min(2), email: zod_1.z.string().email(), password: zod_1.z.string().min(6) });
+        const { name, email, password } = schema.parse({ ...req.body, name: rawName, email: rawEmail });
+        const normalizedEmail = email;
         const existing = await prisma_1.prisma.user.findFirst({
             where: { email: { equals: normalizedEmail, mode: 'insensitive' } }
         });
@@ -37,9 +39,10 @@ router.post('/register', async (req, res, next) => {
 });
 router.post('/login', async (req, res, next) => {
     try {
+        const rawEmail = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
         const schema = zod_1.z.object({ email: zod_1.z.string().email(), password: zod_1.z.string() });
-        const { email, password } = schema.parse(req.body);
-        const normalizedEmail = email.toLowerCase().trim();
+        const { email, password } = schema.parse({ ...req.body, email: rawEmail });
+        const normalizedEmail = email;
         const user = await prisma_1.prisma.user.findFirst({
             where: { email: { equals: normalizedEmail, mode: 'insensitive' } }
         });

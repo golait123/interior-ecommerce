@@ -13,9 +13,11 @@ const signToken = (u: {id: string, role: Role}) => jwt.sign({sub: u.id, role: u.
 
 router.post('/register', async (req, res, next) => {
   try {
-    const schema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(8) });
-    const { name, email, password } = schema.parse(req.body);
-    const normalizedEmail = email.toLowerCase().trim();
+    const rawEmail = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const rawName = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+    const schema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(6) });
+    const { name, email, password } = schema.parse({ ...req.body, name: rawName, email: rawEmail });
+    const normalizedEmail = email;
 
     const existing = await prisma.user.findFirst({
       where: { email: { equals: normalizedEmail, mode: 'insensitive' } }
@@ -36,9 +38,10 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
+    const rawEmail = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     const schema = z.object({ email: z.string().email(), password: z.string() });
-    const { email, password } = schema.parse(req.body);
-    const normalizedEmail = email.toLowerCase().trim();
+    const { email, password } = schema.parse({ ...req.body, email: rawEmail });
+    const normalizedEmail = email;
 
     const user = await prisma.user.findFirst({
       where: { email: { equals: normalizedEmail, mode: 'insensitive' } }

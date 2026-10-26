@@ -390,6 +390,18 @@ export default {
           const targetUrl = new URL(path + url.search, LIVE_BACKEND_URL);
           const fwdHeaders = new Headers();
           for (const [k, v] of request.headers.entries()) {
+            const lowerKey = k.toLowerCase();
+            // CRITICAL: Strip Cloudflare internal headers, host, and forward loop indicators
+            // Cloudflare-to-Cloudflare requests throw 403 (Error 1000) if cf-* or host headers are copied!
+            if (
+              lowerKey === 'host' ||
+              lowerKey.startsWith('cf-') ||
+              lowerKey.startsWith('x-forwarded-') ||
+              lowerKey === 'x-real-ip' ||
+              lowerKey === 'cdn-loop'
+            ) {
+              continue;
+            }
             fwdHeaders.set(k, v);
           }
           const authHeader = request.headers.get('authorization');
@@ -400,7 +412,6 @@ export default {
           if (contentType) {
             fwdHeaders.set('content-type', contentType);
           }
-          fwdHeaders.set('x-forwarded-host', url.host);
 
           let reqBody: ArrayBuffer | undefined = undefined;
           if (!['GET', 'HEAD'].includes(request.method)) {
