@@ -13805,5 +13805,185 @@ img, video, canvas, iframe, picture, svg {
   }
 }
 
+/* ========================================================================= */
+/* DEDICATED SYSTEMATIC MOBILE SHOP LAYOUT (BANNER-FREE, EQUALLY BALANCED)  */
+/* ========================================================================= */
+@media (max-width: 768px) {
+  /* 1. Only for mobile view don't keep the banner */
+  .nl-trust-ribbon,
+  .nl-hero-header {
+    display: none !important;
+  }
+
+  /* 2. Systematic, full-width catalog layout with zero clunky margins */
+  .nursery-catalog-layout {
+    padding: 8px 10px 48px !important;
+    gap: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Hide the stacked desktop sidebar on mobile (clean bottom sheet drawer is used instead) */
+  .nursery-sidebar-filters {
+    display: none !important;
+  }
+
+  /* Hide the desktop toolbar in favor of the dedicated compact mobile action bar */
+  .nursery-standard-toolbar {
+    display: none !important;
+  }
+
+  /* 3. Pure 2-Column commerce grid equally adjusted to phone resolution */
+  .catalog-grid-4,
+  .product-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* 4. Symmetrical, systematic product card */
+  .product-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 12px !important;
+    border: 1px solid #e7e2d9 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 100% !important;
+    background: #ffffff !important;
+  }
+
+  .product-card-image-wrapper {
+    aspect-ratio: 4 / 3 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 120px !important;
+    background: #fbf9f6 !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .product-card-image-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  .product-card-content {
+    padding: 10px 10px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    justify-content: space-between !important;
+  }
+
+  /* Clamped 2-line title ensuring identical card height across the entire row */
+  .product-title-link {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    height: 35px !important;
+    margin-bottom: 6px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    color: #1f2937 !important;
+  }
+
+  .product-category-text {
+    font-size: 9.5px !important;
+    letter-spacing: 0.04em !important;
+    color: #8c6f52 !important;
+  }
+
+  .product-highlight-pill {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+    margin-bottom: 8px !important;
+    line-height: 1.2 !important;
+  }
+
+  .product-card-footer {
+    padding-top: 8px !important;
+    margin-top: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-top: 1px solid #f3f0ea !important;
+  }
+
+  .product-price-current {
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+  }
+
+  .product-price-original {
+    font-size: 11px !important;
+  }
+
+  .product-footer-action-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .product-qty-stepper {
+    height: 30px !important;
+    padding: 0 2px !important;
+  }
+
+  .product-qty-stepper .product-qty-btn {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .product-qty-stepper .product-qty-count {
+    font-size: 11px !important;
+    padding: 0 4px !important;
+  }
+
+  /* Hide hover action overlay on mobile */
+  .product-card-actions {
+    display: none !important;
+  }
+}
+
+/* Landscape Phone Mode: 3 Equal Columns */
+@media (orientation: landscape) and (max-height: 580px) {
+  .catalog-grid-4,
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+}
+
+/* Very Narrow Phone Mode (< 360px): Compact Typography and Padding */
+@media (max-width: 360px) {
+  .nursery-catalog-layout {
+    padding: 6px 6px 40px !important;
+  }
+  .catalog-grid-4,
+  .product-grid {
+    gap: 8px !important;
+  }
+  .product-card-content {
+    padding: 8px 8px 10px !important;
+  }
+  .product-title-link {
+    font-size: 12px !important;
+    height: 33px !important;
+  }
+  .product-price-current {
+    font-size: 13.5px !important;
+  }
+}
+
+
 
 

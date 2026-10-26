@@ -414,9 +414,9 @@ export default function Shop() {
 
       <main>
         {/* ========================================================================= */}
-        {/* 1. TRUST BADGES RIBBON (SCREENSHOT 1)                                     */}
+        {/* 1. TRUST BADGES RIBBON (DESKTOP ONLY - HIDDEN ON MOBILE)                  */}
         {/* ========================================================================= */}
-        <div className="nl-trust-ribbon">
+        <div className="nl-trust-ribbon hidden md:block">
           <div className="nl-trust-ribbon-inner">
             <div className="nl-trust-pill">
               <Truck size={14} />
@@ -446,9 +446,9 @@ export default function Shop() {
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. HERO STUDIO HEADER WITH CITY PINCODE CHECK (SCREENSHOT 1 DESIGN)        */}
+        {/* 2. HERO STUDIO HEADER (DESKTOP ONLY - HIDDEN ON MOBILE)                   */}
         {/* ========================================================================= */}
-        <header className={`nl-hero-header ${activeDomain === 'indoor' ? 'domain-theme-indoor' : activeDomain === 'outdoor' ? 'domain-theme-outdoor' : ''}`}>
+        <header className={`nl-hero-header hidden md:block ${activeDomain === 'indoor' ? 'domain-theme-indoor' : activeDomain === 'outdoor' ? 'domain-theme-outdoor' : ''}`}>
           <div className="nl-hero-glow" aria-hidden="true" />
           <div className="nl-hero-content">
             {/* Breadcrumb Trail on top of header */}
@@ -506,6 +506,45 @@ export default function Shop() {
             </div>
           </div>
         </header>
+
+        {/* DEDICATED SYSTEMATIC MOBILE SHOP HEADER (Mobile Only) */}
+        <div className="md:hidden px-3 pt-3 pb-1 bg-stone-50 border-b border-stone-200">
+          <div className="grid grid-cols-3 gap-1.5 bg-stone-200/80 p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => handleDomainSelect('indoor')}
+              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer border-none ${
+                activeDomain === 'indoor'
+                  ? 'bg-[#0f2444] text-white shadow-xs'
+                  : 'text-stone-700 bg-transparent hover:text-stone-900'
+              }`}
+            >
+              <span>🏠 Interior</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDomainSelect('outdoor')}
+              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer border-none ${
+                activeDomain === 'outdoor'
+                  ? 'bg-[#15803d] text-white shadow-xs'
+                  : 'text-stone-700 bg-transparent hover:text-stone-900'
+              }`}
+            >
+              <span>🌿 Exterior</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDomainSelect('all')}
+              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer border-none ${
+                activeDomain === 'all'
+                  ? 'bg-[#8c6f52] text-white shadow-xs'
+                  : 'text-stone-700 bg-transparent hover:text-stone-900'
+              }`}
+            >
+              <span>✨ All Spaces</span>
+            </button>
+          </div>
+        </div>
 
         {/* Store Manager Controls Bar (ADMIN / STOCK_MANAGER) */}
         {user && (user.role === 'ADMIN' || user.role === 'STOCK_MANAGER') && (
@@ -586,57 +625,14 @@ export default function Shop() {
           </div>
         </section>
 
-        {/* Layout View Selector Bar (Mobile Quick Catalog vs Desktop Studio) */}
-        <div className="max-w-[1440px] mx-auto px-4 mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 p-1 bg-stone-200/70 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setActiveLayoutView('mobile-catalog')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border-none ${
-                activeLayoutView === 'mobile-catalog'
-                  ? 'bg-[#0f2444] text-white shadow-xs'
-                  : 'text-stone-700 hover:text-stone-900 bg-transparent'
-              }`}
-            >
-              <Smartphone size={14} />
-              <span>📱 Express Mobile Catalog</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveLayoutView('desktop-studio')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border-none ${
-                activeLayoutView === 'desktop-studio'
-                  ? 'bg-white text-stone-900 shadow-xs'
-                  : 'text-stone-700 hover:text-stone-900 bg-transparent'
-              }`}
-            >
-              <LayoutGrid size={14} />
-              <span>🖥️ Studio Grid</span>
-            </button>
-          </div>
-
-          <span className="text-xs text-stone-500 hidden sm:inline">
-            {activeLayoutView === 'mobile-catalog' 
-              ? '⚡ Viewing fast dual-pane mobile shopping layout with dimension blueprints' 
-              : 'Viewing comprehensive architectural studio'}
-          </span>
-        </div>
-
-        {activeLayoutView === 'mobile-catalog' ? (
-          <MobileQuickCatalog
-            products={allCatalogProducts}
-            onAddToCart={(p, q) => handleAddToCart(p, q)}
-            onOpenQuickView={(p) => setQuickViewProduct(p)}
-          />
-        ) : (
-          /* ========================================================================= */
-          /* 3. TWO-COLUMN CATALOG LAYOUT WITH FILTERS SIDEBAR AND PRODUCT GRID        */
-          /* ========================================================================= */
-          <section className="nursery-catalog-layout">
+        {/* ========================================================================= */}
+        {/* 3. CATALOG LAYOUT WITH FILTERS SIDEBAR AND PRODUCT GRID                   */}
+        {/* ========================================================================= */}
+        <section className="nursery-catalog-layout">
           {/* ======================================================================= */}
-          {/* LEFT SIDEBAR: FILTERS CARD ACCORDIONS                                    */}
+          {/* LEFT SIDEBAR: FILTERS CARD ACCORDIONS (DESKTOP ONLY)                     */}
           {/* ======================================================================= */}
-          <aside className="nursery-sidebar-filters">
+          <aside className="nursery-sidebar-filters hidden lg:block">
             <div className="nursery-sidebar-card">
               {/* Sidebar Header */}
               <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-stone-200">
@@ -808,8 +804,43 @@ export default function Shop() {
           {/* ======================================================================= */}
           <div className="flex-1 w-full min-w-0">
 
-            {/* Standard Toolbar */}
-            <div className="nursery-standard-toolbar">
+            {/* Dedicated Systematic Mobile Shop Action Bar (Mobile Only) */}
+            <div className="lg:hidden mb-3 p-2 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between gap-2 shadow-xs">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileFilters(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0f2444] text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer border-none active:scale-95 transition-transform"
+                >
+                  <SlidersHorizontal size={13} />
+                  <span>Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-amber-400 text-stone-900 text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </button>
+                <span className="text-xs font-semibold text-stone-600">
+                  {filteredProducts.length} pieces
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-800 focus:outline-none"
+                >
+                  <option value="featured">Featured</option>
+                  <option value="price-asc">₹ Low to High</option>
+                  <option value="price-desc">₹ High to Low</option>
+                  <option value="discount">Top Discount</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Standard Toolbar (Desktop Only) */}
+            <div className="nursery-standard-toolbar hidden lg:flex">
               {/* Left: Total Count (Clean standard toolbar - Screenshot 1 updated) */}
               <div className="flex items-center gap-3">
                 <div className="text-xs sm:text-sm text-stone-600">
@@ -1022,7 +1053,6 @@ export default function Shop() {
 
           </div>
         </section>
-      )}
       </main>
 
       {/* Mobile Filters Drawer Modal */}
