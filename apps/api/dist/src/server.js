@@ -28,6 +28,8 @@ const mongodb_1 = require("./lib/mongodb");
 const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT || 4000);
+// Trust proxy for Cloudflare Tunnel / Edge Worker requests
+app.set('trust proxy', 1);
 // Initialize MongoDB service for custom designs, reviews, AI chats & activity logs
 (0, mongodb_1.connectMongoDB)().catch(err => console.warn('MongoDB connection notice:', err?.message || err));
 app.use((0, helmet_1.default)({
@@ -36,7 +38,7 @@ app.use((0, helmet_1.default)({
 // Allow both localhost and local network Wi-Fi origins for mobile phone AR access
 app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use(express_1.default.json({ limit: '10mb' }));
-app.use((0, express_rate_limit_1.default)({ windowMs: 60_000, max: 200, standardHeaders: true }));
+app.use((0, express_rate_limit_1.default)({ windowMs: 60_000, max: 500, standardHeaders: true, validate: { xForwardedForHeader: false } }));
 // Serve static uploaded files
 app.use('/uploads', express_1.default.static(path_1.default.resolve(process.cwd(), 'uploads')));
 app.get('/api/v1/health', (_, res) => {

@@ -48,7 +48,7 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(loginEmail, loginPassword);
+      await login(loginEmail.trim(), loginPassword);
       toast.success('Welcome back to InteriorG! Your 15% discount code WELCOME15 is active!', {
         duration: 6000,
         icon: '🏷️'
@@ -70,7 +70,7 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
     }
 
     try {
-      await register(regName, regEmail, regPassword);
+      await register(regName.trim(), regEmail.trim(), regPassword);
       toast.success('Welcome to InteriorG! Your 15% discount code WELCOME15 is ready!', {
         duration: 6000,
         icon: '🎁'

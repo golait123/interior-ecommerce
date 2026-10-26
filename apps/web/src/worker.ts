@@ -391,10 +391,13 @@ export default {
           const fwdHeaders = new Headers();
           for (const [k, v] of request.headers.entries()) {
             const lowerKey = k.toLowerCase();
-            // CRITICAL: Strip Cloudflare internal headers, host, and forward loop indicators
-            // Cloudflare-to-Cloudflare requests throw 403 (Error 1000) if cf-* or host headers are copied!
+            // CRITICAL: Strip Cloudflare internal headers, host, connection, content-length
+            // Fetch calculates accurate Content-Length; forwarding client Content-Length causes body-parser JSON SyntaxErrors!
             if (
               lowerKey === 'host' ||
+              lowerKey === 'content-length' ||
+              lowerKey === 'transfer-encoding' ||
+              lowerKey === 'connection' ||
               lowerKey.startsWith('cf-') ||
               lowerKey.startsWith('x-forwarded-') ||
               lowerKey === 'x-real-ip' ||
@@ -413,9 +416,9 @@ export default {
             fwdHeaders.set('content-type', contentType);
           }
 
-          let reqBody: ArrayBuffer | undefined = undefined;
+          let reqBody: string | undefined = undefined;
           if (!['GET', 'HEAD'].includes(request.method)) {
-            reqBody = await request.clone().arrayBuffer();
+            reqBody = await request.clone().text();
           }
 
           const fwdReq = new Request(targetUrl.toString(), {

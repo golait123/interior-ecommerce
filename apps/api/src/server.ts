@@ -25,6 +25,9 @@ import { errorHandler } from './middleware/errorHandler';
 const app = express();
 const PORT = Number(process.env.PORT || 4000);
 
+// Trust proxy for Cloudflare Tunnel / Edge Worker requests
+app.set('trust proxy', 1);
+
 // Initialize MongoDB service for custom designs, reviews, AI chats & activity logs
 connectMongoDB().catch(err => console.warn('MongoDB connection notice:', err?.message || err));
 
@@ -34,7 +37,7 @@ app.use(helmet({
 // Allow both localhost and local network Wi-Fi origins for mobile phone AR access
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
-app.use(rateLimit({ windowMs: 60_000, max: 200, standardHeaders: true }));
+app.use(rateLimit({ windowMs: 60_000, max: 500, standardHeaders: true, validate: { xForwardedForHeader: false } }));
 
 // Serve static uploaded files
 app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
