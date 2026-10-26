@@ -62,4 +62,44 @@ describe('Storefront Pricing & Cart Logic', () => {
     assert.equal(userCart.items[0].product.name, 'Handcrafted Sheesham Dining Table');
     assert.equal(userCart.items[0].quantity, 2);
   });
+
+  it('strictly isolates products by selected room/space (Bedroom, Living Room, Pooja, etc.)', () => {
+    const catalog = [
+      { id: '1', name: 'Sheesham King Bed', spaceSlugs: ['bedroom'] },
+      { id: '2', name: 'Japandi Nightstand', spaceSlugs: ['bedroom'] },
+      { id: '3', name: 'Terracotta Wallpaper', spaceSlugs: ['living-room'] },
+      { id: '4', name: 'Chesterfield Sofa', spaceSlugs: ['living-room'] },
+      { id: '5', name: 'Teak Pooja Mandir', spaceSlugs: ['pooja-room'] },
+      { id: '6', name: 'Balcony Planter Urn', spaceSlugs: ['balcony'] },
+    ];
+
+    const filterBySpace = (items: typeof catalog, selectedSpace: string) => {
+      const sSlug = selectedSpace.toLowerCase().trim();
+      const sKey = sSlug.replace(/-/g, ' ');
+      return items.filter(p => {
+        if (Array.isArray(p.spaceSlugs) && p.spaceSlugs.length > 0) {
+          return p.spaceSlugs.some(s => s.toLowerCase() === sSlug || s.toLowerCase().includes(sSlug));
+        }
+        const text = p.name.toLowerCase();
+        return text.includes(sKey) || text.includes(sSlug.replace(/-/g, ' '));
+      });
+    };
+
+    // Selecting Bedroom returns ONLY bedroom products
+    const bedroomProducts = filterBySpace(catalog, 'bedroom');
+    assert.equal(bedroomProducts.length, 2);
+    assert.ok(bedroomProducts.every(p => p.spaceSlugs.includes('bedroom')));
+    assert.ok(!bedroomProducts.some(p => p.name.includes('Sofa')));
+
+    // Selecting Living Room returns ONLY living room products
+    const livingProducts = filterBySpace(catalog, 'living-room');
+    assert.equal(livingProducts.length, 2);
+    assert.ok(livingProducts.every(p => p.spaceSlugs.includes('living-room')));
+    assert.ok(!livingProducts.some(p => p.name.includes('Bed')));
+
+    // Selecting Pooja Room returns ONLY pooja room products
+    const poojaProducts = filterBySpace(catalog, 'pooja-room');
+    assert.equal(poojaProducts.length, 1);
+    assert.equal(poojaProducts[0].name, 'Teak Pooja Mandir');
+  });
 });

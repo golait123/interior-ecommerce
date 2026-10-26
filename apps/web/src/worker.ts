@@ -233,6 +233,7 @@ const TRAFFIC_DATA: EdgeTrafficData = {
 
 // Rich Products Seed Data
 const EDGE_PRODUCTS = [
+  // --- LIVING ROOM ---
   {
     id: 'cmvfw83l9002ei29wpgbi1mgr',
     name: 'Earthy Bohemian Terracotta Arch Wallpaper',
@@ -256,17 +257,194 @@ const EDGE_PRODUCTS = [
     inStock: true,
     primaryDomain: 'indoor',
     category: { id: 'cat_wp', name: 'Wallpapers', slug: 'wallpapers' },
-    spaceSlugs: ['living-room', 'bedroom', 'hall', 'indoor'],
+    spaceSlugs: ['living-room'],
     spaces: [
-      { id: 'living-room', slug: 'living-room', name: 'Living Room', icon: '🛋️', domain: 'indoor' },
-      { id: 'bedroom', slug: 'bedroom', name: 'Bedroom', icon: '🛏️', domain: 'indoor' }
+      { id: 'living-room', slug: 'living-room', name: 'Living Room', icon: '🛋️', domain: 'indoor' }
     ],
     botanicalBenefits: ['Peel & Stick Ready', 'Breathable Non-Woven Fiber', 'Acoustic Softening'],
   },
   {
+    id: 'cmv_living_sofa_001',
+    name: 'Solid Sheesham 3-Seater Chesterfield Sofa',
+    slug: 'solid-sheesham-3-seater-chesterfield-sofa',
+    description: 'Deep button-tufted upholstery with premium high-density foam cushions and kiln-dried solid Sheesham wood frame designed for luxury living rooms.',
+    type: 'FURNITURE',
+    sku: 'CC-FN-001',
+    price: '38999',
+    discountPrice: '32499',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Kiln-Dried Sheesham Wood & Velvet',
+    finish: 'Rich Walnut Stain & Olive Velvet',
+    images: [
+      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['living-room'],
+    spaces: [
+      { id: 'living-room', slug: 'living-room', name: 'Living Room', icon: '🛋️', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Ergonomic Lumbar Support', 'Termite-Resistant Hardwood', 'High Durability Rub Count'],
+  },
+  {
+    id: 'cmv_living_table_002',
+    name: 'Handcrafted Sheesham Fluted Glass Coffee Table',
+    slug: 'handcrafted-sheesham-fluted-glass-coffee-table',
+    description: 'Minimalist curved silhouette featuring tempered fluted glass surface perched upon sculpted organic Sheesham wood legs.',
+    type: 'FURNITURE',
+    sku: 'CC-FN-002',
+    price: '14499',
+    discountPrice: '11999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Tempered Fluted Glass & Sheesham',
+    finish: 'Warm Natural Honey Polish',
+    images: [
+      'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1532323544230-7191fd51bc1b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['living-room'],
+    spaces: [
+      { id: 'living-room', slug: 'living-room', name: 'Living Room', icon: '🛋️', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Tempered Safety Glass', 'Scratch Resistant Polish', 'Child-Safe Rounded Corners'],
+  },
+
+  // --- BEDROOM ---
+  {
+    id: 'cmv_bed_king_001',
+    name: 'Solid Sheesham King Bed with Hand-Woven Cane Headboard',
+    slug: 'solid-sheesham-king-bed-cane-headboard',
+    description: 'Regal master bedroom king-sized bed constructed with heirloom-grade seasoned Indian Rosewood and natural wicker cane lattice headboard.',
+    type: 'FURNITURE',
+    sku: 'CC-BD-001',
+    price: '46999',
+    discountPrice: '38999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Solid Seasoned Sheesham Wood & Natural Cane',
+    finish: 'Matte Teak Hand Rubbed Wax',
+    images: [
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1540518614846-7ede433c4ef0?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['bedroom'],
+    spaces: [
+      { id: 'bedroom', slug: 'bedroom', name: 'Bedroom', icon: '🛏️', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Heirloom Strength Timber', 'Breathable Cane Weave', 'Hydraulic Lift Storage Compatible'],
+  },
+  {
+    id: 'cmv_bed_nightstand_002',
+    name: 'Japandi Floating Bedroom Nightstand with Brass Drawer',
+    slug: 'japandi-floating-bedroom-nightstand-brass-drawer',
+    description: 'Wall-mounted minimalist bedside table with soft-close dovetailed storage drawer and brushed gold hardware.',
+    type: 'FURNITURE',
+    sku: 'CC-BD-002',
+    price: '6499',
+    discountPrice: '4999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Natural White Oak & Solid Brass',
+    finish: 'Nordic Light Oak Matte Seal',
+    images: [
+      'https://images.unsplash.com/photo-1532323544230-7191fd51bc1b?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1540518614846-7ede433c4ef0?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['bedroom'],
+    spaces: [
+      { id: 'bedroom', slug: 'bedroom', name: 'Bedroom', icon: '🛏️', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Floating Floor Clearance', 'Silent Soft-Close Sliders', 'Solid Brass Knob'],
+  },
+  {
+    id: 'cmv_bed_wallpaper_003',
+    name: 'Organic Raw Linen Textured Bedroom Accent Wallpaper',
+    slug: 'organic-raw-linen-textured-bedroom-accent-wallpaper',
+    description: 'Gentle woven linen fabric texture that creates serene, restful bedroom acoustics and organic warmth.',
+    type: 'CUSTOM_WALLPAPER',
+    sku: 'CC-WP-003',
+    price: '2899',
+    discountPrice: '2299',
+    unit: 'roll',
+    pricePerSqFt: '45',
+    material: 'Pure Woven Cellulose Flax Fiber',
+    finish: 'Matte Tactile Weave',
+    images: [
+      'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80',
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.07.45_e1be9ecf.jpg',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_wp', name: 'Wallpapers', slug: 'wallpapers' },
+    spaceSlugs: ['bedroom'],
+    spaces: [
+      { id: 'bedroom', slug: 'bedroom', name: 'Bedroom', icon: '🛏️', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Zero VOC Emission', 'Hypoallergenic Surface', 'Sound Absorbing Microtexture'],
+  },
+
+  // --- DINING ROOM ---
+  {
+    id: 'cmv_dining_table_001',
+    name: 'Solid Sheesham 6-Seater Heritage Dining Table Set',
+    slug: 'solid-sheesham-6-seater-heritage-dining-table-set',
+    description: 'Substantial solid Indian timber dining table with 6 cushioned ergonomic chairs, celebrating natural grain knots and heirloom joinery.',
+    type: 'FURNITURE',
+    sku: 'CC-DN-001',
+    price: '42999',
+    discountPrice: '35999',
+    unit: 'set',
+    pricePerSqFt: null,
+    material: 'Solid Indian Sheesham Wood & Linen Weave',
+    finish: 'Warm Amber Hand Polish',
+    images: [
+      'https://images.unsplash.com/photo-1617806118233-18e1de247200?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1577140917170-285929fb55b7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['dining'],
+    spaces: [
+      { id: 'dining', slug: 'dining', name: 'Dining Room', icon: '🍽️', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Stain-Resistant Top Coat', 'Mortise & Tenon Joinery', 'High Density Padded Seats'],
+  },
+  {
     id: 'cmvfw83l9002fi29wz8w9012a',
-    name: 'Banjara Heritage Jaipuri Floral Wallpaper',
-    slug: 'banjara-heritage-jaipuri-floral-wallpaper',
+    name: 'Banjara Heritage Jaipuri Floral Dining Wallpaper',
+    slug: 'banjara-heritage-jaipuri-floral-dining-wallpaper',
     description: 'Intricate block-printed floral patterns with muted indigo, sage, and antique beige tones. Washable surface for dining suites and accent walls.',
     type: 'CUSTOM_WALLPAPER',
     sku: 'CC-WP-002',
@@ -286,18 +464,166 @@ const EDGE_PRODUCTS = [
     inStock: true,
     primaryDomain: 'indoor',
     category: { id: 'cat_wp', name: 'Wallpapers', slug: 'wallpapers' },
-    spaceSlugs: ['living-room', 'dining', 'pooja-room', 'indoor'],
+    spaceSlugs: ['dining'],
     spaces: [
-      { id: 'dining', slug: 'dining', name: 'Dining Room', icon: '🍽️', domain: 'indoor' },
-      { id: 'pooja-room', slug: 'pooja-room', name: 'Pooja Room', icon: '🪔', domain: 'indoor' }
+      { id: 'dining', slug: 'dining', name: 'Dining Room', icon: '🍽️', domain: 'indoor' }
     ],
-    botanicalBenefits: ['Water-Resistant Coating', '10-Yr Fade Resistance'],
+    botanicalBenefits: ['Water-Resistant Coating', '10-Yr Fade Resistance', 'Wipe-Clean Dining Ready'],
+  },
+  {
+    id: 'cmvfw83l9002hi29wza345klm',
+    name: 'Wrought Iron Triple Tier Candelabra Dining Stand',
+    slug: 'wrought-iron-triple-tier-candelabra-dining-stand',
+    description: 'Hand-welded wrought iron dining table candelabra centerpiece with rustic matte black coating. Accommodates 3 pillar candles.',
+    type: 'HOME_DECOR',
+    sku: 'CC-HD-001',
+    price: '2499',
+    discountPrice: '1999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Wrought Iron',
+    finish: 'Rust-Proof Thermal Black Enamel',
+    images: [
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.08_93fea15a.jpg',
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.09_1a8a16df.jpg',
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.10_c5568657.jpg',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_hd', name: 'Home Decor', slug: 'home-decor' },
+    spaceSlugs: ['dining'],
+    spaces: [
+      { id: 'dining', slug: 'dining', name: 'Dining Room', icon: '🍽️', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Heavy Base Anti-Tipping', 'Heat Resistant Enamel', 'Atmospheric Dinner Lighting'],
+  },
+
+  // --- POOJA ROOM ---
+  {
+    id: 'cmv_mandir_001',
+    name: 'Hand-Carved Solid Teak Wood Wall Hanging Pooja Mandir',
+    slug: 'hand-carved-solid-teak-wood-pooja-mandir',
+    description: 'Artisanal sanctum mandir crafted from seasoned Burma teak wood with traditional Gopuram spire, drawer for puja essentials, and brass bells.',
+    type: 'HOME_DECOR',
+    sku: 'CC-PJ-001',
+    price: '18999',
+    discountPrice: '15499',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Grade-A Seasoned Teak Wood & Brass Accents',
+    finish: 'Natural Honey Rosewood Oil Rub',
+    images: [
+      'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1200&q=80',
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.06_95bcd72d.jpg',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_hd', name: 'Home Decor', slug: 'home-decor' },
+    spaceSlugs: ['pooja-room'],
+    spaces: [
+      { id: 'pooja-room', slug: 'pooja-room', name: 'Pooja Room & Mandir', icon: '🪔', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Vastu Compliant Dimensions', 'Dovetail Storage Drawer', 'Pure Bell-Metal Ghanti Hooks'],
+  },
+  {
+    id: 'cmv_pooja_diya_002',
+    name: 'Antique Brass Hanging Temple Bell Diya with Peacock Arch',
+    slug: 'antique-brass-hanging-temple-bell-diya-peacock-arch',
+    description: 'Hand-cast heavy virgin brass temple diya with authentic sonic clarity resonant bells and intricate Mayur arch motif.',
+    type: 'AESTHETIC_DECOR',
+    sku: 'CC-PJ-002',
+    price: '3899',
+    discountPrice: '2999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: '100% Solid Cast Brass',
+    finish: 'Antique Patina Gold Polish',
+    images: [
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.06_4c36ce0c.jpg',
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.06_95bcd72d.jpg',
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_ad', name: 'Aesthetic Decor', slug: 'aesthetic-decor' },
+    spaceSlugs: ['pooja-room'],
+    spaces: [
+      { id: 'pooja-room', slug: 'pooja-room', name: 'Pooja Room & Mandir', icon: '🪔', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Pure Bell Metal Tone', 'Tarnish-Resistant Coating', 'Traditional 18-Inch Brass Chain Included'],
+  },
+
+  // --- STUDY & HOME OFFICE ---
+  {
+    id: 'cmv_study_desk_001',
+    name: 'Architectural Teak Study Desk with Cable Management Drawer',
+    slug: 'architectural-teak-study-desk-cable-drawer',
+    description: 'Ergonomic solid teak wood workstation featuring concealed charging access channel, fluted privacy divider, and smooth slide drawers.',
+    type: 'FURNITURE',
+    sku: 'CC-ST-001',
+    price: '27499',
+    discountPrice: '22999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Kiln-Seasoned Teak Wood',
+    finish: 'Matte Water-Resistant Satin Finish',
+    images: [
+      'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['study-room'],
+    spaces: [
+      { id: 'study-room', slug: 'study-room', name: 'Study & Office', icon: '📚', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Integrated Wire Raceway', 'Rounded Edge Forearm Comfort', 'Dual Stationery Drawers'],
+  },
+  {
+    id: 'cmv_study_shelf_002',
+    name: 'Solid Walnut 5-Tier Geometric Bookshelf & Display Unit',
+    slug: 'solid-walnut-5-tier-geometric-bookshelf',
+    description: 'Architectural stepped open bookcase crafted from American Walnut with varied cubbies for art pieces and reference volumes.',
+    type: 'FURNITURE',
+    sku: 'CC-ST-002',
+    price: '19999',
+    discountPrice: '16499',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'American Walnut & Matte Black Steel',
+    finish: 'Natural Danish Oil Finish',
+    images: [
+      'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['study-room'],
+    spaces: [
+      { id: 'study-room', slug: 'study-room', name: 'Study & Office', icon: '📚', domain: 'indoor' }
+    ],
+    botanicalBenefits: ['Heavy Load Shelf Capacity (40kg/shelf)', 'Anti-Tip Wall Anchors Included'],
   },
   {
     id: 'cmvfw83l9002gi29wpq123bvc',
     name: 'Abstract Metal Figurine Sculpture Showpiece',
     slug: 'abstract-metal-figurine-sculpture-showpiece',
-    description: 'Forged antique brass abstract human sculpture mounted on solid walnut wood pedestal. Perfect for foyer consoles and bookshelf alcoves.',
+    description: 'Forged antique brass abstract human sculpture mounted on solid walnut wood pedestal. Perfect for bookshelf alcoves and desk styling.',
     type: 'AESTHETIC_DECOR',
     sku: 'CC-AD-001',
     price: '1899',
@@ -316,43 +642,45 @@ const EDGE_PRODUCTS = [
     inStock: true,
     primaryDomain: 'indoor',
     category: { id: 'cat_ad', name: 'Aesthetic Decor', slug: 'aesthetic-decor' },
-    spaceSlugs: ['hall', 'living-room', 'study-room', 'indoor'],
+    spaceSlugs: ['study-room'],
     spaces: [
-      { id: 'hall', slug: 'hall', name: 'Hall & Entryway', icon: '🚪', domain: 'indoor' },
       { id: 'study-room', slug: 'study-room', name: 'Study & Office', icon: '📚', domain: 'indoor' }
     ],
     botanicalBenefits: ['Artisanal Repousse', 'Solid Heavyweight Base'],
   },
+
+  // --- HALL & ENTRYWAY ---
   {
-    id: 'cmvfw83l9002hi29wza345klm',
-    name: 'Wrought Iron Triple Tier Candelabra Stand',
-    slug: 'wrought-iron-triple-tier-candelabra-stand',
-    description: 'Hand-welded wrought iron floor candelabra stand with rustic matte black coating. Accommodates 3 pillar candles for ambient courtyard dining.',
-    type: 'HOME_DECOR',
-    sku: 'CC-HD-001',
-    price: '2499',
-    discountPrice: '1999',
-    unit: 'piece',
+    id: 'cmv_hall_console_001',
+    name: 'Vintage Solid Wood Entryway Console Table with Mirror Arch',
+    slug: 'vintage-solid-wood-entryway-console-table-mirror',
+    description: 'Sculptural entryway console crafted from weathered reclaimed teak paired with an architectural arched brass framed foyer mirror.',
+    type: 'FURNITURE',
+    sku: 'CC-HL-001',
+    price: '17999',
+    discountPrice: '14999',
+    unit: 'set',
     pricePerSqFt: null,
-    material: 'Wrought Iron',
-    finish: 'Rust-Proof Thermal Black Enamel',
+    material: 'Reclaimed Teak Wood & Brushed Brass Frame',
+    finish: 'Rustic Weathered Patina Polish',
     images: [
-      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.08_93fea15a.jpg',
-      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.09_1a8a16df.jpg',
-      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.10_c5568657.jpg',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.06_95bcd72d.jpg',
     ],
-    isCustomizable: false,
+    isCustomizable: true,
     isActive: true,
     inStock: true,
-    primaryDomain: 'both',
-    category: { id: 'cat_hd', name: 'Home Decor', slug: 'home-decor' },
-    spaceSlugs: ['patio', 'balcony', 'dining', 'outdoor', 'indoor'],
+    primaryDomain: 'indoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['hall'],
     spaces: [
-      { id: 'patio', slug: 'patio', name: 'Patio & Courtyard', icon: '☀️', domain: 'outdoor' },
-      { id: 'balcony', slug: 'balcony', name: 'Balcony', icon: '🪴', domain: 'outdoor' }
+      { id: 'hall', slug: 'hall', name: 'Hall & Entryway', icon: '🚪', domain: 'indoor' }
     ],
-    botanicalBenefits: ['Rust-Resistant', 'Outdoor-Safe Coating'],
+    botanicalBenefits: ['Slim Foyer Space-Saving Depth', 'Mirror Reflects Daylight into Foyer'],
   },
+
+  // --- BALCONY & VERANDAH ---
   {
     id: 'cmvfw83l9002ii29wzq567opq',
     name: 'Wheel-Thrown Terracotta Balcony Planter Urn',
@@ -376,13 +704,134 @@ const EDGE_PRODUCTS = [
     inStock: true,
     primaryDomain: 'outdoor',
     category: { id: 'cat_outdoor', name: 'Exterior Living', slug: 'exterior-living' },
-    spaceSlugs: ['balcony', 'lawn', 'home-nursery', 'outdoor'],
+    spaceSlugs: ['balcony'],
     spaces: [
-      { id: 'balcony', slug: 'balcony', name: 'Balcony', icon: '🪴', domain: 'outdoor' },
-      { id: 'lawn', slug: 'lawn', name: 'Lawn & Garden', icon: '🌳', domain: 'outdoor' }
+      { id: 'balcony', slug: 'balcony', name: 'Balcony', icon: '🪴', domain: 'outdoor' }
     ],
     botanicalBenefits: ['Porous Oxygenation', 'Microclimate Humidity', 'Evaporative Cooling'],
   },
+  {
+    id: 'cmv_balcony_swing_002',
+    name: 'All-Weather Resin Wicker Hanging Egg Swing Chair with Stand',
+    slug: 'all-weather-resin-wicker-hanging-egg-swing-chair',
+    description: 'UV-stabilized resin rattan balcony swing pod equipped with heavy-gauge powder-coated steel base and water-repellent tufted cushions.',
+    type: 'FURNITURE',
+    sku: 'NL-SW-001',
+    price: '15999',
+    discountPrice: '12999',
+    unit: 'set',
+    pricePerSqFt: null,
+    material: 'High Density Polyethylene Wicker & Steel',
+    finish: 'Weatherproof Slate Charcoal Powder Coat',
+    images: [
+      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'outdoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['balcony'],
+    spaces: [
+      { id: 'balcony', slug: 'balcony', name: 'Balcony', icon: '🪴', domain: 'outdoor' }
+    ],
+    botanicalBenefits: ['UV50+ Resistant Resin', 'Weather-Resistant Olefin Cushioning', 'Supports up to 160kg'],
+  },
+
+  // --- LAWN & GARDEN ---
+  {
+    id: 'cmv_lawn_lantern_001',
+    name: 'Hand-Carved Granite Stone Garden Pagoda Lantern',
+    slug: 'hand-carved-granite-stone-garden-pagoda-lantern',
+    description: 'Traditional solid natural grey granite stone Japanese Kasuga lantern carved by master stone sculptors for tranquil garden pathways.',
+    type: 'HOME_DECOR',
+    sku: 'NL-LN-001',
+    price: '11499',
+    discountPrice: '8999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Solid Indian Grey Granite Stone',
+    finish: 'Natural Chiseled & Bush-Hammered Stone',
+    images: [
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'outdoor',
+    category: { id: 'cat_outdoor', name: 'Exterior Living', slug: 'exterior-living' },
+    spaceSlugs: ['lawn'],
+    spaces: [
+      { id: 'lawn', slug: 'lawn', name: 'Lawn & Garden', icon: '🌳', domain: 'outdoor' }
+    ],
+    botanicalBenefits: ['Lifetime All-Weather Durability', 'Heavy Wind Gust Resistant', 'Concealed LED Ready Cavity'],
+  },
+  {
+    id: 'cmv_lawn_patio_set_002',
+    name: 'Cast Aluminum Antique Bronze 4-Seater Garden Patio Set',
+    slug: 'cast-aluminum-antique-bronze-garden-patio-set',
+    description: 'Rust-proof cast aluminum dining table with 4 lattice armchairs finished with durable antique bronze patina finish for lawn terraces.',
+    type: 'FURNITURE',
+    sku: 'NL-PT-001',
+    price: '29999',
+    discountPrice: '24999',
+    unit: 'set',
+    pricePerSqFt: null,
+    material: 'Rust-Proof Solid Cast Aluminum',
+    finish: 'Multi-Stage Powder Coated Antique Bronze',
+    images: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: false,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'outdoor',
+    category: { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture' },
+    spaceSlugs: ['lawn'],
+    spaces: [
+      { id: 'lawn', slug: 'lawn', name: 'Lawn & Garden', icon: '🌳', domain: 'outdoor' }
+    ],
+    botanicalBenefits: ['100% Rust-Proof in Monsoon', 'Center Parasol Umbrella Hole', 'Ergonomic Curved Seating'],
+  },
+
+  // --- PATIO & COURTYARD ---
+  {
+    id: 'cmv_patio_firepit_001',
+    name: 'Rustic Sandstone Fire Bowl with Steel Brazier Grill',
+    slug: 'rustic-sandstone-fire-bowl-steel-brazier-grill',
+    description: 'Chiseled natural sandstone bowl housing a heavy-gauge carbon steel wood-burning fire basin for evening warmth and outdoor grilling.',
+    type: 'HOME_DECOR',
+    sku: 'NL-FP-001',
+    price: '16999',
+    discountPrice: '13999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Natural Dholpur Sandstone & Heat-Shielded Carbon Steel',
+    finish: 'Rough Chiseled Stone & High-Temp Black Enamel',
+    images: [
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+      'https://banjaramarketsgurugram.com/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-08-at-17.08.08_93fea15a.jpg',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'outdoor',
+    category: { id: 'cat_outdoor', name: 'Exterior Living', slug: 'exterior-living' },
+    spaceSlugs: ['patio'],
+    spaces: [
+      { id: 'patio', slug: 'patio', name: 'Patio & Courtyard', icon: '☀️', domain: 'outdoor' }
+    ],
+    botanicalBenefits: ['High Heat Dispersion', 'Food-Grade BBQ Grate Included', 'Spark Arrestor Screen'],
+  },
+
+  // --- ROOFTOP TERRACE ---
   {
     id: 'cmvfw83l9002ji29wlk789rst',
     name: 'Weatherproof Sandstone Facade Louver Panel',
@@ -399,18 +848,78 @@ const EDGE_PRODUCTS = [
     images: [
       'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80',
     ],
     isCustomizable: true,
     isActive: true,
     inStock: true,
     primaryDomain: 'outdoor',
     category: { id: 'cat_outdoor', name: 'Exterior Living', slug: 'exterior-living' },
-    spaceSlugs: ['terrace', 'patio', 'parking', 'outdoor'],
+    spaceSlugs: ['terrace'],
     spaces: [
-      { id: 'terrace', slug: 'terrace', name: 'Rooftop Terrace', icon: '🏙️', domain: 'outdoor' },
-      { id: 'parking', slug: 'parking', name: 'Porch & Cladding', icon: '🚗', domain: 'outdoor' }
+      { id: 'terrace', slug: 'terrace', name: 'Rooftop Terrace', icon: '🏙️', domain: 'outdoor' }
     ],
     botanicalBenefits: ['UV Stabilized', 'Heavy Monsoon Resistant', 'Fire Rated Class A'],
+  },
+  {
+    id: 'cmv_terrace_pergola_002',
+    name: 'Motorized Waterproof Pergola Louvered Roof Canopy',
+    slug: 'motorized-waterproof-pergola-louvered-roof-canopy',
+    description: 'Architectural grade aluminum automated bioclimatic pergola with remote-controlled rotating louvers and integrated gutter drainage system.',
+    type: 'FURNITURE',
+    sku: 'NL-PG-001',
+    price: '84999',
+    discountPrice: '74999',
+    unit: 'module',
+    pricePerSqFt: '210',
+    material: '6063-T5 Extruded Aluminum Alloy',
+    finish: 'Architectural Matt Anthracite AkzoNobel Powder',
+    images: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'outdoor',
+    category: { id: 'cat_outdoor', name: 'Exterior Living', slug: 'exterior-living' },
+    spaceSlugs: ['terrace'],
+    spaces: [
+      { id: 'terrace', slug: 'terrace', name: 'Rooftop Terrace', icon: '🏙️', domain: 'outdoor' }
+    ],
+    botanicalBenefits: ['100% Watertight Closed Seal', 'Withstands 120km/h Gales', 'Concealed LED Strip Channels'],
+  },
+
+  // --- PARKING & PORCH ---
+  {
+    id: 'cmv_parking_paver_001',
+    name: 'Heavy-Duty Hexagonal Slate Porch & Driveway Paver Slabs',
+    slug: 'heavy-duty-hexagonal-slate-porch-paver-slabs',
+    description: 'Interlocking heavy-load natural grey slate tiles engineered to withstand vehicle axle weights and thermal shifts without cracking.',
+    type: 'HOME_DECOR',
+    sku: 'NL-PV-001',
+    price: '1899',
+    discountPrice: '1499',
+    unit: 'sq.m',
+    pricePerSqFt: '140',
+    material: 'Natural Slate & Quartzite Composite',
+    finish: 'Anti-Skid Textured R11 Flamed Finish',
+    images: [
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+    ],
+    isCustomizable: true,
+    isActive: true,
+    inStock: true,
+    primaryDomain: 'outdoor',
+    category: { id: 'cat_outdoor', name: 'Exterior Living', slug: 'exterior-living' },
+    spaceSlugs: ['parking'],
+    spaces: [
+      { id: 'parking', slug: 'parking', name: 'Parking & Porch', icon: '🚗', domain: 'outdoor' }
+    ],
+    botanicalBenefits: ['Oil & Grease Spill Resistant', 'R11 Anti-Slip Rain Safe', 'Vehicular Load Rated'],
   }
 ];
 
@@ -713,10 +1222,32 @@ export default {
       if (path === '/api/v1/products' && request.method === 'GET') {
         const domain = url.searchParams.get('domain');
         const q = url.searchParams.get('q');
+        const space = url.searchParams.get('space');
+        const category = url.searchParams.get('category');
         let items = [...EDGE_PRODUCTS];
 
         if (domain && domain !== 'all') {
           items = items.filter(p => p.primaryDomain === domain || p.primaryDomain === 'both');
+        }
+
+        if (space && space !== 'all' && space !== domain) {
+          const sLower = space.toLowerCase().trim();
+          const sKey = sLower.replace(/-/g, ' ');
+          items = items.filter(p => {
+            if (Array.isArray(p.spaceSlugs) && p.spaceSlugs.length > 0) {
+              return p.spaceSlugs.some(s => s.toLowerCase() === sLower || s.toLowerCase().includes(sLower));
+            }
+            if (Array.isArray(p.spaces) && p.spaces.length > 0) {
+              return p.spaces.some((s: any) => s.slug?.toLowerCase() === sLower || s.name?.toLowerCase().includes(sKey));
+            }
+            const text = `${p.name} ${p.description || ''} ${p.category?.name || ''}`.toLowerCase();
+            return text.includes(sKey) || text.includes(sLower.replace(/-/g, ' '));
+          });
+        }
+
+        if (category && category !== 'all') {
+          const catLower = category.toLowerCase().trim();
+          items = items.filter(p => p.category?.slug?.toLowerCase() === catLower || p.category?.id?.toLowerCase() === catLower);
         }
 
         if (q) {
@@ -724,7 +1255,7 @@ export default {
           items = items.filter(p =>
             p.name.toLowerCase().includes(qLower) ||
             p.description.toLowerCase().includes(qLower) ||
-            p.category.name.toLowerCase().includes(qLower)
+            p.category?.name?.toLowerCase().includes(qLower)
           );
         }
 
@@ -745,6 +1276,7 @@ export default {
       if (path === '/api/v1/products/categories' && request.method === 'GET') {
         const categories = [
           { id: 'cat_wp', name: 'Wallpapers', slug: 'wallpapers', count: 48 },
+          { id: 'cat_fur', name: 'Luxury Furniture', slug: 'furniture', count: 45 },
           { id: 'cat_ad', name: 'Aesthetic Decor', slug: 'aesthetic-decor', count: 26 },
           { id: 'cat_hd', name: 'Home Decor', slug: 'home-decor', count: 34 },
           { id: 'cat_outdoor', name: 'Exterior Living', slug: 'exterior-living', count: 42 },

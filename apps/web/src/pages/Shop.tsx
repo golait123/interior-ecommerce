@@ -299,6 +299,30 @@ export default function Shop() {
   const filteredProducts = useMemo(() => {
     let items = productsData?.items ? [...productsData.items] : [];
 
+    // Filter by Selected Space / Room (Living Room, Bedroom, Dining, Balcony, Pooja, etc.)
+    if (selectedSpace && selectedSpace !== 'all' && selectedSpace !== activeDomain && selectedSpace !== '') {
+      const sSlug = selectedSpace.toLowerCase().trim();
+      const sKey = sSlug.replace(/-/g, ' ');
+
+      items = items.filter(p => {
+        // Direct match in spaceSlugs array
+        if (Array.isArray(p.spaceSlugs) && p.spaceSlugs.length > 0) {
+          return p.spaceSlugs.some(s => s.toLowerCase() === sSlug || s.toLowerCase().includes(sSlug));
+        }
+
+        // Direct match in spaces object array
+        if (Array.isArray(p.spaces) && p.spaces.length > 0) {
+          return p.spaces.some((s: any) => 
+            s.slug?.toLowerCase() === sSlug || s.name?.toLowerCase().includes(sKey)
+          );
+        }
+
+        // Fallback to keyword in name or description only if no space metadata exists
+        const text = `${p.name} ${p.description || ''} ${p.category?.name || ''}`.toLowerCase();
+        return text.includes(sKey) || text.includes(sSlug.replace(/-/g, ' '));
+      });
+    }
+
     // Filter by SubCategory Keywords (Screenshot 3)
     if (subCategoryKeywords.length > 0) {
       items = items.filter(p => {
@@ -364,7 +388,7 @@ export default function Shop() {
     }
 
     return items;
-  }, [productsData?.items, subCategoryKeywords, selectedColorKeyword, priceRange, inStockOnly, selectedRating, sortBy]);
+  }, [productsData?.items, selectedSpace, activeDomain, subCategoryKeywords, selectedColorKeyword, priceRange, inStockOnly, selectedRating, sortBy]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
     if (!user) {
