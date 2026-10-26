@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { productsApi, Product } from '../api/products';
-import { useCart } from '../contexts/CartContext';
+import { useCart, setPendingCartItem } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocationContext } from '../contexts/LocationContext';
 import { Header } from '../components/Header';
@@ -144,7 +144,18 @@ export default function ProductDetail() {
   const handleAddToCart = async () => {
     if (!p) return;
     if (!user) {
-      navigate('/login');
+      setPendingCartItem({
+        productId: p.id,
+        quantity: qty,
+        productName: p.name,
+        returnTo: window.location.pathname,
+      });
+      toast('Please sign in to add this piece to your cart. We\'ve saved your selection!', {
+        id: 'signin-to-add-toast',
+        icon: '🔐',
+        duration: 4000,
+      });
+      navigate('/login?returnTo=/cart&reason=add_to_cart');
       return;
     }
     try {
@@ -158,7 +169,18 @@ export default function ProductDetail() {
   const handleBuyNow = async () => {
     if (!p) return;
     if (!user) {
-      navigate('/login');
+      setPendingCartItem({
+        productId: p.id,
+        quantity: qty,
+        productName: p.name,
+        returnTo: '/cart',
+      });
+      toast('Please sign in to proceed with this piece. We\'ve saved your selection!', {
+        id: 'signin-to-add-toast',
+        icon: '🔐',
+        duration: 4000,
+      });
+      navigate('/login?returnTo=/cart&reason=buy_now');
       return;
     }
     try {

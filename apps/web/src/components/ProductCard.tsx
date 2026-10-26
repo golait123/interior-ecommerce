@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
 import { Eye, Ban, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useCart } from '../contexts/CartContext';
+import { useCart, setPendingCartItem } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
 
 interface ProductCardProps {
@@ -27,6 +27,21 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
     if (e) {
       e.preventDefault();
       e.stopPropagation();
+    }
+    if (!user) {
+      setPendingCartItem({
+        productId: product.id,
+        quantity: 1,
+        productName: product.name,
+        returnTo: window.location.pathname + window.location.search,
+      });
+      toast('Please sign in to add this item to your cart. We\'ve saved your selection!', {
+        id: 'signin-to-add-toast',
+        icon: '🔐',
+        duration: 4000,
+      });
+      navigate('/login?returnTo=/cart&reason=add_to_cart');
+      return;
     }
     if (isUpdating) return;
     setIsUpdating(true);

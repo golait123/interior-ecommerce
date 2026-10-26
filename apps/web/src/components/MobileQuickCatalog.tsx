@@ -29,7 +29,7 @@ import {
   Armchair
 } from 'lucide-react';
 import { Product } from '../api/products';
-import { useCart } from '../contexts/CartContext';
+import { useCart, setPendingCartItem } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocationContext } from '../contexts/LocationContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -190,8 +190,18 @@ export function MobileQuickCatalog({
       e.stopPropagation();
     }
     if (!user) {
-      toast.error('Please sign in to add items to your cart');
-      navigate('/login');
+      setPendingCartItem({
+        productId: product.id,
+        quantity: 1,
+        productName: product.name,
+        returnTo: window.location.pathname,
+      });
+      toast('Please sign in to add this item to your cart. We\'ve saved your selection!', {
+        id: 'signin-to-add-toast',
+        icon: '🔐',
+        duration: 4000,
+      });
+      navigate('/login?returnTo=/cart&reason=add_to_cart');
       return;
     }
     if (isUpdatingId) return;

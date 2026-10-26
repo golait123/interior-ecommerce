@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { productsApi, Product } from '../api/products';
-import { useCart } from '../contexts/CartContext';
+import { useCart, setPendingCartItem } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -367,6 +367,21 @@ export default function Shop() {
   }, [productsData?.items, subCategoryKeywords, selectedColorKeyword, priceRange, inStockOnly, selectedRating, sortBy]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
+    if (!user) {
+      setPendingCartItem({
+        productId: product.id,
+        quantity,
+        productName: product.name,
+        returnTo: window.location.pathname + window.location.search,
+      });
+      toast('Please sign in to add this piece to your cart. We\'ve saved your selection!', {
+        id: 'signin-to-add-toast',
+        icon: '🔐',
+        duration: 4000,
+      });
+      navigate('/login?returnTo=/cart&reason=add_to_cart');
+      return;
+    }
     try {
       await addItem(product.id, quantity);
       toast.success(`Added ${product.name} to bag!`);

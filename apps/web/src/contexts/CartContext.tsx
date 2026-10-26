@@ -1,6 +1,36 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { cartApi, Cart, CartItem } from '../api/cart';
 import { useAuth } from './AuthContext';
+
+export interface PendingCartItem {
+  productId: string;
+  quantity: number;
+  customization?: any;
+  productName?: string;
+  returnTo?: string;
+}
+
+export const setPendingCartItem = (item: PendingCartItem) => {
+  try {
+    localStorage.setItem('interiorg_pending_cart_item', JSON.stringify(item));
+  } catch {}
+};
+
+export const getPendingCartItem = (): PendingCartItem | null => {
+  try {
+    const raw = localStorage.getItem('interiorg_pending_cart_item');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearPendingCartItem = () => {
+  try {
+    localStorage.removeItem('interiorg_pending_cart_item');
+  } catch {}
+};
 
 interface CartCtx {
   cart: Cart | null;
@@ -57,7 +87,49 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const fetch = async () => {
     try {
-      const serverCart = await cartApi.get();
+      let serverCart = await cartApi.get();
+
+      // Check if user had a piece they tried to add before logging in
+      if (user) {
+        const pending = getPendingCartItem();
+        if (pending?.productId) {
+          try {
+            serverCart = await cartApi.addItem({
+              productId: pending.productId,
+              quantity: pending.quantity || 1,
+              customization: pending.customization,
+            });
+            toast.success(
+              `Added ${pending.productName || 'your selected piece'} to your cart!`,
+              { id: 'pending-cart-added', duration: 4000, icon: '🛍️' }
+            );
+          } catch {}
+          clearPendingCartItem();
+        }
+
+        // Also merge any local guest cart items into user's account cart
+        const localRaw = localStorage.getItem('interiorg_cart');
+        if (localRaw) {
+          try {
+            const localCart = JSON.parse(localRaw);
+            if (Array.isArray(localCart.items) && localCart.items.length > 0) {
+              for (const item of localCart.items) {
+                if (item.product?.id) {
+                  const alreadyOnServer = serverCart?.items?.some((si: any) => si.product?.id === item.product.id);
+                  if (!alreadyOnServer) {
+                    serverCart = await cartApi.addItem({
+                      productId: item.product.id,
+                      quantity: item.quantity || 1,
+                      customization: item.customization,
+                    });
+                  }
+                }
+              }
+            }
+          } catch {}
+        }
+      }
+
       if (serverCart && Array.isArray(serverCart.items)) {
         updateCartState(serverCart);
       }

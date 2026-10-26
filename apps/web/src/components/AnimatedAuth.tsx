@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getPendingCartItem } from '../contexts/CartContext';
 import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../auth-animated.css';
@@ -13,6 +14,7 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>(initialMode);
   const { user, login, register, googleLogin, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Sign In state
   const [loginEmail, setLoginEmail] = useState('');
@@ -26,14 +28,28 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
   const [regConfirm, setRegConfirm] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
 
-  // Redirect if authenticated
+  // Redirect if authenticated - Seamlessly routes customers with pending cart items to their bag
   useEffect(() => {
     if (user) {
-      if (user.role === 'ADMIN') navigate('/admin', { replace: true });
-      else if (user.role === 'STOCK_MANAGER') navigate('/stock', { replace: true });
-      else navigate('/customer/dashboard', { replace: true });
+      if (user.role === 'ADMIN') {
+        navigate('/admin', { replace: true });
+      } else if (user.role === 'STOCK_MANAGER') {
+        navigate('/stock', { replace: true });
+      } else {
+        const pending = getPendingCartItem();
+        const searchParams = new URLSearchParams(location.search);
+        const returnTo = searchParams.get('returnTo');
+
+        if (pending || returnTo === '/cart') {
+          navigate('/cart', { replace: true });
+        } else if (returnTo) {
+          navigate(returnTo, { replace: true });
+        } else {
+          navigate('/customer/dashboard', { replace: true });
+        }
+      }
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.search]);
 
   // Sync mode with route if initialMode changes
   useEffect(() => {
