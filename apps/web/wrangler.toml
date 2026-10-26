@@ -1,0 +1,7 @@
+name = "interiorg"
+compatibility_date = "2026-10-22"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "INTERIORG_DB"
+id = "6286bfc48be64ff2bd035b43d0cab20c"
