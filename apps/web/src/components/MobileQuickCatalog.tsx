@@ -32,7 +32,6 @@ import { Product } from '../api/products';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocationContext } from '../contexts/LocationContext';
-import { ArticleDimensionViewer } from './ArticleDimensionViewer';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -103,9 +102,6 @@ export function MobileQuickCatalog({
 
   // Active Multi-image preview indexes per card
   const [cardImageIndexes, setCardImageIndexes] = useState<Record<string, number>>({});
-
-  // Dimension Modal state
-  const [dimensionProduct, setDimensionProduct] = useState<Product | null>(null);
 
   // Categories list based on domain
   const currentCategories = useMemo(() => {
@@ -511,21 +507,6 @@ export function MobileQuickCatalog({
                             CURATED
                           </span>
                         )}
-
-                        {/* Interactive Dimension Button on Card */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDimensionProduct(product);
-                          }}
-                          className="pointer-events-auto bg-white/90 hover:bg-white text-stone-800 text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-xs border border-stone-300/80 flex items-center gap-1 cursor-pointer transition-transform hover:scale-105"
-                          title="View exact dimensions & scale blueprints"
-                        >
-                          <Ruler size={10} className="text-[#8c6f52]" />
-                          <span>Dimensions</span>
-                        </button>
                       </div>
 
                       {/* Multi-Image Dot Carousel Controls */}
@@ -648,13 +629,6 @@ export function MobileQuickCatalog({
         </main>
       </div>
 
-      {/* Interactive Multi-Image Dimension & Angle Viewer Modal */}
-      <ArticleDimensionViewer
-        product={dimensionProduct}
-        isOpen={Boolean(dimensionProduct)}
-        onClose={() => setDimensionProduct(null)}
-        onAddToCart={onAddToCart}
-      />
     </div>
   );
 }

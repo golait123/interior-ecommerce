@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../api/products';
-import { Eye, Ban, Plus, Minus, Ruler, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, Ban, Plus, Minus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
@@ -10,10 +10,9 @@ interface ProductCardProps {
   product: Product;
   onAddToCart?: (product: Product) => void;
   onQuickView?: (product: Product) => void;
-  onOpenDimensions?: (product: Product) => void;
 }
 
-export function ProductCard({ product, onAddToCart, onQuickView, onOpenDimensions }: ProductCardProps) {
+export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardProps) {
   const { user } = useAuth();
   const { cart, addItem, updateItem, removeItem } = useCart();
   const navigate = useNavigate();
@@ -100,6 +99,39 @@ export function ProductCard({ product, onAddToCart, onQuickView, onOpenDimension
     setImgSrc(nextImg);
   }, [activeImgIdx, product.images]);
 
+  // Touch Swipe for mobile devices
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 35 && rawImages.length > 1) {
+      if (diff > 0) {
+        setActiveImgIdx((prev) => (prev + 1) % rawImages.length);
+      } else {
+        setActiveImgIdx((prev) => (prev - 1 + rawImages.length) % rawImages.length);
+      }
+    }
+    setTouchStartX(null);
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveImgIdx((prev) => (prev - 1 + rawImages.length) % rawImages.length);
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveImgIdx((prev) => (prev + 1) % rawImages.length);
+  };
+
   // Space / Room information
   const spaceItem = product.spaces && product.spaces.length > 0 ? product.spaces[0] : null;
   const roomName = product.rooms && product.rooms.length > 0 ? product.rooms[0] : null;
@@ -107,8 +139,12 @@ export function ProductCard({ product, onAddToCart, onQuickView, onOpenDimension
 
   return (
     <div className={`product-card group ${isOutOfStock ? 'opacity-90' : ''}`}>
-      {/* 1. Studio Image Box */}
-      <div className="product-card-image-wrapper relative">
+      {/* 1. Studio Image Box with Multi-Image Slider */}
+      <div 
+        className="product-card-image-wrapper relative"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <Link to={`/products/${product.id}`} className="block w-full h-full">
           <div className="product-image-placeholder">
             <img 
@@ -121,6 +157,32 @@ export function ProductCard({ product, onAddToCart, onQuickView, onOpenDimension
             />
           </div>
         </Link>
+
+        {/* Previous Image Chevron Button */}
+        {rawImages.length > 1 && (
+          <button
+            type="button"
+            onClick={handlePrevImage}
+            className="card-slide-nav-btn prev"
+            aria-label="Previous image"
+            title="Previous picture"
+          >
+            <ChevronLeft size={16} />
+          </button>
+        )}
+
+        {/* Next Image Chevron Button */}
+        {rawImages.length > 1 && (
+          <button
+            type="button"
+            onClick={handleNextImage}
+            className="card-slide-nav-btn next"
+            aria-label="Next image"
+            title="Next picture"
+          >
+            <ChevronRight size={16} />
+          </button>
+        )}
 
         {/* Top-Left Badge: Single clean, non-overlapping pill */}
         <div className="product-badge-corner">
@@ -146,82 +208,42 @@ export function ProductCard({ product, onAddToCart, onQuickView, onOpenDimension
           )}
         </div>
 
-        {/* Top-Right Badge: Dimensions & Blueprint Pill or Frosted Space Pill */}
-        <div className="product-badge-domain flex items-center gap-1">
-          {onOpenDimensions ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onOpenDimensions(product);
-              }}
-              className="bg-white/95 hover:bg-white text-stone-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs border border-stone-300 flex items-center gap-1 cursor-pointer transition-transform hover:scale-105"
-              title="View dimensions and room perspectives"
-            >
-              <Ruler size={11} className="text-[#8c6f52]" />
-              <span>Dimensions</span>
-            </button>
-          ) : product.primaryDomain === 'outdoor' ? (
-            <span>🌿 Outdoor</span>
-          ) : product.primaryDomain === 'indoor' ? (
-            <span>🏠 Indoor</span>
-          ) : spaceLabel ? (
+        {/* Top-Right Badge: Frosted Space Pill */}
+        {spaceLabel && (
+          <div className="product-badge-domain">
             <span>{spaceLabel}</span>
-          ) : null}
-        </div>
-
-        {/* Multi-Image Dots & Flip for Article Dimensions */}
-        {rawImages.length > 1 && (
-          <div 
-            className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none z-10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-1 bg-black/60 px-1.5 py-0.5 rounded-full backdrop-blur-xs">
-              {rawImages.slice(0, 4).map((_, i) => (
-                <span
-                  key={i}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    (activeImgIdx % rawImages.length) === i ? 'bg-amber-400 w-2.5' : 'bg-white/60'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setActiveImgIdx((prev) => (prev + 1) % rawImages.length);
-              }}
-              className="pointer-events-auto bg-black/60 hover:bg-black/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-full cursor-pointer border-none flex items-center gap-0.5 shadow-sm"
-              title="Switch dimension angle"
-            >
-              <span>Angle {((activeImgIdx % rawImages.length) + 1)}/{rawImages.length}</span>
-              <ChevronRight size={10} />
-            </button>
           </div>
         )}
 
-        {/* Hover Action Bar: Centered slide up */}
-        <div className="product-card-actions">
-          {onOpenDimensions && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onOpenDimensions(product);
-              }}
-              className="product-btn-quickview"
-              title="View Article Dimensions & Blueprints"
-            >
-              <Ruler size={13} />
-              <span>Dimensions</span>
-            </button>
-          )}
+        {/* Interactive Image Slide Dots & Counter Pill */}
+        {rawImages.length > 1 && (
+          <div 
+            className="card-slide-indicators"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          >
+            <div className="card-slide-dots">
+              {rawImages.slice(0, 5).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveImgIdx(i);
+                  }}
+                  className={`card-slide-dot ${(activeImgIdx % rawImages.length) === i ? 'active' : ''}`}
+                  aria-label={`View image ${i + 1}`}
+                />
+              ))}
+            </div>
+            <span className="card-slide-counter">
+              {(activeImgIdx % rawImages.length) + 1}/{rawImages.length}
+            </span>
+          </div>
+        )}
 
+        {/* Hover Action Bar: Centered Quick View */}
+        <div className="product-card-actions">
           {onQuickView && (
             <button
               type="button"

@@ -10,7 +10,6 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductQuickViewModal } from '../components/ProductQuickViewModal';
 import { AddProductModal } from '../components/AddProductModal';
 import { MobileQuickCatalog } from '../components/MobileQuickCatalog';
-import { ArticleDimensionViewer } from '../components/ArticleDimensionViewer';
 import { CategoryFilterTree } from '../components/CategoryFilterTree';
 import { getHierarchyForDomain } from '../data/categoryHierarchy';
 import { useLocationContext } from '../contexts/LocationContext';
@@ -93,9 +92,8 @@ export default function Shop() {
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [categorySearch, setCategorySearch] = useState<string>('');
 
-  // Quick View & Dimensions State
+  // Quick View State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
-  const [dimensionProduct, setDimensionProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
   // Dedicated Mobile Layout detection and view state
@@ -800,205 +798,140 @@ export default function Shop() {
           </aside>
 
           {/* ======================================================================= */}
-          {/* RIGHT COLUMN: TOOLBAR, ACTIVE CHIPS STRIP & PRODUCT GRID                  */}
+          {/* RIGHT COLUMN: UNIFIED SMART TOOLBAR & PRODUCT GRID                       */}
           {/* ======================================================================= */}
           <div className="flex-1 w-full min-w-0">
 
-            {/* Dedicated Systematic Mobile Shop Action Bar (Mobile Only) */}
-            <div className="lg:hidden mb-3 p-2 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between gap-2 shadow-xs">
-              <div className="flex items-center gap-2">
+            {/* UNIFIED SMART COMMERCE TOOLBAR (Consolidated Space-Efficient Design) */}
+            <div className="shop-smart-toolbar">
+              {/* Left group: Filter Trigger + Item Count + Inline Active Filter Badges */}
+              <div className="shop-toolbar-left">
                 <button
                   type="button"
                   onClick={() => setShowMobileFilters(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0f2444] text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer border-none active:scale-95 transition-transform"
+                  className="shop-filter-trigger-btn"
+                  title="Filter catalog"
                 >
                   <SlidersHorizontal size={13} />
                   <span>Filters</span>
                   {activeFiltersCount > 0 && (
-                    <span className="bg-amber-400 text-stone-900 text-[10px] font-black px-1.5 py-0.2 rounded-full">
-                      {activeFiltersCount}
-                    </span>
+                    <span className="shop-filter-badge">{activeFiltersCount}</span>
                   )}
                 </button>
-                <span className="text-xs font-semibold text-stone-600">
-                  {filteredProducts.length} pieces
-                </span>
-              </div>
 
-              <div className="flex items-center gap-1.5">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-800 focus:outline-none"
-                >
-                  <option value="featured">Featured</option>
-                  <option value="price-asc">₹ Low to High</option>
-                  <option value="price-desc">₹ High to Low</option>
-                  <option value="discount">Top Discount</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Standard Toolbar (Desktop Only) */}
-            <div className="nursery-standard-toolbar hidden lg:flex">
-              {/* Left: Total Count (Clean standard toolbar - Screenshot 1 updated) */}
-              <div className="flex items-center gap-3">
-                <div className="text-xs sm:text-sm text-stone-600">
-                  Showing <strong className="text-stone-900 font-semibold">{filteredProducts.length}</strong> of{' '}
-                  <span className="text-stone-500">{productsData?.total ?? filteredProducts.length} pieces</span>
-                </div>
-              </div>
-
-              {/* Center: Search Box */}
-              <div className="nursery-search-box">
-                <Search size={14} className="text-stone-400 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search pieces, wood, brass..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="text-stone-400 hover:text-stone-600 text-xs p-0 border-none bg-transparent cursor-pointer"
-                  >
-                    <X size={13} />
-                  </button>
-                )}
-              </div>
-
-              {/* Right: Sort By & View Mode */}
-              <div className="flex items-center gap-3">
-                <div className="nursery-sort-group">
-                  <span className="text-xs font-semibold text-stone-500 hidden sm:inline">Sort by:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="nursery-sort-select"
-                  >
-                    <option value="featured">Best Selling / Featured</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="discount">Highest Discount</option>
-                    <option value="name">Alphabetically: A–Z</option>
-                  </select>
+                <div className="shop-item-counter">
+                  Showing <strong>{filteredProducts.length}</strong> pieces
                 </div>
 
-                <div className="nursery-viewas-group">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('grid')}
-                    className={`nursery-viewas-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                    title="Grid view"
-                  >
-                    <LayoutGrid size={15} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('list')}
-                    className={`nursery-viewas-btn ${viewMode === 'list' ? 'active' : ''}`}
-                    title="List view"
-                  >
-                    <List size={15} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Active Filter Chips Strip */}
-            {hasActiveFilters && (
-              <div className="nursery-active-chips-strip">
-                <span className="text-xs font-bold text-stone-600 flex items-center gap-1.5 mr-1">
-                  <Filter size={13} className="text-[var(--navy)]" />
-                  Active Filters:
-                </span>
-
-                {searchQuery && (
-                  <div className="nursery-filter-chip">
-                    <span>Search: "{searchQuery}"</span>
-                    <button type="button" onClick={() => setSearchQuery('')}><X size={12} /></button>
-                  </div>
-                )}
-
+                {/* Inline Active Filters Pills (Utilizing free horizontal space wisely) */}
                 {selectedSpace && selectedSpace !== activeDomain && (
-                  <div className="nursery-filter-chip">
-                    <span>Space: {activeSpaceObj?.name || selectedSpace}</span>
-                    <button type="button" onClick={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)}><X size={12} /></button>
-                  </div>
-                )}
-
-                {selectedCategory && (
-                  <div className="nursery-filter-chip">
-                    <span>Category: {activeCategoryObj?.name || selectedCategory}</span>
-                    <button type="button" onClick={() => handleCategorySelect('')}><X size={12} /></button>
-                  </div>
-                )}
-
-                {selectedSubCategory && (
-                  <div className="nursery-filter-chip">
-                    <span>Sub-Section: {selectedSubCategory.replace(/-/g, ' ')}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setSelectedSubCategory(null);
-                        setSubCategoryKeywords([]);
-                        setSelectedColor(null);
-                        setSelectedColorKeyword(null);
-                      }}
-                    >
-                      <X size={12} />
+                  <div className="shop-inline-pill">
+                    <span>{activeSpaceObj?.name || selectedSpace}</span>
+                    <button type="button" onClick={() => handleSpaceSelect(activeDomain === 'all' ? '' : activeDomain)} aria-label="Remove space filter">
+                      <X size={11} />
                     </button>
                   </div>
                 )}
 
-                {selectedColor && (
-                  <div className="nursery-filter-chip">
-                    <span>Colour: {selectedColor}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setSelectedColor(null);
-                        setSelectedColorKeyword(null);
-                      }}
-                    >
-                      <X size={12} />
+                {selectedCategory && (
+                  <div className="shop-inline-pill">
+                    <span>{activeCategoryObj?.name || selectedCategory}</span>
+                    <button type="button" onClick={() => handleCategorySelect('')} aria-label="Remove category filter">
+                      <X size={11} />
                     </button>
                   </div>
                 )}
 
                 {priceRange !== 'all' && (
-                  <div className="nursery-filter-chip">
-                    <span>Price: {priceRange.replace('-', ' ')}</span>
-                    <button type="button" onClick={() => setPriceRange('all')}><X size={12} /></button>
+                  <div className="shop-inline-pill">
+                    <span>{priceRange.replace('-', ' ')}</span>
+                    <button type="button" onClick={() => setPriceRange('all')} aria-label="Remove price filter">
+                      <X size={11} />
+                    </button>
                   </div>
                 )}
 
                 {inStockOnly && (
-                  <div className="nursery-filter-chip">
-                    <span>In Stock Only</span>
-                    <button type="button" onClick={() => setInStockOnly(false)}><X size={12} /></button>
+                  <div className="shop-inline-pill">
+                    <span>In Stock</span>
+                    <button type="button" onClick={() => setInStockOnly(false)} aria-label="Remove in stock filter">
+                      <X size={11} />
+                    </button>
                   </div>
                 )}
 
-                {selectedRating !== 'all' && (
-                  <div className="nursery-filter-chip">
-                    <span>Rating: {selectedRating === '4-above' ? '4★ & up' : '3★ & up'}</span>
-                    <button type="button" onClick={() => setSelectedRating('all')}><X size={12} /></button>
-                  </div>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleClearAllFilters}
+                    className="shop-clear-all-link"
+                    title="Clear all active filters"
+                  >
+                    <RotateCcw size={11} />
+                    <span>Clear</span>
+                  </button>
                 )}
-
-                <button
-                  type="button"
-                  onClick={handleClearAllFilters}
-                  className="text-xs text-red-600 hover:text-red-700 font-bold ml-auto flex items-center gap-1 hover:underline cursor-pointer"
-                >
-                  <RotateCcw size={12} />
-                  <span>Clear All</span>
-                </button>
               </div>
-            )}
+
+              {/* Center group: Smart Compact Search Box */}
+              <div className="shop-toolbar-search">
+                <Search size={14} className="shop-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search pieces, wallpapers, plants..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="shop-search-input"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="shop-search-clear"
+                    aria-label="Clear search"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              {/* Right group: Sort By & View Mode */}
+              <div className="shop-toolbar-right">
+                <div className="shop-sort-box">
+                  <span className="shop-sort-label">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="shop-sort-select"
+                  >
+                    <option value="featured">Best Selling</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="discount">Top Discount</option>
+                    <option value="name">Alphabetical</option>
+                  </select>
+                </div>
+
+                <div className="shop-view-toggle">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('grid')}
+                    className={`shop-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                    title="Grid View (4 columns)"
+                  >
+                    <LayoutGrid size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('list')}
+                    className={`shop-view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                    title="List View"
+                  >
+                    <List size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* Products Grid */}
             {isLoading ? (
@@ -1033,7 +966,6 @@ export default function Shop() {
                     product={product}
                     onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
                     onQuickView={(p) => setQuickViewProduct(p)}
-                    onOpenDimensions={(p) => setDimensionProduct(p)}
                   />
                 ))}
               </div>
@@ -1045,7 +977,6 @@ export default function Shop() {
                     product={product}
                     onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
                     onQuickView={(p) => setQuickViewProduct(p)}
-                    onOpenDimensions={(p) => setDimensionProduct(p)}
                   />
                 ))}
               </div>
@@ -1185,14 +1116,6 @@ export default function Shop() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         defaultRole="ADMIN"
-      />
-
-      {/* Interactive Multi-Image Dimension & Angle Viewer Modal */}
-      <ArticleDimensionViewer
-        product={dimensionProduct}
-        isOpen={Boolean(dimensionProduct)}
-        onClose={() => setDimensionProduct(null)}
-        onAddToCart={(product, qty) => handleAddToCart(product, qty)}
       />
 
       <Footer />
