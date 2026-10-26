@@ -363,20 +363,29 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
           ) : null}
         </div>
 
-        {/* 3. Price & Action Footer */}
+        {/* 3. Proportional Price & Action Footer (Button perfectly contained inside card) */}
         <div className="product-card-footer">
           <div className="product-price-wrapper">
-            <span className="product-price-current">
-              {product.priceRange || `₹${curPrice.toLocaleString()}`}
-            </span>
-            {isDiscounted && (
-              <span className="product-price-original">
-                ₹{origPrice.toLocaleString()}
+            <div className="product-price-main-row">
+              <span className="product-price-current">
+                {product.priceRange || `₹${curPrice.toLocaleString('en-IN')}`}
               </span>
+              <span className="product-price-unit">
+                /{product.unit || 'pc'}
+              </span>
+            </div>
+            {isDiscounted && (
+              <div className="product-price-sub-row">
+                <span className="product-price-original">
+                  ₹{origPrice.toLocaleString('en-IN')}
+                </span>
+                {discountPct ? (
+                  <span className="product-price-discount-tag">
+                    {discountPct}% OFF
+                  </span>
+                ) : null}
+              </div>
             )}
-            <span className="product-price-unit">
-              /{product.unit || 'piece'}
-            </span>
           </div>
 
           {/* Quick Footer Action Button: Interactive +/- Stepper (Screenshot 2) */}
