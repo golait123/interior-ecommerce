@@ -92,6 +92,18 @@ export default function Shop() {
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [categorySearch, setCategorySearch] = useState<string>('');
 
+  // Lock body scroll when filter drawer is open to prevent background bleed and scroll glitch
+  useEffect(() => {
+    if (showMobileFilters) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showMobileFilters]);
+
   // Quick View State
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
@@ -355,10 +367,6 @@ export default function Shop() {
   }, [productsData?.items, subCategoryKeywords, selectedColorKeyword, priceRange, inStockOnly, selectedRating, sortBy]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
     try {
       await addItem(product.id, quantity);
       toast.success(`Added ${product.name} to bag!`);
@@ -986,35 +994,43 @@ export default function Shop() {
         </section>
       </main>
 
-      {/* Mobile Filters Drawer Modal */}
+      {/* Clean Off-Canvas Filter Drawer (Solid, Zero-Blur, No Background Bleed) */}
       {showMobileFilters && (
         <div 
-          className="fixed inset-0 z-50 flex bg-black/50 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-[10020] flex bg-black/45"
           onClick={() => setShowMobileFilters(false)}
         >
           <div 
-            className="bg-white w-[320px] max-w-[85vw] h-full overflow-y-auto p-5 shadow-2xl flex flex-col justify-between"
+            className="bg-white w-[350px] max-w-[90vw] h-full shadow-2xl flex flex-col z-[10030] overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            <div>
-              <div className="flex items-center justify-between pb-3 border-b border-stone-200 mb-4">
-                <div className="flex items-center gap-2">
-                  <SlidersHorizontal size={16} className="text-[var(--navy)]" />
-                  <h3 className="text-base font-bold text-stone-900 m-0">Filters</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowMobileFilters(false)}
-                  className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
+            {/* Solid Sticky Header */}
+            <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={16} className="text-[#0f2444]" />
+                <h3 className="text-base font-bold text-stone-900 m-0">Catalog Filters</h3>
+                {activeFiltersCount > 0 && (
+                  <span className="bg-amber-100 text-amber-900 text-xs font-bold px-2 py-0.5 rounded-full">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </div>
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(false)}
+                className="p-1.5 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-100 cursor-pointer transition-colors"
+                aria-label="Close filters drawer"
+              >
+                <X size={18} />
+              </button>
+            </div>
 
-              {/* Mobile Categories (Screenshot 3 Hierarchical Dropdowns) */}
-              <div className="mb-4 pt-3 border-t border-stone-100">
+            {/* Scrollable Solid Content Area */}
+            <div className="flex-1 overflow-y-auto p-4 overscroll-contain bg-white space-y-4">
+              {/* Category & Subsections */}
+              <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Category & Subsections</h4>
-                <div className="max-h-72 overflow-y-auto">
+                <div className="max-h-72 overflow-y-auto border border-stone-200 rounded-lg p-2 bg-stone-50/50">
                   <CategoryFilterTree
                     categories={categoryTree}
                     selectedCategory={selectedCategory}
@@ -1043,8 +1059,8 @@ export default function Shop() {
                 </div>
               </div>
 
-              {/* Mobile Price */}
-              <div className="mb-4 pt-3 border-t border-stone-100">
+              {/* Price Range */}
+              <div className="pt-3 border-t border-stone-100">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Price Range</h4>
                 <div className="space-y-1">
                   {[
@@ -1054,13 +1070,13 @@ export default function Shop() {
                     { id: '3000-7000', label: `${formatPrice(3000)} - ${formatPrice(7000)}` },
                     { id: '7000-plus', label: `Above ${formatPrice(7000)}` },
                   ].map(p => (
-                    <label key={p.id} className="nursery-checkbox-item">
+                    <label key={p.id} className="nursery-checkbox-item cursor-pointer">
                       <input
                         type="radio"
                         name="m-shop-price-bracket"
                         checked={priceRange === p.id}
                         onChange={() => setPriceRange(p.id as any)}
-                        className="accent-[var(--navy)]"
+                        className="accent-[#0f2444]"
                       />
                       <span>{p.label}</span>
                     </label>
@@ -1068,34 +1084,35 @@ export default function Shop() {
                 </div>
               </div>
 
-              {/* Mobile In Stock */}
-              <div className="mb-4 pt-3 border-t border-stone-100">
-                <label className="nursery-checkbox-item">
+              {/* In Stock Only */}
+              <div className="pt-3 border-t border-stone-100">
+                <label className="nursery-checkbox-item cursor-pointer">
                   <input
                     type="checkbox"
                     checked={inStockOnly}
                     onChange={(e) => setInStockOnly(e.target.checked)}
-                    className="accent-[var(--navy)]"
+                    className="accent-[#0f2444]"
                   />
                   <span className="font-semibold text-stone-800">In stock pieces only</span>
                 </label>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-stone-200 mt-4 flex items-center gap-2">
+            {/* Solid Sticky Footer Actions */}
+            <div className="p-4 border-t border-stone-200 bg-stone-50 flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={handleClearAllFilters}
-                className="btn btn-secondary btn-sm flex-1"
+                className="btn btn-secondary btn-sm flex-1 py-2 font-semibold"
               >
-                Reset
+                Clear All
               </button>
               <button
                 type="button"
                 onClick={() => setShowMobileFilters(false)}
-                className="btn btn-primary btn-sm flex-1"
+                className="btn btn-primary btn-sm flex-1 py-2 font-semibold"
               >
-                View ({filteredProducts.length})
+                Apply ({filteredProducts.length})
               </button>
             </div>
           </div>

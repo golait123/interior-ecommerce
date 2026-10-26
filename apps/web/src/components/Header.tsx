@@ -253,7 +253,7 @@ export function Header() {
 
               {isUserMenuOpen && (
                 <div 
-                  className="user-flyout-backdrop" 
+                  className="user-flyout-backdrop sm:hidden" 
                   onClick={() => setIsUserMenuOpen(false)} 
                   aria-hidden="true"
                 />

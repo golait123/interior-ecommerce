@@ -9,7 +9,16 @@ export const api = axios.create({ baseURL: BASE, withCredentials: false });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('cc_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    let guestId = localStorage.getItem('interiorg_guest_id');
+    if (!guestId) {
+      guestId = 'gst_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      localStorage.setItem('interiorg_guest_id', guestId);
+    }
+    config.headers['x-guest-id'] = guestId;
+  }
   return config;
 });
 

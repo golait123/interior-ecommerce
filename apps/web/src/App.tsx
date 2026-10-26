@@ -95,7 +95,7 @@ export default function App() {
                 <Route path="/products/:id" element={<ProductDetail />} />
                 {/* Customer */}
                 <Route path="/customer/dashboard" element={<ProtectedRoute roles={['CUSTOMER']}><CustomerDashboard /></ProtectedRoute>} />
-                <Route path="/cart" element={<ProtectedRoute roles={['CUSTOMER']}><Cart /></ProtectedRoute>} />
+                <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<ProtectedRoute roles={['CUSTOMER']}><Checkout /></ProtectedRoute>} />
                 <Route path="/orders" element={<ProtectedRoute roles={['CUSTOMER']}><Orders /></ProtectedRoute>} />
                 {/* Admin */}

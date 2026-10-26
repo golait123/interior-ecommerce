@@ -28,11 +28,6 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
       e.preventDefault();
       e.stopPropagation();
     }
-    if (!user) {
-      toast.error('Please sign in to add items to your cart');
-      navigate('/login');
-      return;
-    }
     if (isUpdating) return;
     setIsUpdating(true);
     try {
@@ -41,7 +36,7 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
           onAddToCart(product);
         } else {
           await addItem(product.id, 1);
-          toast.success(`Added ${product.name} to cart`);
+          toast.success(`Added ${product.name} to bag!`);
         }
       } else if (cartItem) {
         await updateItem(cartItem.id, itemCount + 1);
@@ -58,12 +53,12 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
       e.preventDefault();
       e.stopPropagation();
     }
-    if (!user || isUpdating) return;
+    if (isUpdating) return;
     setIsUpdating(true);
     try {
       if (itemCount === 1 && cartItem) {
         await removeItem(cartItem.id);
-        toast('Removed from cart', { icon: '🗑️' });
+        toast('Removed from bag', { icon: '🗑️' });
       } else if (itemCount > 1 && cartItem) {
         await updateItem(cartItem.id, itemCount - 1);
       }

@@ -199,10 +199,6 @@ export default function Home() {
   }, [allProducts, activeCategory]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
     try {
       await addItem(product.id, quantity);
       toast.success(`Added ${product.name} to bag!`);

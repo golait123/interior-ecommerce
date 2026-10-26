@@ -1080,16 +1080,143 @@ export default {
         }
       }
 
-      // 14. Cart endpoint
-      if (path === '/api/v1/cart') {
-        return jsonResponse({
-          success: true,
-          data: {
-            id: 'cart_edge_001',
-            items: [],
-            subtotal: 0,
-          },
-        });
+      // 14. Cart endpoints (Full Edge-backed & KV persistence)
+      if (path === '/api/v1/cart' || path.startsWith('/api/v1/cart/')) {
+        const authHeader = request.headers.get('Authorization') || '';
+        const token = authHeader.replace(/^Bearer\s+/i, '');
+        const payload = token ? await verifyJwt(token) : null;
+        const guestId = request.headers.get('x-guest-id') || 'guest_default';
+        const cartKey = payload?.sub ? `cart:user:${payload.sub}` : `cart:guest:${guestId}`;
+
+        // Helper to fetch cart from KV or create default
+        const getCart = async () => {
+          let c: any = null;
+          if (env?.INTERIORG_DB) {
+            try {
+              c = await env.INTERIORG_DB.get(cartKey, 'json');
+            } catch {}
+          }
+          if (!c) {
+            c = {
+              id: 'cart_' + (payload?.sub || guestId),
+              items: [],
+              subtotal: 0,
+            };
+          }
+          if (!Array.isArray(c.items)) c.items = [];
+          return c;
+        };
+
+        const saveCart = async (c: any) => {
+          c.subtotal = c.items.reduce((sum: number, it: any) => {
+            const price = Number(it.product?.discountPrice ?? it.product?.price ?? 0);
+            return sum + price * (it.quantity || 1);
+          }, 0);
+          if (env?.INTERIORG_DB) {
+            try {
+              await env.INTERIORG_DB.put(cartKey, JSON.stringify(c));
+            } catch {}
+          }
+          return c;
+        };
+
+        // GET /api/v1/cart
+        if (path === '/api/v1/cart' && request.method === 'GET') {
+          const cart = await getCart();
+          await saveCart(cart);
+          return jsonResponse({ success: true, data: cart });
+        }
+
+        // POST /api/v1/cart/items (Add to cart)
+        if (path === '/api/v1/cart/items' && request.method === 'POST') {
+          try {
+            const body = await request.json() as any;
+            const { productId, quantity = 1, customization } = body;
+            const cart = await getCart();
+
+            const product = EDGE_PRODUCTS.find(p => p.id === productId) || {
+              id: productId,
+              name: 'Custom Architectural Piece',
+              price: '2499',
+              discountPrice: null,
+              images: ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80'],
+              unit: 'piece',
+              category: { id: 'c1', name: 'Curated Pieces', slug: 'curated' },
+            };
+
+            const existingItem = cart.items.find((it: any) => it.product?.id === productId);
+            if (existingItem) {
+              existingItem.quantity = (existingItem.quantity || 0) + Number(quantity);
+              if (customization) existingItem.customization = customization;
+            } else {
+              cart.items.push({
+                id: 'item_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                quantity: Number(quantity) || 1,
+                customization: customization || null,
+                product: {
+                  id: product.id,
+                  name: product.name,
+                  price: String(product.price),
+                  discountPrice: product.discountPrice ? String(product.discountPrice) : null,
+                  images: product.images || [],
+                  unit: product.unit || 'piece',
+                  category: product.category,
+                },
+              });
+            }
+
+            await saveCart(cart);
+            return jsonResponse({
+              success: true,
+              message: `Added ${product.name} to cart`,
+              data: cart,
+            });
+          } catch {
+            return jsonResponse({ success: false, message: 'Failed to add item to cart' }, 400);
+          }
+        }
+
+        // PATCH /api/v1/cart/items/:id (Update quantity)
+        if (path.startsWith('/api/v1/cart/items/') && request.method === 'PATCH') {
+          try {
+            const itemId = path.replace('/api/v1/cart/items/', '');
+            const body = await request.json() as any;
+            const { quantity } = body;
+            const cart = await getCart();
+
+            if (Number(quantity) <= 0) {
+              cart.items = cart.items.filter((it: any) => it.id !== itemId);
+            } else {
+              const item = cart.items.find((it: any) => it.id === itemId);
+              if (item) {
+                item.quantity = Number(quantity);
+              }
+            }
+
+            await saveCart(cart);
+            return jsonResponse({ success: true, data: cart });
+          } catch {
+            return jsonResponse({ success: false, message: 'Failed to update item quantity' }, 400);
+          }
+        }
+
+        // DELETE /api/v1/cart/items/:id (Remove item)
+        if (path.startsWith('/api/v1/cart/items/') && request.method === 'DELETE') {
+          const itemId = path.replace('/api/v1/cart/items/', '');
+          const cart = await getCart();
+          cart.items = cart.items.filter((it: any) => it.id !== itemId);
+          await saveCart(cart);
+          return jsonResponse({ success: true, data: cart });
+        }
+
+        // DELETE /api/v1/cart (Clear cart)
+        if (path === '/api/v1/cart' && request.method === 'DELETE') {
+          const cart = await getCart();
+          cart.items = [];
+          cart.subtotal = 0;
+          await saveCart(cart);
+          return jsonResponse({ success: true, data: cart });
+        }
       }
 
       // Default fallback for any undefined API route

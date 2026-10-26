@@ -358,7 +358,7 @@ export function MobileQuickCatalog({
       {/* ========================================================================= */}
       <div className="flex w-full items-start">
         {/* LEFT VERTICAL CATEGORY RAIL (Width ~76px) */}
-        <aside className="w-[76px] sm:w-[84px] shrink-0 sticky top-[125px] h-[calc(100vh-125px)] overflow-y-auto bg-stone-100/90 border-r border-stone-200 no-scrollbar">
+        <aside className="w-[76px] sm:w-[84px] shrink-0 sticky top-[125px] h-[calc(100vh-125px)] overflow-y-auto bg-stone-100 border-r border-stone-200 no-scrollbar">
           <div className="py-2 flex flex-col items-center gap-1.5">
             {currentCategories.map((cat) => {
               const isSelected = selectedCategoryId === cat.id;

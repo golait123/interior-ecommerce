@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { productsApi, Product } from '../api/products';
@@ -265,6 +265,18 @@ export default function Gardening() {
   const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(true);
   const [isPriceOpen, setIsPriceOpen] = useState(true);
   const [isRatingOpen, setIsRatingOpen] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+  useEffect(() => {
+    if (showMobileFilters) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showMobileFilters]);
 
   // Toolbar states (Screenshot 1)
   const [sortBy, setSortBy] = useState<string>('best-selling');
@@ -564,10 +576,6 @@ export default function Gardening() {
   }, [productTypeSearch]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
     try {
       await addItem(product.id, quantity);
       toast.success(`Added ${product.name} to cart!`);
@@ -743,7 +751,7 @@ export default function Gardening() {
           {/* ======================================================================= */}
           {/* LEFT SIDEBAR: DYNAMIC CATEGORY-SPECIFIC FILTERS                         */}
           {/* ======================================================================= */}
-          <aside className="nursery-sidebar-filters">
+          <aside className="nursery-sidebar-filters hidden lg:block">
             <div className="nursery-sidebar-card">
               {/* Sidebar Header */}
               <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-stone-200">
@@ -1020,8 +1028,20 @@ export default function Gardening() {
 
             {/* Standard Redesigned Toolbar */}
             <div className="nursery-standard-toolbar">
-              {/* Left: Total Count (Clean standard toolbar - Screenshot 1 updated) */}
-              <div className="flex items-center gap-3">
+              {/* Left: Filter Trigger Button on Mobile + Total Count */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileFilters(true)}
+                  className="shop-filter-trigger-btn lg:hidden"
+                  title="Filter catalog"
+                >
+                  <SlidersHorizontal size={13} />
+                  <span>Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <span className="shop-filter-badge">{activeFiltersCount}</span>
+                  )}
+                </button>
                 <div className="text-xs sm:text-sm text-stone-600">
                   Showing <strong className="text-stone-900 font-semibold">{filteredProducts.length}</strong> of{' '}
                   <span className="text-stone-500">{masterNurseryCatalog.length} products</span>
@@ -1371,6 +1391,131 @@ export default function Gardening() {
                 className="w-full py-2.5 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-semibold rounded-md shadow-sm transition-colors cursor-pointer"
               >
                 Copy Voucher & Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clean Off-Canvas Filter Drawer (Solid, Zero-Blur, No Background Bleed) */}
+      {showMobileFilters && (
+        <div 
+          className="fixed inset-0 z-[10020] flex bg-black/45"
+          onClick={() => setShowMobileFilters(false)}
+        >
+          <div 
+            className="bg-white w-[350px] max-w-[90vw] h-full shadow-2xl flex flex-col z-[10030] overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Solid Sticky Header */}
+            <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={16} className="text-[#0f2444]" />
+                <h3 className="text-base font-bold text-stone-900 m-0">Nursery Filters</h3>
+                {activeFiltersCount > 0 && (
+                  <span className="bg-amber-100 text-amber-900 text-xs font-bold px-2 py-0.5 rounded-full">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(false)}
+                className="p-1.5 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-100 cursor-pointer transition-colors"
+                aria-label="Close filters drawer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Scrollable Solid Content Area */}
+            <div className="flex-1 overflow-y-auto p-4 overscroll-contain bg-white space-y-4">
+              {/* Category Tree */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Botanical Categories</h4>
+                <div className="max-h-64 overflow-y-auto border border-stone-200 rounded-lg p-2 bg-stone-50/50">
+                  <CategoryFilterTree
+                    categories={categoryTree}
+                    selectedCategory={selectedMainMenuCat || ''}
+                    onSelectCategory={(slug) => {
+                      handleSelectHorizontalCategory(slug || null);
+                      setSelectedSubCat(null);
+                      setSubCategoryKeywords([]);
+                      setSelectedColor(null);
+                      setSelectedColorKeyword(null);
+                    }}
+                    selectedSubCategory={selectedSubCat}
+                    onSelectSubCategory={(slug, keywords) => {
+                      setSelectedSubCat(slug);
+                      setSubCategoryKeywords(keywords);
+                      if (!slug) {
+                        setSelectedColor(null);
+                        setSelectedColorKeyword(null);
+                      }
+                    }}
+                    selectedColor={selectedColor}
+                    onSelectColor={(colorId, keyword) => {
+                      setSelectedColor(colorId);
+                      setSelectedColorKeyword(keyword);
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Price Range */}
+              <div className="pt-3 border-t border-stone-100">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Price Bracket</h4>
+                <div className="space-y-1">
+                  {[
+                    { id: 'all', label: 'All Prices' },
+                    { id: 'under-300', label: 'Under ₹300' },
+                    { id: '300-500', label: '₹300 - ₹500' },
+                    { id: '500-1000', label: '₹500 - ₹1,000' },
+                    { id: 'above-1000', label: 'Above ₹1,000' },
+                  ].map(p => (
+                    <label key={p.id} className="nursery-checkbox-item cursor-pointer">
+                      <input
+                        type="radio"
+                        name="m-gardening-price"
+                        checked={priceFilter === p.id}
+                        onChange={() => setPriceFilter(p.id as any)}
+                        className="accent-[#0f2444]"
+                      />
+                      <span>{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* In Stock Only */}
+              <div className="pt-3 border-t border-stone-100">
+                <label className="nursery-checkbox-item cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedAvailability === 'in-stock'}
+                    onChange={(e) => setSelectedAvailability(e.target.checked ? 'in-stock' : 'all')}
+                    className="accent-[#0f2444]"
+                  />
+                  <span className="font-semibold text-stone-800">In stock plants only</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Solid Sticky Footer Actions */}
+            <div className="p-4 border-t border-stone-200 bg-stone-50 flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleClearAllFilters}
+                className="btn btn-secondary btn-sm flex-1 py-2 font-semibold"
+              >
+                Clear All
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(false)}
+                className="btn btn-primary btn-sm flex-1 py-2 font-semibold"
+              >
+                Apply ({filteredProducts.length})
               </button>
             </div>
           </div>
