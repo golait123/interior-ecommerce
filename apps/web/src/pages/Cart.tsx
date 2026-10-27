@@ -85,7 +85,7 @@ export default function Cart() {
                         {item.product.images?.[0] ? (
                           <img 
                             src={item.product.images[0]} 
-                            alt={item.product.name} 
+                            alt={item.product?.name || 'Piece'} 
                             loading="lazy"
                           />
                         ) : (
@@ -98,11 +98,11 @@ export default function Cart() {
                       {/* Product Metadata & Price */}
                       <div className="cart-item-info">
                         <span className="cart-item-subtitle">
-                          {isNursery ? 'Nurserylive Curated Botanical Sanctuary' : (item.product.category?.name || 'InteriorG Studio Piece')}
+                          {isNursery ? 'Nurserylive Curated Botanical Sanctuary' : (item.product?.category?.name || 'InteriorG Studio Piece')}
                         </span>
                         
-                        <Link to={`/products/${item.product.id}`} className="cart-item-title">
-                          {isNursery && item.customization?.spaceName ? `${item.customization.spaceName} — Bespoke Nursery` : item.product.name}
+                        <Link to={`/products/${item.product?.id || ''}`} className="cart-item-title">
+                          {isNursery && item.customization?.spaceName ? `${item.customization.spaceName} — Bespoke Nursery` : (item.product?.name || 'Artisan Piece')}
                         </Link>
 
                         <div className="cart-item-price-row">

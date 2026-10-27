@@ -422,7 +422,7 @@ export default function ProductDetail() {
                 </span>
               </div>
               <p className="text-xs text-[#536b88] mt-1 m-0">
-                Inclusive of {currentCountry.tax.name} and regional customs clearance. {currentCountry.deliveryNotice}
+                Inclusive of {currentCountry?.tax?.name || 'GST (18%)'} and regional customs clearance. {currentCountry?.deliveryNotice || ''}
               </p>
             </div>
 

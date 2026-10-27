@@ -54,13 +54,14 @@ export function CategoryFilterTree({
   };
 
   // Filter categories by search term
-  const filteredCats = categories.filter(cat => {
+  const filteredCats = (categories || []).filter(cat => {
+    if (!cat) return false;
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
-    if (cat.name.toLowerCase().includes(term)) return true;
-    return cat.subcategories.some(sub => 
-      sub.name.toLowerCase().includes(term) ||
-      sub.keywords.some(k => k.toLowerCase().includes(term))
+    if (cat.name?.toLowerCase().includes(term)) return true;
+    return (cat.subcategories || []).some(sub => 
+      sub?.name?.toLowerCase().includes(term) ||
+      (sub?.keywords || []).some(k => k?.toLowerCase().includes(term))
     );
   });
 
@@ -117,7 +118,7 @@ export function CategoryFilterTree({
                     className="accent-[var(--navy)] cursor-pointer"
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="truncate">{cat.name}</span>
+                  <span className="truncate">{cat?.name || 'Category'}</span>
                 </div>
 
                 {cat.subcategories.length > 0 && (
@@ -157,7 +158,7 @@ export function CategoryFilterTree({
                             }
                           }}
                         >
-                          <span className="truncate flex-1 font-medium">{sub.name}</span>
+                          <span className="truncate flex-1 font-medium">{sub?.name || 'Subcategory'}</span>
                           
                           {hasColors && (
                             <button
@@ -193,13 +194,13 @@ export function CategoryFilterTree({
                                     }
                                   }}
                                   className={`nursery-color-swatch-btn ${isColorActive ? 'active' : ''}`}
-                                  title={`Filter by ${color.name}`}
+                                  title={`Filter by ${color?.name || 'Color'}`}
                                 >
                                   <span 
                                     className="swatch-color-dot" 
-                                    style={{ backgroundColor: color.hex }} 
+                                    style={{ backgroundColor: color?.hex || '#cccccc' }} 
                                   />
-                                  <span>{color.name}</span>
+                                  <span>{color?.name || ''}</span>
                                   {isColorActive && <Check size={11} className="ml-0.5 text-white" />}
                                 </button>
                               );

@@ -143,9 +143,9 @@ export function ProductCard({ product, onAddToCart, onQuickView }: ProductCardPr
   };
 
   // Space / Room information
-  const spaceItem = product.spaces && product.spaces.length > 0 ? product.spaces[0] : null;
-  const roomName = product.rooms && product.rooms.length > 0 ? product.rooms[0] : null;
-  const spaceLabel = spaceItem ? `${spaceItem.icon} ${spaceItem.name}` : roomName ? roomName : null;
+  const spaceItem = (product.spaces && product.spaces.length > 0 && typeof product.spaces[0] === 'object') ? product.spaces[0] : null;
+  const roomName = product.rooms && product.rooms.length > 0 ? product.rooms[0] : (typeof product.spaces?.[0] === 'string' ? product.spaces[0] : null);
+  const spaceLabel = spaceItem?.name ? `${spaceItem.icon || '✨'} ${spaceItem.name}` : roomName || null;
 
   return (
     <div className={`product-card group ${isOutOfStock ? 'opacity-90' : ''}`}>

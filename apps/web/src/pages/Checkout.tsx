@@ -709,7 +709,7 @@ export default function Checkout() {
                         {itemImg ? (
                           <img 
                             src={itemImg} 
-                            alt={item.product.name} 
+                            alt={item.product?.name || 'Sanctuary Piece'} 
                             loading="lazy"
                           />
                         ) : (
@@ -726,11 +726,11 @@ export default function Checkout() {
                       {/* Product Details & Specs */}
                       <div className="flex-1 min-w-0">
                         <span className="text-[10px] uppercase tracking-wider text-muted font-semibold block mb-0.5">
-                          {isNursery ? 'Nurserylive Curated Sanctuary' : (item.product.category?.name || 'InteriorG Piece')}
+                          {isNursery ? 'Nurserylive Curated Sanctuary' : (item.product?.category?.name || 'InteriorG Piece')}
                         </span>
                         
                         <p className="text-sm font-serif font-medium text-dark truncate m-0 group-hover:text-accent transition-colors">
-                          {isNursery && item.customization?.spaceName ? `${item.customization.spaceName} — Bespoke Nursery` : item.product.name}
+                          {isNursery && item.customization?.spaceName ? `${item.customization.spaceName} — Bespoke Nursery` : (item.product?.name || 'Curated Piece')}
                         </p>
 
                         {/* Made-to-measure / Bespoke nursery specs */}

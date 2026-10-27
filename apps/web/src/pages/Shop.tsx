@@ -265,7 +265,7 @@ export default function Shop() {
   const visibleCategories = useMemo(() => {
     if (!categories) return [];
     if (!categorySearch.trim()) return categories;
-    return categories.filter(c => c.name.toLowerCase().includes(categorySearch.toLowerCase()));
+    return categories.filter(c => c?.name?.toLowerCase().includes(categorySearch.toLowerCase()));
   }, [categories, categorySearch]);
 
   const getSpaceEmoji = (slug: string) => {
@@ -312,9 +312,11 @@ export default function Shop() {
 
         // Direct match in spaces object array
         if (Array.isArray(p.spaces) && p.spaces.length > 0) {
-          return p.spaces.some((s: any) => 
-            s.slug?.toLowerCase() === sSlug || s.name?.toLowerCase().includes(sKey)
-          );
+          return p.spaces.some((s: any) => {
+            if (!s) return false;
+            if (typeof s === 'string') return s.toLowerCase() === sSlug;
+            return s.slug?.toLowerCase() === sSlug || (s.name && s.name.toLowerCase().includes(sKey));
+          });
         }
 
         // Fallback to keyword in name or description only if no space metadata exists
@@ -512,7 +514,7 @@ export default function Shop() {
               {activeSpaceObj && activeSpaceObj.slug !== activeDomain && (
                 <>
                   <ChevronRight size={12} />
-                  <span className="text-[#86efac] font-semibold">{activeSpaceObj.name}</span>
+                  <span className="text-[#86efac] font-semibold">{activeSpaceObj?.name || activeSpaceObj?.slug}</span>
                 </>
               )}
             </div>
@@ -532,7 +534,7 @@ export default function Shop() {
 
                 <h1 className="nl-hero-title">
                   {activeSpaceObj && activeSpaceObj.slug !== activeDomain
-                    ? activeSpaceObj.name
+                    ? (activeSpaceObj?.name || activeSpaceObj?.slug)
                     : activeDomain === 'indoor'
                     ? 'Custom Interior & Living Studio'
                     : activeDomain === 'outdoor'
@@ -598,7 +600,7 @@ export default function Shop() {
               <div className="flex items-center gap-3">
                 <span className="badge badge-blue">Store Manager Mode</span>
                 <span className="text-xs text-[#555]">
-                  Logged in as <strong>{user.name}</strong> ({user.role}). You have full catalog management access.
+                  Logged in as <strong>{user?.name || user?.email || 'Store Manager'}</strong> ({user?.role || 'ADMIN'}). You have full catalog management access.
                 </span>
               </div>
 
@@ -640,18 +642,19 @@ export default function Shop() {
                 </span>
               </button>
 
-              {activeDomainSpaces.map(leaf => {
+              {activeDomainSpaces.filter(Boolean).map(leaf => {
+                if (!leaf) return null;
                 const isSelected = selectedSpace === leaf.slug;
-                const emoji = getSpaceEmoji(leaf.slug);
+                const emoji = getSpaceEmoji(leaf.slug || '');
                 return (
                   <button
-                    key={leaf.slug}
+                    key={leaf.slug || Math.random()}
                     type="button"
                     onClick={() => handleSpaceSelect(leaf.slug)}
                     className={`nursery-pill-btn ${isSelected ? 'active' : ''}`}
                   >
-                    <span>{emoji} {leaf.name}</span>
-                    {leaf.count > 0 && <span className="nursery-pill-badge">{leaf.count}</span>}
+                    <span>{emoji} {leaf.name || leaf.slug}</span>
+                    {(leaf.count || 0) > 0 && <span className="nursery-pill-badge">{leaf.count}</span>}
                   </button>
                 );
               })}

@@ -449,7 +449,7 @@ export default function CustomerDashboard() {
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 mt-1 m-0">
-                          {order.items.length} {order.items.length === 1 ? 'item' : 'items'}: {order.items[0]?.product.name}
+                          {order.items.length} {order.items.length === 1 ? 'item' : 'items'}: {order.items[0]?.product?.name || 'Sanctuary Piece'}
                         </p>
                       </div>
 

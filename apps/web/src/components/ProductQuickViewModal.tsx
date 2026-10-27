@@ -219,7 +219,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                   </span>
                 </div>
                 <p className="text-[11px] text-[#536b88] mt-1 m-0">
-                  Inclusive of {currentCountry.tax.name} • {currentCountry.deliveryNotice}
+                  Inclusive of {currentCountry?.tax?.name || 'GST (18%)'} • {currentCountry?.deliveryNotice || ''}
                 </p>
               </div>
 

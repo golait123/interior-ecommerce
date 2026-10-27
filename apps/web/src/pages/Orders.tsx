@@ -208,10 +208,10 @@ export default function Orders() {
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
                                   <div className="w-16 h-16 rounded bg-white border border-[#ded9d0] overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                    {item.product.images?.[0] ? (
+                                    {item.product?.images?.[0] ? (
                                       <img 
                                         src={item.product.images[0]} 
-                                        alt={item.product.name} 
+                                        alt={item.product?.name || 'Sanctuary Piece'} 
                                         className="w-full h-full object-cover" 
                                       />
                                     ) : (
@@ -223,7 +223,7 @@ export default function Orders() {
 
                                   <div>
                                     <p className="font-serif text-base font-medium text-dark m-0">
-                                      {isNursery && cust?.spaceName ? `${cust.spaceName} — Bespoke Nursery` : item.product.name}
+                                      {isNursery && cust?.spaceName ? `${cust.spaceName} — Bespoke Nursery` : (item.product?.name || 'Sanctuary Piece')}
                                     </p>
                                     <p className="text-xs text-muted mt-1 m-0">
                                       Unit Price: {formatPrice(Number(item.unitPrice))} &times; {item.quantity}
