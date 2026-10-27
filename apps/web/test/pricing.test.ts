@@ -102,4 +102,79 @@ describe('Storefront Pricing & Cart Logic', () => {
     assert.equal(poojaProducts.length, 1);
     assert.equal(poojaProducts[0].name, 'Teak Pooja Mandir');
   });
+
+  it('returns all items across rooms when All Interior or All Exterior is selected', () => {
+    const fullCatalog = [
+      { id: '1', name: 'Sheesham King Bed', primaryDomain: 'indoor', spaceSlugs: ['bedroom'] },
+      { id: '2', name: 'Terracotta Wallpaper', primaryDomain: 'indoor', spaceSlugs: ['living-room'] },
+      { id: '3', name: 'Teak Pooja Mandir', primaryDomain: 'indoor', spaceSlugs: ['pooja-room'] },
+      { id: '4', name: 'Balcony Planter Urn', primaryDomain: 'outdoor', spaceSlugs: ['balcony'] },
+      { id: '5', name: 'Lawn Garden Bench', primaryDomain: 'outdoor', spaceSlugs: ['lawn'] },
+    ];
+
+    const filterShop = (items: typeof fullCatalog, selectedSpace: string, activeDomain: string) => {
+      let filtered = [...items];
+      const effectiveDomain = (selectedSpace === 'indoor' || selectedSpace === 'interior')
+        ? 'indoor'
+        : (selectedSpace === 'outdoor' || selectedSpace === 'exterior')
+        ? 'outdoor'
+        : activeDomain;
+
+      if (effectiveDomain && effectiveDomain !== 'all') {
+        filtered = filtered.filter(p => p.primaryDomain === effectiveDomain || p.primaryDomain === 'both');
+      }
+
+      const isDomainOnly = !selectedSpace || 
+        selectedSpace === 'all' || 
+        selectedSpace === 'indoor' || 
+        selectedSpace === 'outdoor' || 
+        selectedSpace === 'interior' || 
+        selectedSpace === 'exterior' || 
+        selectedSpace === activeDomain;
+
+      if (!isDomainOnly) {
+        filtered = filtered.filter(p => p.spaceSlugs.includes(selectedSpace));
+      }
+      return filtered;
+    };
+
+    // Selecting 'indoor' / 'All Interior' returns ALL 3 indoor rooms
+    const interiorItems = filterShop(fullCatalog, 'indoor', 'indoor');
+    assert.equal(interiorItems.length, 3);
+    assert.ok(interiorItems.some(i => i.spaceSlugs.includes('bedroom')));
+    assert.ok(interiorItems.some(i => i.spaceSlugs.includes('living-room')));
+    assert.ok(interiorItems.some(i => i.spaceSlugs.includes('pooja-room')));
+
+    // Selecting 'outdoor' / 'All Exterior' returns ALL 2 outdoor spaces
+    const exteriorItems = filterShop(fullCatalog, 'outdoor', 'outdoor');
+    assert.equal(exteriorItems.length, 2);
+    assert.ok(exteriorItems.some(i => i.spaceSlugs.includes('balcony')));
+    assert.ok(exteriorItems.some(i => i.spaceSlugs.includes('lawn')));
+
+    // Selecting 'all' / 'All Spaces' returns all 5 items
+    const allItems = filterShop(fullCatalog, '', 'all');
+    assert.equal(allItems.length, 5);
+  });
+
+  it('progressively batches items for infinite scroll (8 items per scroll batch)', () => {
+    const mock20Items = Array.from({ length: 20 }, (_, i) => ({ id: `prod_${i}`, name: `Piece ${i}` }));
+    
+    // Batch 1 (Initial scroll view)
+    let visibleCount = 8;
+    let displayed = mock20Items.slice(0, visibleCount);
+    assert.equal(displayed.length, 8);
+    assert.equal(displayed[0].id, 'prod_0');
+    assert.equal(displayed[7].id, 'prod_7');
+
+    // Batch 2 (Scrolled down -> loads 8 more)
+    visibleCount = Math.min(visibleCount + 8, mock20Items.length);
+    displayed = mock20Items.slice(0, visibleCount);
+    assert.equal(displayed.length, 16);
+
+    // Batch 3 (Scrolled down -> loads remaining 4)
+    visibleCount = Math.min(visibleCount + 8, mock20Items.length);
+    displayed = mock20Items.slice(0, visibleCount);
+    assert.equal(displayed.length, 20);
+    assert.equal(visibleCount < mock20Items.length, false); // hasMore = false
+  });
 });

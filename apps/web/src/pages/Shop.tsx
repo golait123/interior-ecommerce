@@ -143,14 +143,32 @@ export default function Shop() {
   const indoorDomain = domains.find(d => d.slug === 'indoor');
   const outdoorDomain = domains.find(d => d.slug === 'outdoor');
 
+  // Determine effective domain & space for API query
+  const isDomainSpace = !selectedSpace || 
+    selectedSpace === 'all' || 
+    selectedSpace === 'indoor' || 
+    selectedSpace === 'outdoor' || 
+    selectedSpace === 'interior' || 
+    selectedSpace === 'exterior' || 
+    selectedSpace === activeDomain;
+
+  const queryDomain = (selectedSpace === 'indoor' || selectedSpace === 'interior')
+    ? 'indoor'
+    : (selectedSpace === 'outdoor' || selectedSpace === 'exterior')
+    ? 'outdoor'
+    : (activeDomain !== 'all' ? activeDomain : undefined);
+
+  const querySpace = isDomainSpace ? undefined : selectedSpace;
+
   // Fetch Products
   const { data: productsData, isLoading } = useQuery({
-    queryKey: ['products', { q: searchQuery, category: selectedCategory, space: selectedSpace }],
+    queryKey: ['products', { q: searchQuery, category: selectedCategory, space: querySpace, domain: queryDomain }],
     queryFn: () => productsApi.list({ 
       q: searchQuery, 
       category: selectedCategory, 
-      space: selectedSpace, 
-      limit: 50 
+      space: querySpace, 
+      domain: queryDomain,
+      limit: 100 
     })
   });
 
@@ -299,8 +317,27 @@ export default function Shop() {
   const filteredProducts = useMemo(() => {
     let items = productsData?.items ? [...productsData.items] : [];
 
+    // Filter by Domain (Indoor vs Outdoor vs All)
+    const effectiveDomain = (selectedSpace === 'indoor' || selectedSpace === 'interior')
+      ? 'indoor'
+      : (selectedSpace === 'outdoor' || selectedSpace === 'exterior')
+      ? 'outdoor'
+      : activeDomain;
+
+    if (effectiveDomain && effectiveDomain !== 'all') {
+      items = items.filter(p => p.primaryDomain === effectiveDomain || p.primaryDomain === 'both');
+    }
+
     // Filter by Selected Space / Room (Living Room, Bedroom, Dining, Balcony, Pooja, etc.)
-    if (selectedSpace && selectedSpace !== 'all' && selectedSpace !== activeDomain && selectedSpace !== '') {
+    const isDomainOnly = !selectedSpace || 
+      selectedSpace === 'all' || 
+      selectedSpace === 'indoor' || 
+      selectedSpace === 'outdoor' || 
+      selectedSpace === 'interior' || 
+      selectedSpace === 'exterior' || 
+      selectedSpace === activeDomain;
+
+    if (!isDomainOnly) {
       const sSlug = selectedSpace.toLowerCase().trim();
       const sKey = sSlug.replace(/-/g, ' ');
 
@@ -391,6 +428,65 @@ export default function Shop() {
 
     return items;
   }, [productsData?.items, selectedSpace, activeDomain, subCategoryKeywords, selectedColorKeyword, priceRange, inStockOnly, selectedRating, sortBy]);
+
+  // Progressive Infinite Scroll (Loads 8 items per scroll batch, matching 2x4 orientation)
+  const [visibleCount, setVisibleCount] = useState<number>(8);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Reset visibleCount whenever any filter or search changes
+  useEffect(() => {
+    setVisibleCount(8);
+  }, [
+    selectedSpace,
+    activeDomain,
+    selectedCategory,
+    subCategoryKeywords,
+    selectedColorKeyword,
+    priceRange,
+    inStockOnly,
+    selectedRating,
+    searchQuery,
+    sortBy,
+  ]);
+
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount);
+  }, [filteredProducts, visibleCount]);
+
+  const hasMore = visibleCount < filteredProducts.length;
+
+  // IntersectionObserver for auto-loading next batch when scrolling near bottom
+  useEffect(() => {
+    if (!hasMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + 8, filteredProducts.length));
+        }
+      },
+      { root: null, rootMargin: '350px 0px', threshold: 0.05 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, filteredProducts.length]);
+
+  // Window scroll fallback listener
+  useEffect(() => {
+    if (!hasMore) return;
+    const handleScroll = () => {
+      const scrollPos = window.innerHeight + window.scrollY;
+      const threshold = document.documentElement.scrollHeight - 500;
+      if (scrollPos >= threshold) {
+        setVisibleCount(prev => Math.min(prev + 8, filteredProducts.length));
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, filteredProducts.length]);
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
     if (!user) {
@@ -870,7 +966,7 @@ export default function Shop() {
                 </button>
 
                 <div className="shop-item-counter">
-                  Showing <strong>{filteredProducts.length}</strong> pieces
+                  Showing <strong>{hasMore ? `${displayedProducts.length} of ${filteredProducts.length}` : filteredProducts.length}</strong> pieces
                 </div>
 
                 {/* Inline Active Filters Pills (Utilizing free horizontal space wisely) */}
@@ -1009,27 +1105,47 @@ export default function Shop() {
                 </div>
               </div>
             ) : viewMode === 'grid' ? (
-              <div className="catalog-grid-4">
-                {filteredProducts.map(product => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
-                    onQuickView={(p) => setQuickViewProduct(p)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="catalog-grid-4">
+                  {displayedProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
+                      onQuickView={(p) => setQuickViewProduct(p)}
+                    />
+                  ))}
+                </div>
+                {/* Infinite Scroll Sentinel & Loader */}
+                <div ref={sentinelRef} className="h-8 w-full flex items-center justify-center my-2 pointer-events-none" />
+                {hasMore && (
+                  <div className="py-6 flex flex-col items-center justify-center gap-2 text-stone-500">
+                    <div className="w-6 h-6 border-2 border-stone-200 border-t-[#0f2444] rounded-full animate-spin" />
+                    <span className="text-xs font-medium">Loading more pieces...</span>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filteredProducts.map(product => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
-                    onQuickView={(p) => setQuickViewProduct(p)}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {displayedProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={!product.isCustomizable ? (p) => handleAddToCart(p, 1) : undefined}
+                      onQuickView={(p) => setQuickViewProduct(p)}
+                    />
+                  ))}
+                </div>
+                {/* Infinite Scroll Sentinel & Loader */}
+                <div ref={sentinelRef} className="h-8 w-full flex items-center justify-center my-2 pointer-events-none" />
+                {hasMore && (
+                  <div className="py-6 flex flex-col items-center justify-center gap-2 text-stone-500">
+                    <div className="w-6 h-6 border-2 border-stone-200 border-t-[#0f2444] rounded-full animate-spin" />
+                    <span className="text-xs font-medium">Loading more pieces...</span>
+                  </div>
+                )}
+              </>
             )}
 
           </div>

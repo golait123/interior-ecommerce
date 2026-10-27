@@ -1227,22 +1227,35 @@ export default {
         let items = [...EDGE_PRODUCTS];
 
         if (domain && domain !== 'all') {
-          items = items.filter(p => p.primaryDomain === domain || p.primaryDomain === 'both');
+          const dLower = domain.toLowerCase().trim();
+          const dNorm = (dLower === 'interior' || dLower === 'indoor') ? 'indoor' : (dLower === 'exterior' || dLower === 'outdoor') ? 'outdoor' : dLower;
+          items = items.filter(p => p.primaryDomain === dNorm || p.primaryDomain === 'both');
         }
 
-        if (space && space !== 'all' && space !== domain) {
+        if (space && space !== 'all') {
           const sLower = space.toLowerCase().trim();
-          const sKey = sLower.replace(/-/g, ' ');
-          items = items.filter(p => {
-            if (Array.isArray(p.spaceSlugs) && p.spaceSlugs.length > 0) {
-              return p.spaceSlugs.some(s => s.toLowerCase() === sLower || s.toLowerCase().includes(sLower));
-            }
-            if (Array.isArray(p.spaces) && p.spaces.length > 0) {
-              return p.spaces.some((s: any) => s.slug?.toLowerCase() === sLower || s.name?.toLowerCase().includes(sKey));
-            }
-            const text = `${p.name} ${p.description || ''} ${p.category?.name || ''}`.toLowerCase();
-            return text.includes(sKey) || text.includes(sLower.replace(/-/g, ' '));
-          });
+          if (sLower === 'indoor' || sLower === 'interior') {
+            items = items.filter(p => p.primaryDomain === 'indoor' || p.primaryDomain === 'both');
+          } else if (sLower === 'outdoor' || sLower === 'exterior') {
+            items = items.filter(p => p.primaryDomain === 'outdoor' || p.primaryDomain === 'both');
+          } else if (sLower !== domain) {
+            const sKey = sLower.replace(/-/g, ' ');
+            items = items.filter(p => {
+              if (Array.isArray(p.spaceSlugs) && p.spaceSlugs.length > 0) {
+                return p.spaceSlugs.some(s => s.toLowerCase() === sLower || s.toLowerCase().includes(sLower));
+              }
+              if (Array.isArray(p.spaces) && p.spaces.length > 0) {
+                return p.spaces.some((s: any) => {
+                  if (!s) return false;
+                  const slug = typeof s === 'string' ? s : s.slug;
+                  const name = typeof s === 'string' ? s : s.name;
+                  return slug?.toLowerCase() === sLower || (name && name.toLowerCase().includes(sKey));
+                });
+              }
+              const text = `${p.name} ${p.description || ''} ${p.category?.name || ''}`.toLowerCase();
+              return text.includes(sKey) || text.includes(sLower.replace(/-/g, ' '));
+            });
+          }
         }
 
         if (category && category !== 'all') {

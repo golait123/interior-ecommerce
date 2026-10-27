@@ -37,7 +37,7 @@ export interface SpacesTreeResponse {
 }
 
 export const productsApi = {
-  list: (params?: { page?: number; limit?: number; q?: string; category?: string; room?: string; space?: string }) =>
+  list: (params?: { page?: number; limit?: number; q?: string; category?: string; room?: string; space?: string; domain?: string }) =>
     api.get('/products', { params }).then(unwrap<ProductsResponse>),
   categories: () => api.get('/products/categories').then(unwrap<Category[]>),
   roomCategories: () => api.get('/products/room-categories').then(unwrap<RoomCategory[]>),
