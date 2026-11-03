@@ -1,0 +1,20 @@
+# Dependencies & Node
+node_modules/
+
+# Secrets & Environment files
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!.env.example
+
+# Build Outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+*.log

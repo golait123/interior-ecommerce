@@ -1,5 +1,55 @@
-node_modules
+# ==============================================================================
+# Git Ignore - InteriorG Enterprise Architecture
+# ==============================================================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment Configuration & Local Secrets (CRITICAL: Never commit secrets)
 .env
 .env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production
+.env.production.local
+*.env
+*.env.local
 !.env.example
-dist
+
+# Production & Build Outputs
+dist/
+build/
+out/
+.wrangler/
+.cache/
+dist-ssr/
+*.tsbuildinfo
+
+# Logs & Runtime Diagnostics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+*.pid
+*.seed
+
+# OS & Editor Artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Temporary & Local Database Dumps
+*.local.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
