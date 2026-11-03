@@ -20,7 +20,8 @@ import {
   Settings,
   LogOut,
   LogIn,
-  UserPlus
+  UserPlus,
+  ShieldCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -403,6 +404,17 @@ export function Header() {
                           <span className="flyout-link-sub">Check live shipping status</span>
                         </div>
                       </Link>
+                      <Link
+                        to="/staff/login"
+                        className="flyout-link border-t border-stone-100 mt-1 pt-1.5"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <ShieldCheck size={15} className="flyout-link-icon text-stone-500" />
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title text-stone-700">Staff Portal</span>
+                          <span className="flyout-link-sub">Admin & shop manager access</span>
+                        </div>
+                      </Link>
                     </div>
                   </>
                 )}
@@ -608,6 +620,12 @@ export function Header() {
                   <Link to="/register" onClick={closeMenu} className="mobile-auth-btn-outline">
                     <UserPlus size={14} />
                     <span>Register</span>
+                  </Link>
+                </div>
+                <div className="pt-2 text-center border-t border-stone-200/60 mt-2">
+                  <Link to="/staff/login" onClick={closeMenu} className="text-[11px] text-stone-500 hover:text-stone-800 font-medium inline-flex items-center gap-1">
+                    <ShieldCheck size={12} />
+                    <span>Staff & Manager Portal</span>
                   </Link>
                 </div>
               </div>

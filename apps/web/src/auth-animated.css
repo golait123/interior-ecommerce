@@ -482,6 +482,42 @@
   gap: 0.4rem;
 }
 
+.anim-demo-buttons-patron {
+  display: flex;
+  justify-content: center;
+}
+
+.anim-demo-buttons-patron .anim-demo-btn {
+  width: 100%;
+  max-width: 240px;
+}
+
+.anim-staff-portal-link {
+  margin-top: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--auth-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--auth-muted);
+}
+
+.anim-staff-portal-link .staff-portal-anchor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--auth-navy);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.anim-staff-portal-link .staff-portal-anchor:hover {
+  color: var(--auth-gold);
+  text-decoration: underline;
+}
+
 .anim-demo-btn {
   padding: 0.3rem 0.4rem;
   background-color: #f8fafc;

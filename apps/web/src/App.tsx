@@ -15,6 +15,7 @@ import Packages from './pages/Packages';
 import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import StaffLogin from './pages/StaffLogin';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -92,6 +93,12 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                {/* Dedicated Staff & Management Portals */}
+                <Route path="/admin/login" element={<StaffLogin defaultPortal="admin" />} />
+                <Route path="/stock/login" element={<StaffLogin defaultPortal="stock" />} />
+                <Route path="/shop/login" element={<Navigate to="/stock/login" replace />} />
+                <Route path="/staff/login" element={<StaffLogin defaultPortal="admin" />} />
+                <Route path="/portal/login" element={<StaffLogin defaultPortal="admin" />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 {/* Customer */}
                 <Route path="/customer/dashboard" element={<ProtectedRoute roles={['CUSTOMER']}><CustomerDashboard /></ProtectedRoute>} />

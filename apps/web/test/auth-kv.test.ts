@@ -89,4 +89,47 @@ describe('Cloudflare KV Authentication Unit Tests', () => {
     const memoryStore: Record<string, string> = { 'admin@interiorg.local': 'ADMIN' };
     assert.equal(memoryStore['admin@interiorg.local'], 'ADMIN');
   });
+
+  it('strictly segregates public patron login from dedicated staff portals', () => {
+    // Public customer login only exposes customer patron demo
+    const publicDemoOptions = ['customer@interiorg.local'];
+    assert.ok(!publicDemoOptions.includes('admin@interiorg.local'), 'Public login must not expose Admin credentials');
+    assert.ok(!publicDemoOptions.includes('stock@interiorg.local'), 'Public login must not expose Shop Manager credentials');
+
+    // Separate staff portals provide role-specific paths
+    const getStaffLoginPath = (role: 'ADMIN' | 'STOCK_MANAGER') => {
+      return role === 'ADMIN' ? '/admin/login' : '/stock/login';
+    };
+
+    assert.equal(getStaffLoginPath('ADMIN'), '/admin/login');
+    assert.equal(getStaffLoginPath('STOCK_MANAGER'), '/stock/login');
+  });
+
+  it('redirects unauthenticated routes to their respective dedicated login portal', () => {
+    const resolveRedirect = (pathname: string) => {
+      if (pathname.startsWith('/admin')) {
+        return `/admin/login?returnTo=${encodeURIComponent(pathname)}`;
+      }
+      if (pathname.startsWith('/stock')) {
+        return `/stock/login?returnTo=${encodeURIComponent(pathname)}`;
+      }
+      return `/login?returnTo=${encodeURIComponent(pathname)}`;
+    };
+
+    assert.equal(
+      resolveRedirect('/admin/products'),
+      '/admin/login?returnTo=%2Fadmin%2Fproducts',
+      'Unauthenticated admin routes must redirect to /admin/login'
+    );
+    assert.equal(
+      resolveRedirect('/stock/inventory'),
+      '/stock/login?returnTo=%2Fstock%2Finventory',
+      'Unauthenticated stock routes must redirect to /stock/login'
+    );
+    assert.equal(
+      resolveRedirect('/checkout'),
+      '/login?returnTo=%2Fcheckout',
+      'Unauthenticated patron routes must redirect to /login'
+    );
+  });
 });

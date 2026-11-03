@@ -8,6 +8,12 @@ export function ProtectedRoute({ children, roles }: { children: React.ReactNode;
   const location = useLocation();
 
   if (!user) {
+    if (location.pathname.startsWith('/admin')) {
+      return <Navigate to={`/admin/login?returnTo=${encodeURIComponent(location.pathname)}`} replace />;
+    }
+    if (location.pathname.startsWith('/stock')) {
+      return <Navigate to={`/stock/login?returnTo=${encodeURIComponent(location.pathname)}`} replace />;
+    }
     return <Navigate to={`/login?returnTo=${encodeURIComponent(location.pathname)}`} replace />;
   }
 

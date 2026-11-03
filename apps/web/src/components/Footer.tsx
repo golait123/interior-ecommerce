@@ -201,8 +201,10 @@ export function Footer() {
               <li><Link to="/gardening/customize">Custom Space Configurator</Link></li>
               <li><Link to="/about">Book Architect Consultation</Link></li>
               <li><Link to="/customer/dashboard?tab=saved-rooms">My Saved 3D Spaces</Link></li>
-              {user && ['ADMIN', 'STOCK_MANAGER'].includes(user.role) && (
+              {user && ['ADMIN', 'STOCK_MANAGER'].includes(user.role) ? (
                 <li><Link to="/admin" className="text-gold font-medium">Admin Management Portal</Link></li>
+              ) : (
+                <li><Link to="/staff/login" className="text-stone-400 hover:text-stone-200">Staff & Manager Portal</Link></li>
               )}
             </ul>
           </div>

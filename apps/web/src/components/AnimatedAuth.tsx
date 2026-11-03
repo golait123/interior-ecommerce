@@ -216,32 +216,26 @@ export function AnimatedAuth({ initialMode }: AnimatedAuthProps) {
               <span>Continue with Google</span>
             </button>
 
-            {/* DEMO 1-CLICK PILLS */}
+            {/* DEMO 1-CLICK PILLS (Customer Patron Only - Admin & Shop Manager moved to dedicated portal) */}
             <div className="anim-demo-row">
-              <span className="anim-demo-label">One-Click Demo Fill:</span>
-              <div className="anim-demo-buttons">
+              <span className="anim-demo-label">Demo Customer Account:</span>
+              <div className="anim-demo-buttons-patron">
                 <button
                   type="button"
                   className="anim-demo-btn"
                   onClick={() => { setLoginEmail('customer@interiorg.local'); setLoginPassword('Customer@12345'); }}
                 >
-                  Patron
-                </button>
-                <button
-                  type="button"
-                  className="anim-demo-btn"
-                  onClick={() => { setLoginEmail('admin@interiorg.local'); setLoginPassword('Admin@12345'); }}
-                >
-                  Admin
-                </button>
-                <button
-                  type="button"
-                  className="anim-demo-btn"
-                  onClick={() => { setLoginEmail('stock@interiorg.local'); setLoginPassword('Stock@12345'); }}
-                >
-                  Stock
+                  Fill Demo Patron Credentials
                 </button>
               </div>
+            </div>
+
+            {/* SEPARATE STAFF / MANAGEMENT PORTAL ACCESS LINK */}
+            <div className="anim-staff-portal-link">
+              <span>Authorized Personnel:</span>
+              <Link to="/staff/login" className="staff-portal-anchor">
+                Admin & Shop Manager Portal <ArrowRight size={12} />
+              </Link>
             </div>
 
             {/* Mobile Switch link */}
