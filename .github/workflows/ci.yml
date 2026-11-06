@@ -11,6 +11,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
+  JWT_SECRET: ci-test-secret-key-32-chars-long-minimum!
+  NODE_ENV: test
+
 jobs:
   # ============================================================================
   # STAGE 1: SECURITY SCANNING & STATIC COMPOSITION ANALYSIS (DevSecOps Gate)
@@ -75,9 +80,13 @@ jobs:
 
       - name: 📐 Validate Prisma Database Schema
         run: npx prisma validate --schema=apps/api/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
 
       - name: ⚙️ Generate Prisma Client
         run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
 
       - name: 🛡️ Strict Monorepo Typecheck (apps/api & apps/web)
         run: npm run typecheck
@@ -121,6 +130,8 @@ jobs:
 
       - name: ⚙️ Generate Prisma Client
         run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
 
       - name: 🗄️ Verify Database Schema Push against Container
         run: |
@@ -179,7 +190,7 @@ jobs:
             VITE_API_URL=/api/v1
 
   # ============================================================================
-  # STAGE 5: PRODUCTION COMPILE & ARTIFACT PACKAGING
+  # STAGE 5: PRODUCTION COMPILE, ARTIFACT PACKAGING & DEPLOYMENT
   # ============================================================================
   build-and-archive:
     name: 📦 Production Compilation & Artifact Packaging
@@ -202,6 +213,8 @@ jobs:
 
       - name: ⚙️ Generate Prisma Client
         run: npx prisma generate --schema=apps/api/prisma/schema.prisma
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public
 
       - name: 🏗️ Compile Backend Production API
         run: npm run build -w apps/api
@@ -217,3 +230,11 @@ jobs:
           name: interiorg-production-dist
           path: apps/web/dist
           retention-days: 7
+
+      # Continuous Deployment to Cloudflare Pages (When secret is available on main)
+      - name: 🚀 Deploy to Cloudflare Pages
+        if: github.ref == 'refs/heads/main' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          npx wrangler pages deploy apps/web/dist --project-name interiorg --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

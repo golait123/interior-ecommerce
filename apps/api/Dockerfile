@@ -10,8 +10,8 @@ COPY apps/api/tsconfig.json ./
 COPY apps/api/prisma ./prisma
 COPY apps/api/src ./src
 
+ENV DATABASE_URL="postgresql://postgres:postgrespassword@localhost:5432/interiorg_test_db?schema=public"
 RUN npx prisma generate && npm run build
 
 EXPOSE 4000
 CMD ["node", "dist/src/server.js"]
-
