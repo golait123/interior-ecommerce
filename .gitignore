@@ -20,7 +20,7 @@ node_modules/
 !.env.example
 
 # Production & Build Outputs
-dist/
+apps/api/dist/
 build/
 out/
 .wrangler/

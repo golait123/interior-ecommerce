@@ -12,7 +12,7 @@ node_modules/
 !.env.example
 
 # Build Outputs & Cache
-dist/
+# apps/web/dist is deployed directly to Cloudflare Pages edge
 dist-ssr/
 .wrangler/
 .cache/

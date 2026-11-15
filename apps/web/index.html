@@ -43,28 +43,57 @@
       </div>
     </div>
     <script>
+      function clearAppCachesAndReload() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(r) { r.unregister(); });
+          });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(k) { caches.delete(k); });
+          });
+        }
+        try {
+          sessionStorage.setItem('interiorg_cache_auto_healed', '1');
+        } catch (e) {}
+        setTimeout(function() {
+          window.location.reload();
+        }, 300);
+      }
+
+      // Immediate error listener for stale chunk / module script load failures
+      window.addEventListener('error', function(e) {
+        var msg = (e && e.message) ? e.message : '';
+        var isChunkError = (
+          msg.indexOf('Loading chunk') !== -1 ||
+          msg.indexOf('Failed to fetch dynamically imported module') !== -1 ||
+          msg.indexOf('MIME type') !== -1 ||
+          msg.indexOf('module script') !== -1
+        );
+        if (isChunkError && !sessionStorage.getItem('interiorg_cache_auto_healed')) {
+          clearAppCachesAndReload();
+        }
+      });
+
       // Diagnostic timeout: if React hasn't replaced #root within 3.5s (due to old service worker caching), reveal recovery action
       setTimeout(function() {
         var fallback = document.getElementById('app-loading-fallback');
         var btn = document.getElementById('app-force-reload-btn');
         var msg = document.getElementById('app-loading-msg');
         if (fallback && btn) {
+          if (!sessionStorage.getItem('interiorg_cache_auto_healed')) {
+            clearAppCachesAndReload();
+            return;
+          }
           msg.textContent = 'Browser cache or previous session conflict detected.';
           btn.style.display = 'inline-block';
           btn.onclick = function() {
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                regs.forEach(function(r) { r.unregister(); });
-              });
-            }
-            if ('caches' in window) {
-              caches.keys().then(function(keys) {
-                keys.forEach(function(k) { caches.delete(k); });
-              });
-            }
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.reload(true);
+            try {
+              localStorage.clear();
+              sessionStorage.clear();
+            } catch (e) {}
+            clearAppCachesAndReload();
           };
         }
       }, 3500);

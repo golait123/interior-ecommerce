@@ -1,5 +1,5 @@
 // InteriorG Progressive Web App Service Worker
-const CACHE_NAME = 'interiorg-pwa-v3';
+const CACHE_NAME = 'interiorg-pwa-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -22,13 +22,14 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: Claim clients and remove old caches
+// Activate: Claim clients and remove old caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[InteriorG SW] Purging obsolete cache:', key);
             return caches.delete(key);
           }
         })
@@ -54,6 +55,15 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request)
       .then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const contentType = networkResponse.headers.get('content-type') || '';
+          // Guard: Never cache an SPA HTML rewrite fallback when a JS/CSS file was requested!
+          if (url.pathname.endsWith('.js') && !contentType.includes('javascript')) {
+            return networkResponse;
+          }
+          if (url.pathname.endsWith('.css') && !contentType.includes('text/css')) {
+            return networkResponse;
+          }
+
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
