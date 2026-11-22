@@ -199,7 +199,7 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
           <button 
             type="button" 
             onClick={onClose} 
-            className="btn btn-ghost btn-sm p-1.5 text-muted hover:text-[#0f2444]"
+            className="btn btn-ghost btn-sm p-1.5 text-muted hover:text-[#0B2E5B]"
             aria-label="Close dialog"
           >
             <X size={20} />
@@ -210,7 +210,7 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
         <form id="edit-product-form" onSubmit={handleSubmit} className="modal-body space-y-4">
           
           {/* Quick Status Bar */}
-          <div className="flex flex-wrap items-center justify-between p-3.5 rounded-xl bg-[#fbf9f6] border border-[#cbdceb] gap-3">
+          <div className="flex flex-wrap items-center justify-between p-3.5 rounded-xl bg-[#fbf9f6] border border-[#DCE7F5] gap-3">
             <div className="flex items-center gap-3">
               <span className={`badge ${availableUnits > 5 ? 'badge-green' : availableUnits > 0 ? 'badge-yellow' : 'badge-red'}`}>
                 {availableUnits > 0 ? `${availableUnits} Available in Stock` : 'OUT OF STOCK'}
@@ -475,7 +475,7 @@ export function EditProductModal({ product, isOpen, onClose, onProductUpdated }:
               {images.map((img, idx) => (
                 <div 
                   key={idx} 
-                  className="relative group border border-[#cbdceb] rounded-lg overflow-hidden bg-white shadow-xs"
+                  className="relative group border border-[#DCE7F5] rounded-lg overflow-hidden bg-white shadow-xs"
                   style={{ width: '84px', height: '84px' }}
                 >
                   <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />

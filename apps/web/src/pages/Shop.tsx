@@ -658,7 +658,7 @@ export default function Shop() {
               onClick={() => handleDomainSelect('indoor')}
               className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer border-none ${
                 activeDomain === 'indoor'
-                  ? 'bg-[#0f2444] text-white shadow-xs'
+                  ? 'bg-[#0B2E5B] text-white shadow-xs'
                   : 'text-stone-700 bg-transparent hover:text-stone-900'
               }`}
             >
@@ -1098,7 +1098,7 @@ export default function Shop() {
                   <button
                     type="button"
                     onClick={handleClearAllFilters}
-                    className="px-4 py-2 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+                    className="px-4 py-2 bg-[var(--navy)] hover:bg-[#133E75] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
                   >
                     Reset All Filters
                   </button>
@@ -1120,7 +1120,7 @@ export default function Shop() {
                 <div ref={sentinelRef} className="h-8 w-full flex items-center justify-center my-2 pointer-events-none" />
                 {hasMore && (
                   <div className="py-6 flex flex-col items-center justify-center gap-2 text-stone-500">
-                    <div className="w-6 h-6 border-2 border-stone-200 border-t-[#0f2444] rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-stone-200 border-t-[#0B2E5B] rounded-full animate-spin" />
                     <span className="text-xs font-medium">Loading more pieces...</span>
                   </div>
                 )}
@@ -1141,7 +1141,7 @@ export default function Shop() {
                 <div ref={sentinelRef} className="h-8 w-full flex items-center justify-center my-2 pointer-events-none" />
                 {hasMore && (
                   <div className="py-6 flex flex-col items-center justify-center gap-2 text-stone-500">
-                    <div className="w-6 h-6 border-2 border-stone-200 border-t-[#0f2444] rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-stone-200 border-t-[#0B2E5B] rounded-full animate-spin" />
                     <span className="text-xs font-medium">Loading more pieces...</span>
                   </div>
                 )}
@@ -1165,7 +1165,7 @@ export default function Shop() {
             {/* Solid Sticky Header */}
             <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-white shrink-0">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal size={16} className="text-[#0f2444]" />
+                <SlidersHorizontal size={16} className="text-[#0B2E5B]" />
                 <h3 className="text-base font-bold text-stone-900 m-0">Catalog Filters</h3>
                 {activeFiltersCount > 0 && (
                   <span className="bg-amber-100 text-amber-900 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -1234,7 +1234,7 @@ export default function Shop() {
                         name="m-shop-price-bracket"
                         checked={priceRange === p.id}
                         onChange={() => setPriceRange(p.id as any)}
-                        className="accent-[#0f2444]"
+                        className="accent-[#0B2E5B]"
                       />
                       <span>{p.label}</span>
                     </label>
@@ -1249,7 +1249,7 @@ export default function Shop() {
                     type="checkbox"
                     checked={inStockOnly}
                     onChange={(e) => setInStockOnly(e.target.checked)}
-                    className="accent-[#0f2444]"
+                    className="accent-[#0B2E5B]"
                   />
                   <span className="font-semibold text-stone-800">In stock pieces only</span>
                 </label>

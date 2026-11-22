@@ -4,15 +4,17 @@
    ========================================================================== */
 
 :root {
-  --auth-navy: #0f2444;
-  --auth-navy-hover: #1b3a6b;
-  --auth-dark: #0a192f;
-  --auth-gold: #2563eb;
+  --auth-navy: #0B2E5B;
+  --auth-navy-hover: #071D3A;
+  --auth-dark: #071D3A;
+  --auth-gold: #2D8CFF;
+  --auth-accent: #8EC5FF;
   --auth-white: #ffffff;
-  --auth-canvas: #ffffff;
-  --auth-border: #e2e8f0;
-  --auth-border-subtle: #f1f5f9;
-  --auth-muted: #536b88;
+  --auth-canvas: #F5F9FF;
+  --auth-text: #1F2937;
+  --auth-border: #DCE7F5;
+  --auth-border-subtle: #EBF2FB;
+  --auth-muted: #4B5563;
 }
 
 /* Page Wrapper with Light Banner Backdrop */
@@ -148,7 +150,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(145deg, #0a192f 0%, #0f2444 55%, #1b3a6b 100%);
+  background: linear-gradient(145deg, #071D3A 0%, #0B2E5B 55%, #185294 100%);
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -157,7 +159,7 @@
   text-align: center;
   padding: 2.5rem 2rem;
   box-sizing: border-box;
-  box-shadow: inset 0 0 50px rgba(10, 25, 47, 0.4);
+  box-shadow: inset 0 0 50px rgba(7, 29, 58, 0.4);
 }
 
 /* Subtle decorative arch */
@@ -259,10 +261,10 @@
 
 .anim-slider-btn:hover {
   background: #ffffff;
-  color: #0a192f;
+  color: #0B2E5B;
   border-color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(10, 25, 47, 0.35);
+  box-shadow: 0 8px 24px rgba(7, 29, 58, 0.35);
 }
 
 /* FORM STYLING INSIDE THE ACTIVE SIDE */
@@ -452,7 +454,7 @@
 }
 
 .anim-btn-google:hover {
-  background-color: #f0f5fc;
+  background-color: #F5F9FF;
   border-color: var(--auth-navy);
   color: var(--auth-navy);
   box-shadow: 0 4px 12px rgba(15, 36, 68, 0.1);
@@ -533,7 +535,7 @@
 
 .anim-demo-btn:hover {
   border-color: var(--auth-navy);
-  background-color: #f0f5fc;
+  background-color: #F5F9FF;
   color: var(--auth-navy);
   box-shadow: 0 2px 8px rgba(15, 36, 68, 0.12);
 }

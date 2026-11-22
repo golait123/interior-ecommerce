@@ -84,8 +84,8 @@ export default function About() {
             <span className="text-dark font-medium">About Us</span>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#f0f5fc] border border-[#cbdceb] text-[#0f2444] text-xs font-semibold uppercase tracking-wider mb-4">
-            <Sparkles size={13} className="text-[#0f2444]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F5F9FF] border border-[#DCE7F5] text-[#0B2E5B] text-xs font-semibold uppercase tracking-wider mb-4">
+            <Sparkles size={13} className="text-[#0B2E5B]" />
             <span>The InteriorG Story</span>
           </div>
 
@@ -108,7 +108,7 @@ export default function About() {
               alt="InteriorG Architectural Living" 
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a192f]/85 via-[#0a192f]/35 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/85 via-[#1F2937]/35 to-transparent" />
             <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-10 text-white max-w-xl">
               <span className="text-[11px] uppercase font-bold tracking-widest text-[#93c5fd] block mb-2">
                 Sector 58 Artisan Guild • Born in Gurugram
@@ -149,7 +149,7 @@ export default function About() {
               </div>
 
               {/* Master Artisan Quote Card */}
-              <div className="p-6 bg-[#f0f5fc] border-l-4 border-[var(--navy)] rounded-r-xl border border-[var(--border)] mt-8 shadow-xs">
+              <div className="p-6 bg-[#F5F9FF] border-l-4 border-[var(--navy)] rounded-r-xl border border-[var(--border)] mt-8 shadow-xs">
                 <p className="text-xs sm:text-sm text-dark italic font-serif leading-relaxed m-0 mb-3">
                   "Every grain in seasoned Sheesham wood and every hammer stroke on brass tells the story of our ancestors. When you bring an InteriorG piece into your home, you carry our heritage forward."
                 </p>
@@ -158,8 +158,8 @@ export default function About() {
                     <span className="text-xs font-bold text-dark block">Kalu Ram & Sons</span>
                     <span className="text-[11px] text-muted">3rd Generation Master Woodcarver, Sector 58 Guild</span>
                   </div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white text-[#0f2444] text-[10px] font-semibold border border-[#cbdceb]">
-                    <CheckCircle2 size={11} className="text-[#0f2444]" />
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white text-[#0B2E5B] text-[10px] font-semibold border border-[#DCE7F5]">
+                    <CheckCircle2 size={11} className="text-[#0B2E5B]" />
                     Verified Partner
                   </span>
                 </div>
@@ -225,7 +225,7 @@ export default function About() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {pillars.map((p, i) => (
                 <div key={i} className="bg-white p-7 rounded-xl border border-[var(--border)] shadow-2xs hover:shadow-md hover:border-[var(--navy)] transition-all">
-                  <div className="w-11 h-11 rounded-lg bg-[#f0f5fc] border border-[#cbdceb] flex items-center justify-center mb-4">
+                  <div className="w-11 h-11 rounded-lg bg-[#F5F9FF] border border-[#DCE7F5] flex items-center justify-center mb-4">
                     {p.icon}
                   </div>
                   <span className="text-[10px] font-bold text-[var(--navy)] uppercase tracking-wider block mb-1">
@@ -289,7 +289,7 @@ export default function About() {
         {/* 6. IMPACT & SUSTAINABILITY METRICS                                        */}
         {/* ========================================================================= */}
         <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 mb-20">
-          <div className="p-8 sm:p-10 bg-[#0a192f] text-white rounded-2xl shadow-lg grid grid-cols-2 md:grid-cols-4 gap-8 text-center border border-[#1b3a6b]">
+          <div className="p-8 sm:p-10 bg-[#1F2937] text-white rounded-2xl shadow-lg grid grid-cols-2 md:grid-cols-4 gap-8 text-center border border-[#133E75]">
             <div>
               <span className="text-3xl sm:text-5xl font-serif font-normal text-white block">50+</span>
               <span className="text-xs sm:text-sm text-blue-100 mt-1.5 block font-light">Master Artisan Families</span>
@@ -322,7 +322,7 @@ export default function About() {
         <section className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="p-8 sm:p-10 bg-white border border-[var(--border)] rounded-2xl shadow-xs flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-start gap-5">
-              <div className="w-12 h-12 rounded-xl bg-[#f0f5fc] border border-[#cbdceb] flex items-center justify-center text-[var(--navy)] flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-[#F5F9FF] border border-[#DCE7F5] flex items-center justify-center text-[var(--navy)] flex-shrink-0">
                 <MapPin size={24} />
               </div>
               <div>

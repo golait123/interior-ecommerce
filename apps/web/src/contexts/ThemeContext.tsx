@@ -17,13 +17,13 @@ export interface ThemeOption {
 export const THEME_OPTIONS: ThemeOption[] = [
   {
     id: 'navy-sky',
-    name: 'White + Navy & Sky Blue',
-    tagline: 'Deep Royal Navy, Crisp White & Sky Blue Accents',
+    name: 'InteriorG Blue (Official)',
+    tagline: 'Primary Navy #0B2E5B, Brand Blue #2D8CFF & Accent #8EC5FF',
     colors: {
-      primary: '#0F2444',
-      secondary: '#0284C7',
-      accent: '#38BDF8',
-      bg: '#FFFFFF'
+      primary: '#0B2E5B',
+      secondary: '#2D8CFF',
+      accent: '#8EC5FF',
+      bg: '#F5F9FF'
     }
   },
   {

@@ -30,7 +30,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Admin Security Clearance Pill */}
-        <div className="px-3 py-2 mx-3 mb-2 bg-[#0f2444]/5 border border-[#0f2444]/15 rounded-lg flex items-center gap-2 text-[11px] text-[#0f2444] font-medium">
+        <div className="px-3 py-2 mx-3 mb-2 bg-[#0B2E5B]/5 border border-[#0B2E5B]/15 rounded-lg flex items-center gap-2 text-[11px] text-[#0B2E5B] font-medium">
           <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
           <div className="truncate">
             <span className="font-bold block truncate">{user?.name || 'Administrator'}</span>

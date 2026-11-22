@@ -18,8 +18,8 @@ export function OurStorySection() {
     <section id="story" className="story-section page py-16 my-12 border-t border-[var(--border)]">
       {/* Header Badge & Title */}
       <div className="text-center max-w-3xl mx-auto mb-12">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#f0f5fc] border border-[#cbdceb] rounded-full text-xs font-semibold text-[#0f2444] mb-3">
-          <Sparkles size={13} className="text-[#0f2444]" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F5F9FF] border border-[#DCE7F5] rounded-full text-xs font-semibold text-[#0B2E5B] mb-3">
+          <Sparkles size={13} className="text-[#0B2E5B]" />
           <span>Our Story to InteriorG</span>
         </div>
         <h2 className="text-3xl md:text-5xl font-normal text-dark m-0 font-playfair tracking-tight">
@@ -56,7 +56,7 @@ export function OurStorySection() {
           </p>
 
           {/* Master Artisan Quote Card */}
-          <div className="p-5 bg-[#f0f5fc] border-l-4 border-[var(--navy)] rounded-r border border-[var(--border)] shadow-xs mt-2">
+          <div className="p-5 bg-[#F5F9FF] border-l-4 border-[var(--navy)] rounded-r border border-[var(--border)] shadow-xs mt-2">
             <p className="text-xs md:text-sm text-dark italic leading-relaxed m-0 mb-3 font-serif">
               "Every curve in Sheesham wood and every hammer strike on brass tells a story of our ancestors. We don't just build furniture — we craft heirlooms that outlive generations."
             </p>
@@ -128,7 +128,7 @@ export function OurStorySection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Pillar 1 */}
           <div className="bg-white p-5 border border-[var(--border)] rounded shadow-xs hover:border-[var(--navy)] transition-all">
-            <div className="w-10 h-10 rounded-full bg-[#f0f5fc] flex items-center justify-center text-[var(--navy)] mb-3">
+            <div className="w-10 h-10 rounded-full bg-[#F5F9FF] flex items-center justify-center text-[var(--navy)] mb-3">
               <Hammer size={18} />
             </div>
             <h4 className="text-sm font-bold text-dark m-0 mb-1">Seasoned Solid Hardwoods</h4>
@@ -139,7 +139,7 @@ export function OurStorySection() {
 
           {/* Pillar 2 */}
           <div className="bg-white p-5 border border-[var(--border)] rounded shadow-xs hover:border-[var(--navy)] transition-all">
-            <div className="w-10 h-10 rounded-full bg-[#f0f5fc] flex items-center justify-center text-[var(--navy)] mb-3">
+            <div className="w-10 h-10 rounded-full bg-[#F5F9FF] flex items-center justify-center text-[var(--navy)] mb-3">
               <Sparkles size={18} />
             </div>
             <h4 className="text-sm font-bold text-dark m-0 mb-1">Hand-Beaten Antique Brass</h4>
@@ -150,7 +150,7 @@ export function OurStorySection() {
 
           {/* Pillar 3 */}
           <div className="bg-white p-5 border border-[var(--border)] rounded shadow-xs hover:border-[var(--navy)] transition-all">
-            <div className="w-10 h-10 rounded-full bg-[#f0f5fc] flex items-center justify-center text-[var(--navy)] mb-3">
+            <div className="w-10 h-10 rounded-full bg-[#F5F9FF] flex items-center justify-center text-[var(--navy)] mb-3">
               <Layers size={18} />
             </div>
             <h4 className="text-sm font-bold text-dark m-0 mb-1">Zero-Waste Digital Murals</h4>
@@ -161,7 +161,7 @@ export function OurStorySection() {
 
           {/* Pillar 4 */}
           <div className="bg-white p-5 border border-[var(--border)] rounded shadow-xs hover:border-[var(--navy)] transition-all">
-            <div className="w-10 h-10 rounded-full bg-[#f0f5fc] flex items-center justify-center text-[var(--navy)] mb-3">
+            <div className="w-10 h-10 rounded-full bg-[#F5F9FF] flex items-center justify-center text-[var(--navy)] mb-3">
               <Leaf size={18} />
             </div>
             <h4 className="text-sm font-bold text-dark m-0 mb-1">Non-Toxic & VOC-Free</h4>
@@ -173,7 +173,7 @@ export function OurStorySection() {
       </div>
 
       {/* Impact Numbers Bar */}
-      <div className="mt-12 p-8 bg-[#0a192f] text-white rounded shadow-lg grid grid-cols-2 md:grid-cols-4 gap-6 text-center border border-[#1b3a6b]">
+      <div className="mt-12 p-8 bg-[#1F2937] text-white rounded shadow-lg grid grid-cols-2 md:grid-cols-4 gap-6 text-center border border-[#133E75]">
         <div>
           <span className="text-3xl md:text-4xl font-bold text-white font-playfair block">50+</span>
           <span className="text-xs text-blue-100 mt-1 block">Master Artisan Families</span>

@@ -77,7 +77,7 @@ const PLANS: Plan[] = [
     },
     buttonText: 'Join Artisan Guild',
     buttonClass: 'subs-btn-artisan',
-    accentColor: '#0f2444',
+    accentColor: '#0B2E5B',
     features: [
       'Quarterly Curation Box: Solid brass centerpiece, candle & raw linen cushion',
       'Architectural Lookbook & private room styling guide',
@@ -92,7 +92,7 @@ const PLANS: Plan[] = [
     name: 'Architectural Bespoke Sanctum',
     tagline: 'Comprehensive architectural styling, custom hardwood privileges & full-home curation.',
     badge: 'Connoisseur Tier',
-    icon: <Crown size={22} className="text-[#1b3a6b]" />,
+    icon: <Crown size={22} className="text-[#133E75]" />,
     monthlyPrice: 7999,
     quarterlyPrice: 21999,
     annualPrice: 79999,
@@ -103,7 +103,7 @@ const PLANS: Plan[] = [
     },
     buttonText: 'Apply For Bespoke Sanctum',
     buttonClass: 'subs-btn-bespoke',
-    accentColor: '#1b3a6b',
+    accentColor: '#133E75',
     features: [
       'Dedicated Senior Interior Architect for 1-on-1 consultations',
       '2 Full-room 3D 360° Studio spatial visualizer renders & custom wall murals',

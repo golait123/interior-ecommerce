@@ -342,7 +342,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
           <button 
             type="button"
             onClick={onClose} 
-            className="btn btn-ghost btn-sm p-1.5 text-muted hover:text-[#0f2444]"
+            className="btn btn-ghost btn-sm p-1.5 text-muted hover:text-[#0B2E5B]"
             aria-label="Close dialog"
           >
             <X size={20} />
@@ -522,9 +522,9 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
 
                 {/* Wallpaper Customizer Fields */}
                 {type === 'CUSTOM_WALLPAPER' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 p-3 bg-[#edf4fc] rounded-lg border border-[#cbdceb]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 p-3 bg-[#EDF5FF] rounded-lg border border-[#DCE7F5]">
                     <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label text-[#0f2444]">
+                      <label className="form-label text-[#0B2E5B]">
                         Price Per Sq Ft (₹)
                       </label>
                       <input 
@@ -539,7 +539,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                     </div>
 
                     <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label text-[#0f2444]">
+                      <label className="form-label text-[#0B2E5B]">
                         Standard Roll Coverage (Sq Ft)
                       </label>
                       <input 
@@ -572,8 +572,8 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                     onClick={() => handleDomainChange('indoor')}
                     className={`p-3 text-center rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
                       primaryDomain === 'indoor'
-                        ? 'border-[#0f2444] bg-[#edf4fc] text-[#0f2444] shadow-xs'
-                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#cbdceb]'
+                        ? 'border-[#0B2E5B] bg-[#EDF5FF] text-[#0B2E5B] shadow-xs'
+                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#DCE7F5]'
                     }`}
                   >
                     <span className="text-lg block mb-1">🏠</span>
@@ -586,7 +586,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                     className={`p-3 text-center rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
                       primaryDomain === 'outdoor'
                         ? 'border-[#15803d] bg-[#f0fdf4] text-[#15803d] shadow-xs'
-                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#cbdceb]'
+                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#DCE7F5]'
                     }`}
                   >
                     <span className="text-lg block mb-1">🌿</span>
@@ -599,7 +599,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                     className={`p-3 text-center rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
                       primaryDomain === 'both'
                         ? 'border-[#8c6f52] bg-[#fcf9f6] text-[#8c6f52] shadow-xs'
-                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#cbdceb]'
+                        : 'border-[#e2e8f0] bg-[#f8fafc] text-muted hover:border-[#DCE7F5]'
                     }`}
                   >
                     <span className="text-lg block mb-1">🏡</span>
@@ -614,7 +614,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                 {/* Indoor Spaces Grid */}
                 {(primaryDomain === 'indoor' || primaryDomain === 'both') && (
                   <div className="mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2444] block mb-1.5">Indoor Spaces:</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B2E5B] block mb-1.5">Indoor Spaces:</span>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                       {INDOOR_SPACES.map(s => {
                         const isSel = selectedSpaces.includes(s.id);
@@ -625,8 +625,8 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                             onClick={() => toggleSpace(s.id)}
                             className={`p-2 text-left rounded-md border text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
                               isSel 
-                                ? 'bg-[#0f2444] text-white border-[#0f2444] font-semibold' 
-                                : 'bg-white border-[#e2e8f0] text-[#2d2a27] hover:border-[#cbdceb]'
+                                ? 'bg-[#0B2E5B] text-white border-[#0B2E5B] font-semibold' 
+                                : 'bg-white border-[#e2e8f0] text-[#2d2a27] hover:border-[#DCE7F5]'
                             }`}
                           >
                             <span>{s.icon}</span>
@@ -653,7 +653,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                             className={`p-2 text-left rounded-md border text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
                               isSel 
                                 ? 'bg-[#15803d] text-white border-[#15803d] font-semibold' 
-                                : 'bg-white border-[#e2e8f0] text-[#2d2a27] hover:border-[#cbdceb]'
+                                : 'bg-white border-[#e2e8f0] text-[#2d2a27] hover:border-[#DCE7F5]'
                             }`}
                           >
                             <span>{s.icon}</span>
@@ -706,7 +706,7 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                           type="button"
                           onClick={() => toggleCraft(c)}
                           className={`px-2.5 py-1 rounded-full border text-[11px] font-medium cursor-pointer transition-all ${
-                            isSel ? 'bg-[#8c6f52] text-white border-[#8c6f52]' : 'bg-white border-[#e2e8f0] text-muted hover:border-[#cbdceb]'
+                            isSel ? 'bg-[#8c6f52] text-white border-[#8c6f52]' : 'bg-white border-[#e2e8f0] text-muted hover:border-[#DCE7F5]'
                           }`}
                         >
                           {isSel ? '✓ ' : '+ '}{c}
@@ -814,10 +814,10 @@ export function AddProductModal({ isOpen, onClose, onProductCreated }: AddProduc
                 {selectedFiles.length < 5 && (
                   <label 
                     htmlFor="modal-system-image-upload" 
-                    className="flex flex-col items-center justify-center p-6 border-dashed border-2 rounded-xl cursor-pointer hover:bg-[#faf9f7] transition-all text-center border-[#cbdceb] bg-[#fbf9f6]"
+                    className="flex flex-col items-center justify-center p-6 border-dashed border-2 rounded-xl cursor-pointer hover:bg-[#faf9f7] transition-all text-center border-[#DCE7F5] bg-[#fbf9f6]"
                   >
                     <UploadCloud size={32} className="text-[#8c6f52] mb-1.5" />
-                    <span className="font-semibold text-sm text-[#0f2444]">Click to choose pictures from your computer</span>
+                    <span className="font-semibold text-sm text-[#0B2E5B]">Click to choose pictures from your computer</span>
                     <span className="text-muted text-xs mt-1">Select 1 to {5 - selectedFiles.length} remaining images</span>
                   </label>
                 )}

@@ -583,14 +583,14 @@ export default function NurseryDesignCustomizer() {
 
       {/* Turnkey Home Decor + Nursery Combo Packages Callout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-2">
-        <div className="p-4 rounded-xl bg-gradient-to-r from-[#0F2444] via-[#16335f] to-[#1e467d] text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+        <div className="p-4 rounded-xl bg-gradient-to-r from-[#0B2E5B] via-[#16335f] to-[#1e467d] text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 text-sky-300 flex items-center justify-center shrink-0">
               <Package size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-sky-400 text-[#0F2444]">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-sky-400 text-[#0B2E5B]">
                   Package Available
                 </span>
                 <span className="font-semibold text-xs sm:text-sm">Looking for Combined Home Decor & Nursery Packages?</span>
@@ -602,7 +602,7 @@ export default function NurseryDesignCustomizer() {
           </div>
           <Link
             to="/packages"
-            className="px-4 py-2 bg-white text-[#0F2444] hover:bg-sky-50 rounded-lg text-xs font-semibold uppercase tracking-wider whitespace-nowrap shadow-xs inline-flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2 bg-white text-[#0B2E5B] hover:bg-sky-50 rounded-lg text-xs font-semibold uppercase tracking-wider whitespace-nowrap shadow-xs inline-flex items-center gap-1.5 shrink-0"
           >
             <span>View Packages & Combos</span>
             <ArrowRight size={13} />
@@ -961,7 +961,7 @@ export default function NurseryDesignCustomizer() {
                 <img
                   src={selectedPack.image}
                   alt={selectedPack.name}
-                  className="w-13 h-13 rounded-xl object-cover border border-[#cbdceb] shrink-0"
+                  className="w-13 h-13 rounded-xl object-cover border border-[#DCE7F5] shrink-0"
                   style={{ width: '52px', height: '52px' }}
                 />
                 <div className="min-w-0 flex-1">
@@ -973,7 +973,7 @@ export default function NurseryDesignCustomizer() {
                       {currentSpace.name}
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-[#0a192f] truncate m-0 leading-tight">
+                  <h4 className="text-sm font-bold text-[#1F2937] truncate m-0 leading-tight">
                     {activeStep === 1 ? currentSpace.name : activeStep === 2 ? selectedPack.name : activeStep === 3 ? selectedPlanter.name : `${Object.values(addons).filter(Boolean).length} Care Add-ons Selected`}
                   </h4>
                   <div className="text-[11px] text-[#475569] truncate mt-0.5">

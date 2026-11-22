@@ -27,6 +27,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { LuckyBookingModal } from './LuckyBookingModal';
+import { BrandLogoIcon } from './BrandLogo';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -182,13 +183,13 @@ export function Header() {
           {/* InteriorG Brand Identity */}
           <Link to="/" className="brand-logo-lockup" onClick={closeMenu}>
             <div className="brand-logo-icon">
-              <Sprout size={24} className="sprout-icon" />
+              <BrandLogoIcon size={38} />
             </div>
             <div className="brand-logo-text">
               <div className="brand-title">
                 Interior<span className="brand-title-accent">G</span>
               </div>
-              <div className="brand-subtitle">Walls • Plants • Spaces • You</div>
+              <div className="brand-subtitle">Design • Discover • Transform Your Home</div>
             </div>
           </Link>
 
@@ -541,11 +542,11 @@ export function Header() {
             <div className="mobile-drawer-header">
               <div className="brand-logo-lockup">
                 <div className="brand-logo-icon">
-                  <Sprout size={20} className="sprout-icon" />
+                  <BrandLogoIcon size={32} />
                 </div>
                 <div className="brand-logo-text">
-                  <div className="brand-title">Interior<span>G</span></div>
-                  <div className="brand-subtitle">Walls • Plants • Spaces</div>
+                  <div className="brand-title">Interior<span className="brand-title-accent">G</span></div>
+                  <div className="brand-subtitle">Design • Discover • Transform Your Home</div>
                 </div>
               </div>
               <button onClick={closeMenu} className="close-drawer-btn" aria-label="Close menu">

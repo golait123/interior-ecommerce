@@ -166,7 +166,7 @@ export default function StaffLogin({ defaultPortal }: StaffLoginProps) {
             onClick={() => handlePortalSwitch('admin')}
             className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border-none ${
               isAdmin 
-                ? 'bg-gradient-to-r from-blue-700 to-[#0f2444] text-white shadow-md' 
+                ? 'bg-gradient-to-r from-blue-700 to-[#0B2E5B] text-white shadow-md' 
                 : 'text-slate-400 hover:text-slate-200 bg-transparent'
             }`}
           >
@@ -281,7 +281,7 @@ export default function StaffLogin({ defaultPortal }: StaffLoginProps) {
               disabled={loading}
               className={`w-full py-3 px-4 rounded-xl font-bold text-xs text-white flex items-center justify-center gap-2 cursor-pointer transition-all shadow-lg ${
                 isAdmin 
-                  ? 'bg-gradient-to-r from-blue-600 to-[#0f2444] hover:from-blue-500 hover:to-[#173766] shadow-blue-900/30' 
+                  ? 'bg-gradient-to-r from-blue-600 to-[#0B2E5B] hover:from-blue-500 hover:to-[#173766] shadow-blue-900/30' 
                   : 'bg-gradient-to-r from-emerald-600 to-[#064e3b] hover:from-emerald-500 hover:to-[#096a51] shadow-emerald-900/30'
               } disabled:opacity-50`}
             >

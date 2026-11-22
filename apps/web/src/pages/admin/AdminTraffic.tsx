@@ -58,7 +58,7 @@ export function AdminTraffic() {
   const deviceChartData = [
     { name: 'Mobile (Portrait)', value: stats.deviceBreakdown.mobilePortrait, color: '#8c6f52' },
     { name: 'Mobile (Landscape)', value: stats.deviceBreakdown.mobileLandscape, color: '#c4a982' },
-    { name: 'Desktop', value: stats.deviceBreakdown.desktop, color: '#0f2444' },
+    { name: 'Desktop', value: stats.deviceBreakdown.desktop, color: '#0B2E5B' },
     { name: 'Tablet', value: stats.deviceBreakdown.tablet, color: '#15803d' },
   ];
 
@@ -91,7 +91,7 @@ export function AdminTraffic() {
                 type="button"
                 onClick={() => setTimeRange(r)}
                 className={`px-3 py-1 rounded-md transition-all cursor-pointer border-none ${
-                  timeRange === r ? 'bg-[#0f2444] text-white shadow-xs' : 'text-stone-600 hover:text-stone-900 bg-transparent'
+                  timeRange === r ? 'bg-[#0B2E5B] text-white shadow-xs' : 'text-stone-600 hover:text-stone-900 bg-transparent'
                 }`}
               >
                 {r === 'today' ? 'Today' : r === '7d' ? '7 Days' : '30 Days'}

@@ -182,7 +182,7 @@ export const MASTER_CATEGORY_HIERARCHY: FilterCategoryTree[] = [
         slug: 'wallpapers-by-color',
         keywords: ['color', 'tint', 'palette', 'tone'],
         colors: [
-          { id: 'blue', name: 'Navy & Sky Blue', hex: '#0f2444', keyword: 'blue' },
+          { id: 'blue', name: 'Navy & Sky Blue', hex: '#0B2E5B', keyword: 'blue' },
           { id: 'orange', name: 'Warm Terracotta', hex: '#ea580c', keyword: 'orange' },
           { id: 'green', name: 'Forest Green', hex: '#15803d', keyword: 'green' },
           { id: 'white', name: 'White & Cream', hex: '#f8fafc', keyword: 'white' },

@@ -270,7 +270,7 @@ export function MobileQuickCatalog({
       {/* ========================================================================= */}
       <header className="sticky top-0 z-30 bg-white border-b border-stone-200 shadow-xs">
         {/* Express Dispatch Strip */}
-        <div className="px-3.5 py-1.5 bg-[#0f2444] text-white flex items-center justify-between text-[11px] font-medium">
+        <div className="px-3.5 py-1.5 bg-[#0B2E5B] text-white flex items-center justify-between text-[11px] font-medium">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-bold tracking-wide text-emerald-300">⚡ EXPRESS DISPATCH</span>
@@ -290,7 +290,7 @@ export function MobileQuickCatalog({
               onClick={() => handleDomainChange('interior')}
               className={`py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border-none ${
                 activeDomain === 'interior'
-                  ? 'bg-[#0f2444] text-white shadow-xs'
+                  ? 'bg-[#0B2E5B] text-white shadow-xs'
                   : 'text-stone-700 hover:text-stone-900'
               }`}
             >
@@ -509,7 +509,7 @@ export function MobileQuickCatalog({
                             {discountPct}% OFF
                           </span>
                         ) : product.isCustomizable ? (
-                          <span className="bg-[#0f2444] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                          <span className="bg-[#0B2E5B] text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-xs">
                             CUSTOM
                           </span>
                         ) : (

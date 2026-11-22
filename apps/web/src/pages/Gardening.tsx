@@ -793,7 +793,7 @@ export default function Gardening() {
               {/* If a category is selected from the horizontal bar, show relevant dynamic filter sections */}
               {selectedMainMenuCat && currentCategoryFilterSections.length > 0 ? (
                 <>
-                  <div className="mb-3.5 p-2.5 bg-[#f0f5fc] border border-[#cbdceb] rounded-lg flex items-center justify-between text-xs">
+                  <div className="mb-3.5 p-2.5 bg-[#F5F9FF] border border-[#DCE7F5] rounded-lg flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5 font-bold text-[var(--navy)]">
                       <Tag size={13} className="text-[var(--navy)]" />
                       <span className="capitalize">{NURSERY_MAIN_MENU.find(m => m.slug === selectedMainMenuCat)?.name || selectedMainMenuCat} Filters</span>
@@ -801,7 +801,7 @@ export default function Gardening() {
                     <button
                       type="button"
                       onClick={() => handleSelectHorizontalCategory(null)}
-                      className="text-[var(--navy)] hover:text-[#1b3a6b] font-bold underline cursor-pointer text-[11px]"
+                      className="text-[var(--navy)] hover:text-[#133E75] font-bold underline cursor-pointer text-[11px]"
                     >
                       Show All Catalog
                     </button>
@@ -1235,7 +1235,7 @@ export default function Gardening() {
                   <button
                     type="button"
                     onClick={handleClearAllFilters}
-                    className="px-4 py-2 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
+                    className="px-4 py-2 bg-[var(--navy)] hover:bg-[#133E75] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
                   >
                     Reset All Filters
                   </button>
@@ -1308,7 +1308,7 @@ export default function Gardening() {
         {/* ========================================================================= */}
         <section className="py-16 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 border-t border-[var(--border)]">
           <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#0f2444] bg-[#f0f5fc] px-3 py-1 rounded-full border border-[#cbdceb] inline-block mb-2">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#0B2E5B] bg-[#F5F9FF] px-3 py-1 rounded-full border border-[#DCE7F5] inline-block mb-2">
               Botanical Architecture
             </span>
             <h2 className="text-3xl sm:text-4xl font-playfair font-normal italic text-dark m-0">
@@ -1382,7 +1382,7 @@ export default function Gardening() {
                 Add any nursery items worth ₹999 or more to your cart, or use privilege voucher code <strong className="text-[var(--navy)]">BOTANICALFREE</strong> during checkout to receive an acclimated Jade Plant or Succulent seedling absolutely free!
               </p>
 
-              <div className="bg-[#f0f5fc] border border-[#cbdceb] p-3 rounded-md mb-5 text-left text-xs text-stone-800 space-y-1">
+              <div className="bg-[#F5F9FF] border border-[#DCE7F5] p-3 rounded-md mb-5 text-left text-xs text-stone-800 space-y-1">
                 <div className="flex items-center gap-2">
                   <Check size={14} className="text-[var(--navy)] flex-shrink-0" />
                   <span>Free Potted Botanical Seedling with orders &gt; ₹999</span>
@@ -1403,7 +1403,7 @@ export default function Gardening() {
                   handleCopyVoucher();
                   setShowFreePlantModal(false);
                 }}
-                className="w-full py-2.5 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-semibold rounded-md shadow-sm transition-colors cursor-pointer"
+                className="w-full py-2.5 bg-[var(--navy)] hover:bg-[#133E75] text-white text-xs font-semibold rounded-md shadow-sm transition-colors cursor-pointer"
               >
                 Copy Voucher & Continue Shopping
               </button>
@@ -1425,7 +1425,7 @@ export default function Gardening() {
             {/* Solid Sticky Header */}
             <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-white shrink-0">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal size={16} className="text-[#0f2444]" />
+                <SlidersHorizontal size={16} className="text-[#0B2E5B]" />
                 <h3 className="text-base font-bold text-stone-900 m-0">Nursery Filters</h3>
                 {activeFiltersCount > 0 && (
                   <span className="bg-amber-100 text-amber-900 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -1494,7 +1494,7 @@ export default function Gardening() {
                         name="m-gardening-price"
                         checked={priceFilter === p.id}
                         onChange={() => setPriceFilter(p.id as any)}
-                        className="accent-[#0f2444]"
+                        className="accent-[#0B2E5B]"
                       />
                       <span>{p.label}</span>
                     </label>
@@ -1509,7 +1509,7 @@ export default function Gardening() {
                     type="checkbox"
                     checked={selectedAvailability === 'in-stock'}
                     onChange={(e) => setSelectedAvailability(e.target.checked ? 'in-stock' : 'all')}
-                    className="accent-[#0f2444]"
+                    className="accent-[#0B2E5B]"
                   />
                   <span className="font-semibold text-stone-800">In stock plants only</span>
                 </label>

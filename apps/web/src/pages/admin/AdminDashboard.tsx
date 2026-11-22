@@ -149,12 +149,12 @@ export function AdminDashboard() {
         {/* Card 3: Quarterly Revenue */}
         <div className="p-4 bg-white border border-[#e8e4de] rounded-xl shadow-xs">
           <div className="flex items-center justify-between text-muted mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0f2444]">Quarterly Revenue ({currentQuarterData.quarter})</span>
-            <div className="w-8 h-8 rounded-lg bg-[#edf4fc] flex items-center justify-center text-[#0f2444]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0B2E5B]">Quarterly Revenue ({currentQuarterData.quarter})</span>
+            <div className="w-8 h-8 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#0B2E5B]">
               <Calendar size={16} />
             </div>
           </div>
-          <div className="text-2xl font-serif font-bold text-[#0f2444]">
+          <div className="text-2xl font-serif font-bold text-[#0B2E5B]">
             ₹{Number(currentQuarterData.revenue).toLocaleString()}
           </div>
           <div className="text-[11px] text-muted mt-1 flex items-center justify-between">
@@ -217,7 +217,7 @@ export function AdminDashboard() {
 
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted font-bold">Daily Average Revenue</div>
-          <div className="text-base font-bold text-[#0f2444] mt-0.5">
+          <div className="text-base font-bold text-[#0B2E5B] mt-0.5">
             ₹{Number(summary?.dailyAverageRevenue || 0).toLocaleString()}
           </div>
           <small className="text-muted text-[10px]">Across active business days</small>

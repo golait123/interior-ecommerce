@@ -59,8 +59,8 @@ export function AboutUsSection() {
         {/* 1. HERO HEADER: EDITORIAL MANIFESTO                                       */}
         {/* ========================================================================= */}
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f0f5fc] border border-[#cbdceb] text-[#0f2444] text-xs font-semibold uppercase tracking-wider mb-4 shadow-2xs">
-            <Sparkles size={13} className="text-[#0f2444]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5F9FF] border border-[#DCE7F5] text-[#0B2E5B] text-xs font-semibold uppercase tracking-wider mb-4 shadow-2xs">
+            <Sparkles size={13} className="text-[#0B2E5B]" />
             <span>About InteriorG • Artisan Guild</span>
           </div>
 
@@ -110,8 +110,8 @@ export function AboutUsSection() {
                   <p className="text-[11px] text-muted m-0">3rd Generation Master Woodcarver, Banjara Market</p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f0f5fc] border border-[#cbdceb] text-[#0f2444] text-[11px] font-semibold">
-                <CheckCircle2 size={12} className="text-[#0f2444]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F9FF] border border-[#DCE7F5] text-[#0B2E5B] text-[11px] font-semibold">
+                <CheckCircle2 size={12} className="text-[#0B2E5B]" />
                 Verified Guild Partner
               </span>
             </div>
@@ -125,7 +125,7 @@ export function AboutUsSection() {
                 alt="Master Artisan Woodcarving" 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a192f]/85 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/85 via-transparent to-transparent" />
               <div className="absolute bottom-3 left-3 right-3 text-white">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#93c5fd] block">Hand-Carved</span>
                 <p className="text-xs font-medium m-0 leading-tight">Solid Sheesham Woodwork</p>
@@ -139,7 +139,7 @@ export function AboutUsSection() {
                   alt="Hand-beaten brass mirror" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a192f]/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-2.5 left-2.5 text-white">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-[#93c5fd] block">Sand-Cast</span>
                   <p className="text-xs font-medium m-0">Sunburst Brass</p>
@@ -152,7 +152,7 @@ export function AboutUsSection() {
                   alt="Terracotta clay pottery" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a192f]/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1F2937]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-2.5 left-2.5 text-white">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-300 block">Porous Clay</span>
                   <p className="text-xs font-medium m-0">Breathable Pottery</p>
@@ -184,7 +184,7 @@ export function AboutUsSection() {
                   onClick={() => setActivePillar(idx)}
                   className={`p-6 rounded-xl border transition-all cursor-pointer ${
                     activePillar === idx 
-                      ? 'border-[var(--navy)] bg-[#f0f5fc] shadow-sm -translate-y-1' 
+                      ? 'border-[var(--navy)] bg-[#F5F9FF] shadow-sm -translate-y-1' 
                       : 'border-[var(--border)] bg-white hover:border-[var(--navy)] hover:shadow-2xs'
                   }`}
                 >
@@ -210,7 +210,7 @@ export function AboutUsSection() {
         {/* ========================================================================= */}
         {/* 3. IMPACT NUMBERS BAR (MODERN METRIC STRIP)                                */}
         {/* ========================================================================= */}
-        <div className="p-8 sm:p-10 bg-[#0a192f] text-white rounded-2xl shadow-lg grid grid-cols-2 md:grid-cols-4 gap-8 text-center border border-[#1b3a6b] mb-16">
+        <div className="p-8 sm:p-10 bg-[#1F2937] text-white rounded-2xl shadow-lg grid grid-cols-2 md:grid-cols-4 gap-8 text-center border border-[#133E75] mb-16">
           <div>
             <span className="text-3xl sm:text-5xl font-serif font-normal text-white block">50+</span>
             <span className="text-xs sm:text-sm text-blue-100 mt-1.5 block font-light">Master Artisan Families</span>
@@ -241,7 +241,7 @@ export function AboutUsSection() {
         {/* ========================================================================= */}
         <div className="p-8 sm:p-10 bg-white border border-[var(--border)] rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#f0f5fc] border border-[#cbdceb] flex items-center justify-center text-[var(--navy)] flex-shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[#F5F9FF] border border-[#DCE7F5] flex items-center justify-center text-[var(--navy)] flex-shrink-0">
               <Compass size={24} />
             </div>
             <div>

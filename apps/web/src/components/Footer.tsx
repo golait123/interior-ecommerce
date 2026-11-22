@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { BrandLogoIcon } from './BrandLogo';
 import { 
   Sprout, 
   Truck, 
@@ -140,11 +141,11 @@ export function Footer() {
           <div className="footer-col brand-col">
             <Link to="/" className="brand-logo-lockup mb-3">
               <div className="brand-logo-icon">
-                <Sprout size={22} className="sprout-icon" />
+                <BrandLogoIcon size={34} />
               </div>
               <div className="brand-logo-text">
-                <div className="brand-title">Interior<span>G</span></div>
-                <div className="brand-subtitle">Walls • Plants • Spaces • You</div>
+                <div className="brand-title">Interior<span className="brand-title-accent">G</span></div>
+                <div className="brand-subtitle">Design • Discover • Transform Your Home</div>
               </div>
             </Link>
             <p className="footer-brand-bio">

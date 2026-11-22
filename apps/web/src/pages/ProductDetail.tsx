@@ -197,7 +197,7 @@ export default function ProductDetail() {
         <Header />
         <main className="page py-28 text-center">
           <div className="loading-spinner mb-4 mx-auto" />
-          <h3 className="font-serif italic text-2xl text-[#0a192f] mb-2">InteriorG Studio</h3>
+          <h3 className="font-serif italic text-2xl text-[#1F2937] mb-2">InteriorG Studio</h3>
           <p className="font-sans text-sm text-[#536b88]">Retrieving curated piece and specifications...</p>
         </main>
         <Footer />
@@ -210,7 +210,7 @@ export default function ProductDetail() {
       <div className="page-wrapper bg-white">
         <Header />
         <main className="page py-24 text-center">
-          <h2 className="font-serif italic text-3xl mb-3 text-[#0a192f]">Piece Not Found</h2>
+          <h2 className="font-serif italic text-3xl mb-3 text-[#1F2937]">Piece Not Found</h2>
           <p className="text-[#536b88] text-sm mb-6 max-w-md mx-auto">
             The architectural decor or wallpaper piece you requested could not be located in our current catalog.
           </p>
@@ -247,24 +247,24 @@ export default function ProductDetail() {
         {/* ================================================================= */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-[#e2e8f0]">
           <nav className="flex items-center gap-2 text-xs text-[#536b88] uppercase tracking-wider overflow-x-auto whitespace-nowrap">
-            <Link to="/" className="hover:text-[#0f2444] transition-colors">Home</Link>
+            <Link to="/" className="hover:text-[#0B2E5B] transition-colors">Home</Link>
             <ChevronRight size={12} className="text-[#8fa4bf]" />
-            <Link to="/shop" className="hover:text-[#0f2444] transition-colors">Shop Collection</Link>
+            <Link to="/shop" className="hover:text-[#0B2E5B] transition-colors">Shop Collection</Link>
             {p.category && (
               <>
                 <ChevronRight size={12} className="text-[#8fa4bf]" />
-                <Link to={`/shop?category=${p.category.slug}`} className="hover:text-[#0f2444] transition-colors">
+                <Link to={`/shop?category=${p.category.slug}`} className="hover:text-[#0B2E5B] transition-colors">
                   {p.category.name}
                 </Link>
               </>
             )}
             <ChevronRight size={12} className="text-[#8fa4bf]" />
-            <span className="text-[#0a192f] font-semibold truncate max-w-[200px] sm:max-w-xs">{p.name}</span>
+            <span className="text-[#1F2937] font-semibold truncate max-w-[200px] sm:max-w-xs">{p.name}</span>
           </nav>
 
           <Link
             to="/shop"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#0f2444] hover:text-[#1b3a6b] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#0B2E5B] hover:text-[#133E75] transition-colors"
           >
             <ArrowLeft size={13} />
             <span>Back to All Works</span>
@@ -338,21 +338,21 @@ export default function ProductDetail() {
             {/* Quality Guarantees & White-Glove Service Bar */}
             <div className="product-trust-bar">
               <div className="flex items-start gap-2">
-                <Truck size={17} className="text-[#0f2444] mt-0.5 flex-shrink-0" />
+                <Truck size={17} className="text-[#0B2E5B] mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--navy-deep)', margin: 0 }}>White-Glove</h4>
                   <p style={{ fontSize: '11px', color: '#536b88', margin: '2px 0 0', lineHeight: 1.25 }}>Insured freight & crate protection.</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <ShieldCheck size={17} className="text-[#0f2444] mt-0.5 flex-shrink-0" />
+                <ShieldCheck size={17} className="text-[#0B2E5B] mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--navy-deep)', margin: 0 }}>Authentic</h4>
                   <p style={{ fontSize: '11px', color: '#536b88', margin: '2px 0 0', lineHeight: 1.25 }}>Master craft techniques & materials.</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <Award size={17} className="text-[#0f2444] mt-0.5 flex-shrink-0" />
+                <Award size={17} className="text-[#0B2E5B] mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--navy-deep)', margin: 0 }}>1-Yr Warranty</h4>
                   <p style={{ fontSize: '11px', color: '#536b88', margin: '2px 0 0', lineHeight: 1.25 }}>Structural warranty & care support.</p>
@@ -368,7 +368,7 @@ export default function ProductDetail() {
             {/* Category / Space Badges */}
             <div className="flex flex-wrap items-center gap-2 mb-2.5">
               {p.category && (
-                <span className="text-[11px] font-bold uppercase tracking-widest text-[#0f2444] bg-[#edf4fc] border border-[#cbdceb] px-3 py-0.5 rounded-full">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-[#0B2E5B] bg-[#EDF5FF] border border-[#DCE7F5] px-3 py-0.5 rounded-full">
                   {p.category.name}
                 </span>
               )}
@@ -378,7 +378,7 @@ export default function ProductDetail() {
                     ? 'bg-[#dce9d8] text-[#2e5926]' 
                     : p.primaryDomain === 'both'
                     ? 'bg-[#ede3f7] text-[#552d79]'
-                    : 'bg-[#f0f5fc] text-[#0f2444]'
+                    : 'bg-[#F5F9FF] text-[#0B2E5B]'
                 }`}>
                   {p.primaryDomain === 'outdoor' ? '🌿 Outdoor Sanctuary' : p.primaryDomain === 'both' ? '🏡 Indoor & Outdoor' : '🛋️ Indoor Space'}
                 </span>
@@ -386,7 +386,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Product Title in Playfair Display */}
-            <h1 className="text-2xl sm:text-3xl font-serif italic font-normal text-[#0a192f] tracking-tight mb-2 leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-serif italic font-normal text-[#1F2937] tracking-tight mb-2 leading-tight">
               {p.name}
             </h1>
 
@@ -397,14 +397,14 @@ export default function ProductDetail() {
                   <Star key={i} size={14} fill="currentColor" />
                 ))}
               </div>
-              <span className="text-xs font-bold text-[#0a192f]">4.9</span>
+              <span className="text-xs font-bold text-[#1F2937]">4.9</span>
               <span className="text-xs text-[#536b88]">• 48 Verified Customer Reviews</span>
             </div>
 
             {/* Price Presentation */}
             <div className="mb-4 pb-4 border-b border-[#e2e8f0]">
               <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-2xl sm:text-3xl font-serif font-bold text-[#0f2444]">
+                <span className="text-2xl sm:text-3xl font-serif font-bold text-[#0B2E5B]">
                   {formatPrice(curPrice)}
                 </span>
                 {hasDiscount && (
@@ -464,32 +464,32 @@ export default function ProductDetail() {
             )}
 
             {/* Architectural Specifications Card */}
-            <div className="bg-[#f8fafc] border border-[#cbdceb] rounded-xl p-4 sm:p-5 mb-6">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-[#0a192f] mb-3 flex items-center gap-1.5">
-                <Layers size={13} className="text-[#0f2444]" />
+            <div className="bg-[#f8fafc] border border-[#DCE7F5] rounded-xl p-4 sm:p-5 mb-6">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-[#1F2937] mb-3 flex items-center gap-1.5">
+                <Layers size={13} className="text-[#0B2E5B]" />
                 Architectural Specifications
               </h4>
               <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
                 {p.material && (
                   <div>
                     <span className="text-[#536b88] block text-[11px] mb-0.5">Material Composition</span>
-                    <span className="font-semibold text-[#0a192f]">{p.material}</span>
+                    <span className="font-semibold text-[#1F2937]">{p.material}</span>
                   </div>
                 )}
                 {p.finish && (
                   <div>
                     <span className="text-[#536b88] block text-[11px] mb-0.5">Surface Finish</span>
-                    <span className="font-semibold text-[#0a192f]">{p.finish}</span>
+                    <span className="font-semibold text-[#1F2937]">{p.finish}</span>
                   </div>
                 )}
                 <div>
                   <span className="text-[#536b88] block text-[11px] mb-0.5">Catalog SKU</span>
-                  <span className="font-mono text-[11px] font-semibold text-[#0a192f]">{p.sku}</span>
+                  <span className="font-mono text-[11px] font-semibold text-[#1F2937]">{p.sku}</span>
                 </div>
                 {p.pricePerSqFt && (
                   <div>
                     <span className="text-[#536b88] block text-[11px] mb-0.5">Bespoke Wall Rate</span>
-                    <span className="font-semibold text-[#0f2444]">{formatPrice(Number(p.pricePerSqFt))}/sq ft</span>
+                    <span className="font-semibold text-[#0B2E5B]">{formatPrice(Number(p.pricePerSqFt))}/sq ft</span>
                   </div>
                 )}
               </div>
@@ -497,8 +497,8 @@ export default function ProductDetail() {
 
             {/* Customizer or Add to Cart Section */}
             {p.isCustomizable ? (
-              <div className="mb-8 p-6 bg-white border border-[#cbdceb] rounded-xl shadow-sm">
-                <h3 className="font-serif italic text-xl font-normal text-[#0a192f] mb-3">
+              <div className="mb-8 p-6 bg-white border border-[#DCE7F5] rounded-xl shadow-sm">
+                <h3 className="font-serif italic text-xl font-normal text-[#1F2937] mb-3">
                   Bespoke Wall Dimension Calculator
                 </h3>
                 <p className="text-xs text-[#536b88] mb-4">
@@ -687,14 +687,14 @@ export default function ProductDetail() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-block mb-1.5">
                 🍃 MongoDB Verified Collector Feedback
               </span>
-              <h3 className="text-2xl sm:text-3xl font-serif italic text-[#0a192f] m-0">
+              <h3 className="text-2xl sm:text-3xl font-serif italic text-[#1F2937] m-0">
                 Customer Ratings & Real Space Reviews
               </h3>
             </div>
             <button
               type="button"
               onClick={() => setShowReviewModal(true)}
-              className="py-2.5 px-5 bg-[#0f2444] hover:bg-[#1b3a6b] text-white text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors cursor-pointer flex items-center gap-1.5"
+              className="py-2.5 px-5 bg-[#0B2E5B] hover:bg-[#133E75] text-white text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <MessageSquare size={14} />
               <span>Write a Verified Review</span>
@@ -705,7 +705,7 @@ export default function ProductDetail() {
           <div className="bg-stone-50 border border-stone-200 rounded-lg p-6 mb-10 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             {/* Left: Overall score */}
             <div className="text-center md:text-left md:border-r md:border-stone-200 md:pr-6">
-              <div className="text-5xl font-serif font-bold text-[#0a192f] mb-1">
+              <div className="text-5xl font-serif font-bold text-[#1F2937] mb-1">
                 {reviewsData?.summary?.averageRating || 4.9}
                 <span className="text-xl text-stone-400 font-sans font-normal"> / 5.0</span>
               </div>
@@ -882,7 +882,7 @@ export default function ProductDetail() {
                     onChange={(e) => setReviewTitle(e.target.value)}
                     placeholder="e.g. Stunning craftsmanship, arrived vibrant and healthy"
                     required
-                    className="w-full text-xs p-2.5 border border-stone-300 rounded focus:border-[#0f2444] outline-none"
+                    className="w-full text-xs p-2.5 border border-stone-300 rounded focus:border-[#0B2E5B] outline-none"
                   />
                 </div>
 
@@ -894,7 +894,7 @@ export default function ProductDetail() {
                     onChange={(e) => setReviewComment(e.target.value)}
                     placeholder="Describe the texture, plant health, packaging, installation ease, or living room ambiance..."
                     required
-                    className="w-full text-xs p-2.5 border border-stone-300 rounded focus:border-[#0f2444] outline-none"
+                    className="w-full text-xs p-2.5 border border-stone-300 rounded focus:border-[#0B2E5B] outline-none"
                   />
                 </div>
 
@@ -905,7 +905,7 @@ export default function ProductDetail() {
                     value={reviewPhotoUrl}
                     onChange={(e) => setReviewPhotoUrl(e.target.value)}
                     placeholder="https://... image of your installed space"
-                    className="w-full text-xs p-2.5 border border-stone-300 rounded focus:border-[#0f2444] outline-none"
+                    className="w-full text-xs p-2.5 border border-stone-300 rounded focus:border-[#0B2E5B] outline-none"
                   />
                 </div>
 
@@ -920,7 +920,7 @@ export default function ProductDetail() {
                   <button
                     type="submit"
                     disabled={submittingReview}
-                    className="px-5 py-2 bg-[#0f2444] hover:bg-[#1b3a6b] text-white text-xs font-semibold rounded cursor-pointer transition-colors"
+                    className="px-5 py-2 bg-[#0B2E5B] hover:bg-[#133E75] text-white text-xs font-semibold rounded cursor-pointer transition-colors"
                   >
                     {submittingReview ? 'Submitting to MongoDB...' : 'Publish Verified Review'}
                   </button>
@@ -937,16 +937,16 @@ export default function ProductDetail() {
           <section className="mt-16 pt-12 border-t border-[#e2e8f0]">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2444] bg-[#edf4fc] border border-[#cbdceb] px-3 py-1 rounded-full inline-block mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B2E5B] bg-[#EDF5FF] border border-[#DCE7F5] px-3 py-1 rounded-full inline-block mb-1.5">
                   Complete The Space
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-serif italic text-[#0a192f] m-0">
+                <h3 className="text-2xl sm:text-3xl font-serif italic text-[#1F2937] m-0">
                   You May Also Admire
                 </h3>
               </div>
               <Link 
                 to="/shop" 
-                className="text-xs font-semibold uppercase tracking-widest text-[#0f2444] hover:text-[#1b3a6b] flex items-center gap-1"
+                className="text-xs font-semibold uppercase tracking-widest text-[#0B2E5B] hover:text-[#133E75] flex items-center gap-1"
               >
                 <span>View Full Catalog</span>
                 <ChevronRight size={13} />

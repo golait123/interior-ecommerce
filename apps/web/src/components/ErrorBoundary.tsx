@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
           justifyContent: 'center',
           padding: '2rem',
           backgroundColor: '#ffffff',
-          color: '#0a192f',
+          color: '#1F2937',
           fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
           textAlign: 'center'
         }}>
@@ -66,15 +66,15 @@ export class ErrorBoundary extends Component<Props, State> {
             width: '100%',
             padding: '2.5rem 2rem',
             borderRadius: '16px',
-            border: '1.5px solid #cbdceb',
-            backgroundColor: '#f0f5fc',
+            border: '1.5px solid #DCE7F5',
+            backgroundColor: '#F5F9FF',
             boxShadow: '0 12px 30px rgba(10, 25, 47, 0.08)'
           }}>
             <div style={{
               width: '48px',
               height: '48px',
               borderRadius: '50%',
-              backgroundColor: '#0f2444',
+              backgroundColor: '#0B2E5B',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
@@ -89,7 +89,7 @@ export class ErrorBoundary extends Component<Props, State> {
               margin: '0 0 0.5rem',
               fontSize: '1.5rem',
               fontWeight: 600,
-              color: '#0a192f',
+              color: '#1F2937',
               fontFamily: "'Playfair Display', Georgia, serif",
               fontStyle: 'italic'
             }}>
@@ -124,7 +124,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 onClick={() => window.location.reload()}
                 style={{
                   padding: '0.65rem 1.4rem',
-                  backgroundColor: '#0f2444',
+                  backgroundColor: '#0B2E5B',
                   color: '#ffffff',
                   border: 'none',
                   borderRadius: '8px',
@@ -142,8 +142,8 @@ export class ErrorBoundary extends Component<Props, State> {
                 style={{
                   padding: '0.65rem 1.4rem',
                   backgroundColor: '#ffffff',
-                  color: '#0f2444',
-                  border: '1.5px solid #0f2444',
+                  color: '#0B2E5B',
+                  border: '1.5px solid #0B2E5B',
                   borderRadius: '8px',
                   fontWeight: 600,
                   fontSize: '0.8rem',

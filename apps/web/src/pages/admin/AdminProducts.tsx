@@ -413,7 +413,7 @@ export function AdminProducts() {
             <div className="modal-header">
               <div className="flex items-center gap-2.5 text-red-600">
                 <AlertCircle size={20} />
-                <h3 className="font-bold text-base text-[#0a192f] m-0">Confirm Product Removal</h3>
+                <h3 className="font-bold text-base text-[#1F2937] m-0">Confirm Product Removal</h3>
               </div>
               <button 
                 type="button" 
@@ -426,10 +426,10 @@ export function AdminProducts() {
             
             <div className="modal-body">
               <p className="text-sm text-[#2d2a27] mb-3">
-                Are you sure you want to delete <strong className="font-semibold text-[#0a192f]">"{deletingProduct.name}"</strong>?
+                Are you sure you want to delete <strong className="font-semibold text-[#1F2937]">"{deletingProduct.name}"</strong>?
               </p>
-              <div className="text-xs text-[#555] bg-[#edf4fc] p-3 rounded-lg border border-[#cbdceb] leading-relaxed">
-                <strong className="text-[#0a192f] block mb-1">Financial Integrity Note:</strong>
+              <div className="text-xs text-[#555] bg-[#EDF5FF] p-3 rounded-lg border border-[#DCE7F5] leading-relaxed">
+                <strong className="text-[#1F2937] block mb-1">Financial Integrity Note:</strong>
                 If this item has existing customer orders, our database will safely deactivate/archive it instead of hard deleting, preserving audit trails and customer invoice receipts.
               </div>
             </div>

@@ -105,7 +105,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
           {/* ================================================================= */}
           {/* LEFT: IMAGE GALLERY WITH STANDARD ASPECT RATIO                    */}
           {/* ================================================================= */}
-          <div className="p-5 sm:p-6 bg-[#f8fafc] border-b md:border-b-0 md:border-r border-[#cbdceb]/80 flex flex-col justify-between">
+          <div className="p-5 sm:p-6 bg-[#f8fafc] border-b md:border-b-0 md:border-r border-[#DCE7F5]/80 flex flex-col justify-between">
             <div>
               {/* Main Product Showcase Box */}
               <ImageZoomViewer
@@ -121,7 +121,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                         {discountPct}% OFF
                       </span>
                     )}
-                    <span className="bg-[#0f2444] text-white text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded shadow-sm">
+                    <span className="bg-[#0B2E5B] text-white text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded shadow-sm">
                       {product.isCustomizable ? '✨ BESPOKE' : '🏺 HANDCRAFTED'}
                     </span>
                   </>
@@ -147,17 +147,17 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
             </div>
 
             {/* Quality Guarantee Row */}
-            <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-[#cbdceb]/70 text-[11px] text-[#536b88]">
+            <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-[#DCE7F5]/70 text-[11px] text-[#536b88]">
               <div className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-[#0f2444] flex-shrink-0" />
+                <ShieldCheck size={14} className="text-[#0B2E5B] flex-shrink-0" />
                 <span className="truncate font-medium">100% Authentic</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Truck size={14} className="text-[#0f2444] flex-shrink-0" />
+                <Truck size={14} className="text-[#0B2E5B] flex-shrink-0" />
                 <span className="truncate font-medium">Insured Transit</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Award size={14} className="text-[#0f2444] flex-shrink-0" />
+                <Award size={14} className="text-[#0B2E5B] flex-shrink-0" />
                 <span className="truncate font-medium">1-Yr Warranty</span>
               </div>
             </div>
@@ -170,7 +170,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
             <div>
               {/* Category, Space & Provenance Header */}
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0f2444] bg-[#edf4fc] border border-[#cbdceb] px-2.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B2E5B] bg-[#EDF5FF] border border-[#DCE7F5] px-2.5 py-0.5 rounded-full">
                   {product.category?.name || 'InteriorG Collection'}
                 </span>
 
@@ -180,7 +180,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                       ? 'bg-[#dce9d8] text-[#2e5926]' 
                       : product.primaryDomain === 'both'
                       ? 'bg-[#ede3f7] text-[#552d79]'
-                      : 'bg-[#f0f5fc] text-[#0f2444]'
+                      : 'bg-[#F5F9FF] text-[#0B2E5B]'
                   }`}>
                     {product.primaryDomain === 'outdoor' ? '🌿 Outdoor & Garden' : product.primaryDomain === 'both' ? '🏡 Indoor & Outdoor' : '🛋️ Indoor Living'}
                   </span>
@@ -188,7 +188,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
               </div>
 
               {/* Product Title in Italic Serif */}
-              <h2 className="text-xl sm:text-2xl font-serif italic font-normal text-[#0a192f] m-0 mb-2 leading-tight">
+              <h2 className="text-xl sm:text-2xl font-serif italic font-normal text-[#1F2937] m-0 mb-2 leading-tight">
                 {product.name}
               </h2>
 
@@ -199,14 +199,14 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                     <Star key={i} size={13} fill="currentColor" />
                   ))}
                 </div>
-                <span className="text-xs font-semibold text-[#0a192f]">4.9</span>
+                <span className="text-xs font-semibold text-[#1F2937]">4.9</span>
                 <span className="text-xs text-[#536b88]">• 48 Verified Customer Reviews</span>
               </div>
 
               {/* Price Presentation */}
               <div className="mb-3.5 pb-3 border-b border-[#e2e8f0]">
                 <div className="flex items-baseline gap-3 flex-wrap">
-                  <span className="text-2xl font-serif font-bold text-[#0f2444]">
+                  <span className="text-2xl font-serif font-bold text-[#0B2E5B]">
                     {formatPrice(curPrice)}
                   </span>
                   {hasDiscount && (
@@ -254,27 +254,27 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
               )}
 
               {/* Architectural Specifications Grid */}
-              <div className="bg-[#f8fafc] p-3.5 rounded-xl border border-[#cbdceb] text-xs grid grid-cols-2 gap-2 mb-4">
+              <div className="bg-[#f8fafc] p-3.5 rounded-xl border border-[#DCE7F5] text-xs grid grid-cols-2 gap-2 mb-4">
                 {product.material && (
                   <div>
                     <span className="text-[#536b88] block text-[11px]">Material</span>
-                    <span className="font-semibold text-[#0a192f]">{product.material}</span>
+                    <span className="font-semibold text-[#1F2937]">{product.material}</span>
                   </div>
                 )}
                 {product.finish && (
                   <div>
                     <span className="text-[#536b88] block text-[11px]">Finish</span>
-                    <span className="font-semibold text-[#0a192f]">{product.finish}</span>
+                    <span className="font-semibold text-[#1F2937]">{product.finish}</span>
                   </div>
                 )}
                 <div>
                   <span className="text-[#536b88] block text-[11px]">SKU Reference</span>
-                  <span className="font-mono text-[11px] font-semibold text-[#0a192f]">{product.sku}</span>
+                  <span className="font-mono text-[11px] font-semibold text-[#1F2937]">{product.sku}</span>
                 </div>
                 {product.pricePerSqFt && (
                   <div>
                     <span className="text-[#536b88] block text-[11px]">Bespoke Rate</span>
-                    <span className="font-semibold text-[#0f2444]">₹{product.pricePerSqFt}/sq ft</span>
+                    <span className="font-semibold text-[#0B2E5B]">₹{product.pricePerSqFt}/sq ft</span>
                   </div>
                 )}
               </div>
@@ -297,7 +297,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                   <button
                     type="button"
                     onClick={handleViewFullPage}
-                    className="w-full text-xs text-center text-[#0f2444] hover:text-[#1b3a6b] font-semibold py-1.5 flex items-center justify-center gap-1"
+                    className="w-full text-xs text-center text-[#0B2E5B] hover:text-[#133E75] font-semibold py-1.5 flex items-center justify-center gap-1"
                   >
                     <span>View Architectural Specifications & Gallery</span>
                     <ChevronRight size={13} />
@@ -308,23 +308,23 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                   {/* Quantity and Subtotal Row */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-xs font-semibold text-[#0a192f]">Quantity:</span>
-                      <div className="inline-flex items-center rounded-lg bg-[#f8fafc] border border-[#cbdceb] overflow-hidden">
+                      <span className="text-xs font-semibold text-[#1F2937]">Quantity:</span>
+                      <div className="inline-flex items-center rounded-lg bg-[#f8fafc] border border-[#DCE7F5] overflow-hidden">
                         <button 
                           type="button" 
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-8 h-8 flex items-center justify-center text-sm font-bold text-[#0a192f] hover:bg-[#edf4fc] cursor-pointer border-none bg-transparent"
+                          className="w-8 h-8 flex items-center justify-center text-sm font-bold text-[#1F2937] hover:bg-[#EDF5FF] cursor-pointer border-none bg-transparent"
                           aria-label="Decrease quantity"
                         >
                           &minus;
                         </button>
-                        <span className="w-9 text-center text-xs font-bold text-[#0a192f]">
+                        <span className="w-9 text-center text-xs font-bold text-[#1F2937]">
                           {quantity}
                         </span>
                         <button 
                           type="button" 
                           onClick={() => setQuantity(quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center text-sm font-bold text-[#0a192f] hover:bg-[#edf4fc] cursor-pointer border-none bg-transparent"
+                          className="w-8 h-8 flex items-center justify-center text-sm font-bold text-[#1F2937] hover:bg-[#EDF5FF] cursor-pointer border-none bg-transparent"
                           aria-label="Increase quantity"
                         >
                           &#43;
@@ -334,7 +334,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
 
                     <div className="text-right">
                       <span className="text-[11px] text-[#536b88] block">Subtotal</span>
-                      <strong className="text-sm font-serif font-bold text-[#0f2444]">
+                      <strong className="text-sm font-serif font-bold text-[#0B2E5B]">
                         {formatPrice(curPrice * quantity)}
                       </strong>
                     </div>
@@ -362,7 +362,7 @@ export function ProductQuickViewModal({ product, onClose, onAddToCart }: Product
                     <button
                       type="button"
                       onClick={handleViewFullPage}
-                      className="text-xs text-[#0f2444] hover:text-[#1b3a6b] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer bg-transparent border-none p-0"
+                      className="text-xs text-[#0B2E5B] hover:text-[#133E75] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer bg-transparent border-none p-0"
                     >
                       <span>Explore Complete Heritage Story & Specifications</span>
                       <ArrowRight size={13} />

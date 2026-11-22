@@ -940,7 +940,7 @@ export default function CustomerDashboard() {
               <div className="flex items-center gap-3">
                 <div 
                   className="w-12 h-12 rounded-xl text-white flex items-center justify-center font-bold text-lg shrink-0"
-                  style={{ background: 'var(--brand-primary, #0f2444)' }}
+                  style={{ background: 'var(--brand-primary, #0B2E5B)' }}
                 >
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'P'}
                 </div>

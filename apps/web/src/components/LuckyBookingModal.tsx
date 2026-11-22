@@ -342,7 +342,7 @@ export function LuckyBookingModal({ isOpen, onClose }: LuckyBookingModalProps) {
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className="w-full mt-2 py-3 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  className="w-full mt-2 py-3 bg-[var(--navy)] hover:bg-[#133E75] text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                 >
                   {authLoading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -358,7 +358,7 @@ export function LuckyBookingModal({ isOpen, onClose }: LuckyBookingModalProps) {
           ) : (
             /* User IS Registered -> Fast Booking Form */
             <div>
-              <div className="bg-[#f0f5fc] border border-[#cbdceb] p-3 rounded-xl mb-4 flex items-center justify-between text-xs">
+              <div className="bg-[#F5F9FF] border border-[#DCE7F5] p-3 rounded-xl mb-4 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <UserCheck size={16} className="text-[var(--navy)]" />
                   <span className="text-stone-800">
@@ -437,7 +437,7 @@ export function LuckyBookingModal({ isOpen, onClose }: LuckyBookingModalProps) {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3 bg-[var(--navy)] hover:bg-[#1b3a6b] text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    className="w-full py-3 bg-[var(--navy)] hover:bg-[#133E75] text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
                   >
                     {isSubmitting ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
