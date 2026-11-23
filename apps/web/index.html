@@ -77,7 +77,7 @@
         }
       });
 
-      // Diagnostic timeout: if React hasn't replaced #root within 3.5s (due to old service worker caching), reveal recovery action
+      // Diagnostic timeout: if React hasn't replaced #root within 6s (due to old service worker caching), reveal refresh action
       setTimeout(function() {
         var fallback = document.getElementById('app-loading-fallback');
         var btn = document.getElementById('app-force-reload-btn');
@@ -87,7 +87,8 @@
             clearAppCachesAndReload();
             return;
           }
-          msg.textContent = 'Browser cache or previous session conflict detected.';
+          msg.textContent = 'A new version of InteriorG is available.';
+          btn.textContent = 'Load Latest Version';
           btn.style.display = 'inline-block';
           btn.onclick = function() {
             try {
@@ -97,7 +98,7 @@
             clearAppCachesAndReload();
           };
         }
-      }, 3500);
+      }, 6000);
     </script>
     <!-- Cloudflare Web Analytics -->
     <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "interiorg-insights"}'></script>
