@@ -27,16 +27,20 @@ import {
   Video,
   Camera,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Smartphone,
+  QrCode,
+  Scan
 } from 'lucide-react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { visualizerApi, RoomAnalysisResponse, Hotspot } from '../api/visualizer';
 import { productsApi, Product } from '../api/products';
 import { Panorama360Viewer, PlacedItem } from '../components/Panorama360Viewer';
+import { ARViewer } from '../components/ARViewer';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 // Studio Presets with high-definition equirectangular room panoramas
@@ -69,10 +73,13 @@ const PRESETS = [
 
 export default function RoomStudio() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { cart, addItem } = useCart();
 
   // Mode & Upload State
+  const [studioMode, setStudioMode] = useState<'PANORAMA_360' | 'WEBXR_AR'>('PANORAMA_360');
+  const [activeArProduct, setActiveArProduct] = useState<Product | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'AUTO' | 'MANUAL'>('AUTO');
   const [activePreset, setActivePreset] = useState<string>('preset-living');
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
@@ -181,6 +188,19 @@ export default function RoomStudio() {
   useEffect(() => {
     triggerAnalysis('AUTO', []);
   }, []);
+
+  // Sync URL search parameters (e.g. ?mode=ar&product=prod_123)
+  useEffect(() => {
+    const modeParam = searchParams.get('mode');
+    const prodId = searchParams.get('product');
+    if (modeParam === 'ar' || prodId) {
+      setStudioMode('WEBXR_AR');
+      if (prodId && catalogData?.items) {
+        const found = catalogData.items.find(p => p.id === prodId);
+        if (found) setActiveArProduct(found);
+      }
+    }
+  }, [searchParams, catalogData?.items]);
 
   // Handle local file upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -413,7 +433,46 @@ export default function RoomStudio() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Studio Mode Selector (360 Panorama vs WebXR AR) */}
+            <div className="flex items-center bg-[#F5F9FF] border border-[#2D8CFF]/30 p-1 rounded-full shadow-sm">
+              <button
+                type="button"
+                onClick={() => setStudioMode('PANORAMA_360')}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  studioMode === 'PANORAMA_360'
+                    ? 'bg-[#0B2E5B] text-white shadow-sm'
+                    : 'text-[#1F2937] hover:text-[#0B2E5B]'
+                }`}
+              >
+                <Eye size={13} />
+                <span>360° Studio</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStudioMode('WEBXR_AR');
+                  const targetProd = placedItems[0]
+                    ? catalogData?.items.find(p => p.id === placedItems[0].productId)
+                    : (catalogData?.items?.[0] || suggestedProducts[0]);
+                  if (targetProd) {
+                    setActiveArProduct(targetProd);
+                  } else {
+                    toast.error('Catalog items are loading...');
+                  }
+                }}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  studioMode === 'WEBXR_AR'
+                    ? 'bg-[#2D8CFF] text-white shadow-sm'
+                    : 'text-[#1F2937] hover:text-[#2D8CFF]'
+                }`}
+              >
+                <Smartphone size={13} />
+                <span>WebXR AR Mode</span>
+              </button>
+            </div>
+
             <button
               onClick={() => setIsDimensionsOpen(!isDimensionsOpen)}
               className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs font-semibold"
@@ -475,9 +534,27 @@ export default function RoomStudio() {
             </label>
           </div>
 
-          {/* Right: Studio Controls */}
+          {/* Right: Studio Controls & WebXR AR CTA */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted font-medium">360° Studio Panoramic Visualizer</span>
+            <button
+              type="button"
+              onClick={() => {
+                const targetProd = placedItems[0]
+                  ? catalogData?.items.find(p => p.id === placedItems[0].productId)
+                  : (catalogData?.items?.[0] || suggestedProducts[0]);
+                if (targetProd) {
+                  setActiveArProduct(targetProd);
+                  setStudioMode('WEBXR_AR');
+                } else {
+                  toast.error('Catalog items are loading...');
+                }
+              }}
+              className="btn btn-sm flex items-center gap-1.5 text-xs font-bold bg-[#0B2E5B] text-white hover:bg-[#2D8CFF] transition-all shadow-sm py-1.5 px-3 rounded cursor-pointer"
+              title="Launch WebXR AR viewer to place 3D furniture in your real room"
+            >
+              <Smartphone size={14} className="text-[#8EC5FF]" />
+              <span>View in Real Room (WebXR AR)</span>
+            </button>
           </div>
         </div>
 
@@ -900,6 +977,20 @@ export default function RoomStudio() {
                               )}
                             </button>
 
+                            {/* View in WebXR AR Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveArProduct(prod);
+                                setStudioMode('WEBXR_AR');
+                              }}
+                              className="py-1.5 px-2.5 text-xs font-semibold rounded border border-[#2D8CFF] bg-[#F5F9FF] text-[#0B2E5B] hover:bg-[#2D8CFF] hover:text-white transition-all cursor-pointer flex items-center gap-1"
+                              title="Place true-to-scale in WebXR AR"
+                            >
+                              <Smartphone size={13} className="text-[#2D8CFF]" />
+                              <span>AR</span>
+                            </button>
+
                             {/* Quick Add To Cart */}
                             <button
                               type="button"
@@ -1005,6 +1096,23 @@ export default function RoomStudio() {
                         </div>
 
                         <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const prod = catalogData?.items.find(p => p.id === item.productId) || {
+                                id: item.productId,
+                                name: item.name,
+                                price: item.price,
+                                images: [item.imageUrl]
+                              } as any;
+                              setActiveArProduct(prod);
+                              setStudioMode('WEBXR_AR');
+                            }}
+                            className="p-1.5 text-[#2D8CFF] hover:bg-[#F5F9FF] rounded border-none bg-transparent cursor-pointer"
+                            title="Inspect in WebXR AR"
+                          >
+                            <Smartphone size={15} />
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleAddToCart(item.productId, item.name)}
@@ -1166,6 +1274,20 @@ export default function RoomStudio() {
           </div>
         )}
 
+
+        {/* WebXR AR Product Viewer Modal / Full-Screen Overlay */}
+        {activeArProduct && (
+          <ARViewer
+            product={activeArProduct}
+            catalog={catalogData?.items || suggestedProducts}
+            onSelectProduct={(p) => setActiveArProduct(p)}
+            onClose={() => {
+              setActiveArProduct(null);
+              if (studioMode === 'WEBXR_AR') setStudioMode('PANORAMA_360');
+            }}
+            roomDimensions={{ width: wallWidth, height: wallHeight, length: roomLength }}
+          />
+        )}
 
       </main>
 

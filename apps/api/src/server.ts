@@ -19,6 +19,7 @@ import customizerDesignsRouter from './routes/customizerDesigns';
 import reviewsRouter from './routes/reviews';
 import aiChatRouter from './routes/aiChat';
 import activityLogsRouter from './routes/activityLogs';
+import arSessionsRouter from './routes/arSessions';
 import { connectMongoDB, getMongoStatus } from './lib/mongodb';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -273,7 +274,8 @@ app.get('/', (req, res) => {
       customizerDesigns: '/api/v1/customizer-designs',
       reviews: '/api/v1/reviews',
       aiChat: '/api/v1/ai-chat',
-      activityLogs: '/api/v1/activity-logs'
+      activityLogs: '/api/v1/activity-logs',
+      arSessions: '/api/v1/ar-sessions'
     }
   });
 });
@@ -292,6 +294,7 @@ app.use('/api/v1/customizer-designs', customizerDesignsRouter);
 app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/ai-chat', aiChatRouter);
 app.use('/api/v1/activity-logs', activityLogsRouter);
+app.use('/api/v1/ar-sessions', arSessionsRouter);
 
 // 404 Catch-All Handler
 app.use((req, res) => {

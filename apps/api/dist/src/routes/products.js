@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ROOM_MAPPINGS = exports.SPACES_DOMAINS = exports.matchLeafNode = exports.ALL_SPACES_LEAVES = exports.getBotanicalBenefits = exports.OUTDOOR_LEAVES = exports.INDOOR_LEAVES = void 0;
+exports.getProductArConfig = getProductArConfig;
 const express_1 = require("express");
 const zod_1 = require("zod");
 const prisma_1 = require("../lib/prisma");
@@ -379,6 +380,83 @@ router.get('/spaces-tree', async (_req, res, next) => {
         next(error);
     }
 });
+function getProductArConfig(p) {
+    const text = `${p.name || ''} ${p.description || ''} ${p.category?.name || ''} ${p.material || ''}`.toLowerCase();
+    if (text.includes('wallpaper') ||
+        text.includes('wall art') ||
+        text.includes('art print') ||
+        text.includes('frame') ||
+        text.includes('mural') ||
+        text.includes('painting') ||
+        text.includes('canvas print')) {
+        return {
+            enabled: true,
+            placementType: 'wall',
+            dimensions: { widthMeters: 1.2, heightMeters: 0.9, depthMeters: 0.05, widthFeet: 4.0, heightFeet: 3.0, depthFeet: 0.16 },
+            modelType: 'procedural',
+            geometryType: 'wall-art',
+            primaryColor: '#8EC5FF'
+        };
+    }
+    if (text.includes('plant') || text.includes('monstera') || text.includes('ficus') || text.includes('palm') || text.includes('pot') || text.includes('planter') || text.includes('bonsai')) {
+        return {
+            enabled: true,
+            placementType: 'floor',
+            dimensions: { widthMeters: 0.6, heightMeters: 1.2, depthMeters: 0.6, widthFeet: 2.0, heightFeet: 4.0, depthFeet: 2.0 },
+            modelType: 'procedural',
+            geometryType: 'plant',
+            primaryColor: '#2D8CFF'
+        };
+    }
+    if (text.includes('vase') || text.includes('sculpture') || text.includes('urli') || text.includes('decor') || text.includes('bowl')) {
+        return {
+            enabled: true,
+            placementType: 'tabletop',
+            dimensions: { widthMeters: 0.35, heightMeters: 0.45, depthMeters: 0.35, widthFeet: 1.15, heightFeet: 1.5, depthFeet: 1.15 },
+            modelType: 'procedural',
+            geometryType: 'vase',
+            primaryColor: '#8EC5FF'
+        };
+    }
+    if (text.includes('sofa') || text.includes('couch') || text.includes('lounge') || text.includes('sectional')) {
+        return {
+            enabled: true,
+            placementType: 'floor',
+            dimensions: { widthMeters: 2.1, heightMeters: 0.85, depthMeters: 0.95, widthFeet: 6.9, heightFeet: 2.8, depthFeet: 3.1 },
+            modelType: 'procedural',
+            geometryType: 'sofa',
+            primaryColor: '#0B2E5B'
+        };
+    }
+    if (text.includes('chair') || text.includes('stool') || text.includes('armchair') || text.includes('pouffe')) {
+        return {
+            enabled: true,
+            placementType: 'floor',
+            dimensions: { widthMeters: 0.8, heightMeters: 0.9, depthMeters: 0.8, widthFeet: 2.6, heightFeet: 3.0, depthFeet: 2.6 },
+            modelType: 'procedural',
+            geometryType: 'chair',
+            primaryColor: '#2D8CFF'
+        };
+    }
+    if (text.includes('lamp') || text.includes('light') || text.includes('chandelier') || text.includes('lantern')) {
+        return {
+            enabled: true,
+            placementType: 'tabletop',
+            dimensions: { widthMeters: 0.4, heightMeters: 0.7, depthMeters: 0.4, widthFeet: 1.3, heightFeet: 2.3, depthFeet: 1.3 },
+            modelType: 'procedural',
+            geometryType: 'lamp',
+            primaryColor: '#8EC5FF'
+        };
+    }
+    return {
+        enabled: true,
+        placementType: 'floor',
+        dimensions: { widthMeters: 1.2, heightMeters: 0.75, depthMeters: 0.6, widthFeet: 4.0, heightFeet: 2.5, depthFeet: 2.0 },
+        modelType: 'procedural',
+        geometryType: 'table',
+        primaryColor: '#0B2E5B'
+    };
+}
 router.get('/', async (req, res, next) => {
     try {
         const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -438,7 +516,8 @@ router.get('/', async (req, res, next) => {
                     isOutdoor ? 'outdoor' : ''
                 ].filter(Boolean),
                 primaryDomain,
-                botanicalBenefits: (0, exports.getBotanicalBenefits)(p)
+                botanicalBenefits: (0, exports.getBotanicalBenefits)(p),
+                arConfig: getProductArConfig(p)
             };
         });
         // Filter by space or domain if specified
@@ -556,7 +635,8 @@ router.get('/:id', async (req, res, next) => {
                 isOutdoor ? 'outdoor' : ''
             ].filter(Boolean),
             primaryDomain,
-            botanicalBenefits: (0, exports.getBotanicalBenefits)(product)
+            botanicalBenefits: (0, exports.getBotanicalBenefits)(product),
+            arConfig: getProductArConfig(product)
         };
         res.json({ success: true, message: 'Product retrieved', data: enriched });
     }

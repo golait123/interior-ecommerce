@@ -24,6 +24,7 @@ const customizerDesigns_1 = __importDefault(require("./routes/customizerDesigns"
 const reviews_1 = __importDefault(require("./routes/reviews"));
 const aiChat_1 = __importDefault(require("./routes/aiChat"));
 const activityLogs_1 = __importDefault(require("./routes/activityLogs"));
+const arSessions_1 = __importDefault(require("./routes/arSessions"));
 const mongodb_1 = require("./lib/mongodb");
 const errorHandler_1 = require("./middleware/errorHandler");
 const app = (0, express_1.default)();
@@ -269,7 +270,8 @@ app.get('/', (req, res) => {
             customizerDesigns: '/api/v1/customizer-designs',
             reviews: '/api/v1/reviews',
             aiChat: '/api/v1/ai-chat',
-            activityLogs: '/api/v1/activity-logs'
+            activityLogs: '/api/v1/activity-logs',
+            arSessions: '/api/v1/ar-sessions'
         }
     });
 });
@@ -287,6 +289,7 @@ app.use('/api/v1/customizer-designs', customizerDesigns_1.default);
 app.use('/api/v1/reviews', reviews_1.default);
 app.use('/api/v1/ai-chat', aiChat_1.default);
 app.use('/api/v1/activity-logs', activityLogs_1.default);
+app.use('/api/v1/ar-sessions', arSessions_1.default);
 // 404 Catch-All Handler
 app.use((req, res) => {
     res.status(404).json({
