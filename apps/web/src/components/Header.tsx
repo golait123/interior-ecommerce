@@ -521,15 +521,15 @@ export function Header() {
               <span>Free Sample Swatches • 10-Year Warranty • 50+ Cities Installation</span>
             </div>
 
-            {/* Dedicated Separate Space: 360° Room Studio Launcher */}
+            {/* Dedicated Space: Vision AR Studio Launcher */}
             <Link 
               to="/room-studio" 
               className="room-studio-launcher-btn"
-              title="Launch 360° Interactive 3D Room Studio"
+              title="Launch Vision AR Interactive 3D Studio"
             >
-              <Compass size={14} className="spin-slow text-[#8c6f52]" />
-              <span>360° Room Studio</span>
-              <span className="badge-3d-pulse">3D</span>
+              <Smartphone size={14} className="text-[#2D8CFF]" />
+              <span>Vision AR</span>
+              <span className="badge-3d-pulse" style={{ backgroundColor: '#2D8CFF', color: '#ffffff' }}>AR</span>
             </Link>
           </div>
         </div>
@@ -690,22 +690,22 @@ export function Header() {
               <div className="p-3 my-2 bg-gradient-to-r from-[#faf7f2] to-[#f4ede3] rounded-xl border border-[#ded5c7]">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-dark flex items-center gap-1.5">
-                    <Compass size={15} className="text-[#8c6f52] animate-spin-slow" />
-                    360° Room Studio
+                    <Smartphone size={15} className="text-[#2D8CFF]" />
+                    Vision AR Studio
                   </span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#8c6f52] text-white">
-                    3D Interactive
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#2D8CFF] text-white">
+                    AR Interactive
                   </span>
                 </div>
                 <p className="text-[11px] text-muted mb-2 font-light">
-                  Experience your rooms in realistic 360° virtual 3D staging.
+                  Place true-to-scale 3D furniture into your real room with Vision AR.
                 </p>
                 <Link
                   to="/room-studio"
                   onClick={closeMenu}
                   className="btn btn-sm btn-primary w-full text-xs py-1.5 flex items-center justify-center gap-1.5 font-semibold"
                 >
-                  <span>Launch 360° Studio</span>
+                  <span>Launch Vision AR</span>
                 </Link>
               </div>
 

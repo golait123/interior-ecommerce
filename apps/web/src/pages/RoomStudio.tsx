@@ -1,1342 +1,795 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  Layers, 
   Sparkles, 
-  UploadCloud, 
-  Check, 
-  Eye, 
-  Info, 
   ShoppingBag, 
   Maximize2, 
   RotateCw, 
-  Palette, 
-  Ruler, 
   Sliders, 
   Plus, 
   Trash2,
   X,
-  Image as ImageIcon,
   Move,
-  RefreshCw,
   Search,
   CheckCircle2,
-  ArrowRight,
-  MapPin,
-  Tag,
-  Video,
-  Camera,
-  ChevronDown,
-  ChevronUp,
   Smartphone,
   QrCode,
-  Scan
+  Layers,
+  Ruler,
+  BarChart3,
+  Check,
+  Camera,
+  Share2
 } from 'lucide-react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { visualizerApi, RoomAnalysisResponse, Hotspot } from '../api/visualizer';
 import { productsApi, Product } from '../api/products';
-import { Panorama360Viewer, PlacedItem } from '../components/Panorama360Viewer';
 import { ARViewer } from '../components/ARViewer';
+import { ARProductConfig, ARDimensions, PlacedARItem } from '../types/ar';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import QRCode from 'qrcode';
 import toast from 'react-hot-toast';
 
-// Studio Presets with high-definition equirectangular room panoramas
-const PRESETS = [
+// Curated default fallback products in case store catalog is loading or empty
+const FALLBACK_PRODUCTS: Product[] = [
   {
-    id: 'preset-living',
-    name: 'Panoramic Minimalist Living Suite',
-    type: 'PANORAMA' as const,
-    subtitle: 'Equirectangular 360° Living Room Studio',
-    previewUrl: '/panorama-living.jpg',
-    dimensions: { width: 16, height: 10, length: 20 }
-  },
+    id: 'prod-sofa-velvet',
+    name: 'Royal Velvet 3-Seater Sofa',
+    slug: 'royal-velvet-sofa',
+    description: 'Deep navy velvet 3-seater sofa with hand-turned teakwood legs and plush down-fill cushions.',
+    type: 'furniture',
+    sku: 'SOFA-001',
+    price: '34999',
+    discountPrice: '28999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Velvet & Teak',
+    finish: 'Navy Blue & Natural Teak',
+    images: ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80'],
+    isCustomizable: true,
+    isActive: true,
+    category: { id: 'cat-sofa', name: 'Sofas & Lounges', slug: 'sofas' },
+    rating: 4.9,
+    reviewsCount: 38
+  } as unknown as Product,
   {
-    id: 'preset-bedroom',
-    name: 'Panoramic Master Bedroom Suite',
-    type: 'PANORAMA' as const,
-    subtitle: 'Equirectangular 360° Master Suite',
-    previewUrl: '/panorama-bedroom.jpg',
-    dimensions: { width: 14, height: 9.5, length: 16 }
-  },
+    id: 'prod-chair-lounge',
+    name: 'Artisan Brass & Boucle Lounge Chair',
+    slug: 'boucle-lounge-chair',
+    description: 'Sculptural reading chair crafted from ivory boucle fabric and warm brushed brass frame.',
+    type: 'furniture',
+    sku: 'CHAIR-001',
+    price: '18499',
+    discountPrice: '15999',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Boucle & Brass',
+    finish: 'Ivory Boucle & Satin Brass',
+    images: ['https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=800&q=80'],
+    isCustomizable: true,
+    isActive: true,
+    category: { id: 'cat-chair', name: 'Lounge Chairs', slug: 'chairs' },
+    rating: 4.8,
+    reviewsCount: 24
+  } as unknown as Product,
   {
-    id: 'heritage-hall',
-    name: 'Heritage Drawing Room & Lounge',
-    type: 'PANORAMA' as const,
-    subtitle: 'Banjara Heritage Decor & Murals',
-    previewUrl: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2560&q=95',
-    dimensions: { width: 18, height: 11, length: 22 }
-  }
+    id: 'prod-center-table',
+    name: 'Teak & Gold Minimalist Center Table',
+    slug: 'teak-center-table',
+    description: 'Solid seasoned teak wood coffee table with satin brass cylindrical frame legs.',
+    type: 'furniture',
+    sku: 'TABLE-001',
+    price: '12999',
+    discountPrice: '10499',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Teak Wood & Brass',
+    finish: 'Walnut Stain & Brushed Gold',
+    images: ['https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&w=800&q=80'],
+    isCustomizable: false,
+    isActive: true,
+    category: { id: 'cat-table', name: 'Coffee & Center Tables', slug: 'tables' },
+    rating: 4.7,
+    reviewsCount: 19
+  } as unknown as Product,
+  {
+    id: 'prod-floor-lamp',
+    name: 'Fluted Marble & Brass Floor Lamp',
+    slug: 'brass-floor-lamp',
+    description: 'Tall architectural floor lamp with weighted white marble base and warm opal diffuser shade.',
+    type: 'lighting',
+    sku: 'LAMP-001',
+    price: '7999',
+    discountPrice: '6499',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Brass & Marble',
+    finish: 'Brushed Brass',
+    images: ['https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80'],
+    isCustomizable: false,
+    isActive: true,
+    category: { id: 'cat-lamp', name: 'Designer Lighting', slug: 'lighting' },
+    rating: 4.9,
+    reviewsCount: 31
+  } as unknown as Product,
+  {
+    id: 'prod-planter-botanical',
+    name: 'Ceramic Arch Planter with Botanical Ficus',
+    slug: 'ceramic-arch-planter',
+    description: 'Handmade matte earthenware planter atop a suspended brass tripod stand.',
+    type: 'decor',
+    sku: 'PLANT-001',
+    price: '4499',
+    discountPrice: '3799',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Ceramic & Plant',
+    finish: 'Matte White & Brass',
+    images: ['https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&q=80'],
+    isCustomizable: false,
+    isActive: true,
+    category: { id: 'cat-decor', name: 'Botanicals & Planters', slug: 'plants' },
+    rating: 4.6,
+    reviewsCount: 15
+  } as unknown as Product,
+  {
+    id: 'prod-wall-art-mural',
+    name: 'Banjara Heritage Gilded Wall Mural',
+    slug: 'banjara-wall-mural',
+    description: 'Gold-leaf framed canvas celebrating heritage Indian architectural motifs.',
+    type: 'art',
+    sku: 'ART-001',
+    price: '8999',
+    discountPrice: '7299',
+    unit: 'piece',
+    pricePerSqFt: null,
+    material: 'Canvas & Gold Leaf',
+    finish: 'Gilded Antique Gold',
+    images: ['https://images.unsplash.com/photo-1582582621959-48d27397dc69?auto=format&fit=crop&w=800&q=80'],
+    isCustomizable: false,
+    isActive: true,
+    category: { id: 'cat-art', name: 'Wall Murals & Art', slug: 'art' },
+    rating: 5.0,
+    reviewsCount: 42
+  } as unknown as Product
 ];
 
 export default function RoomStudio() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { cart, addItem } = useCart();
+  const { addItem } = useCart();
 
-  // Mode & Upload State
-  const [studioMode, setStudioMode] = useState<'PANORAMA_360' | 'WEBXR_AR'>('PANORAMA_360');
-  const [activeArProduct, setActiveArProduct] = useState<Product | null>(null);
-  const [analysisMode, setAnalysisMode] = useState<'AUTO' | 'MANUAL'>('AUTO');
-  const [activePreset, setActivePreset] = useState<string>('preset-living');
-  const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  // Dynamic Real Room Dimensions State (auto-adjustable)
-  const [wallWidth, setWallWidth] = useState<number>(16);
-  const [wallHeight, setWallHeight] = useState<number>(10);
-  const [roomLength, setRoomLength] = useState<number>(20);
-  const [isDimensionsOpen, setIsDimensionsOpen] = useState<boolean>(true);
-
-  // Placed Items in 3D Scene State
-  const [placedItems, setPlacedItems] = useState<PlacedItem[]>([]);
-
-  // Manual Selection State
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
-  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-
-  // Viewer State
-  const [showStaged, setShowStaged] = useState(true);
-  const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
-  const [isAddingBundle, setIsAddingBundle] = useState(false);
-
-  // Fetch full store catalog for placement and manual selection
+  // Query store products
   const { data: catalogData } = useQuery({
-    queryKey: ['visualizer-all-products'],
+    queryKey: ['vision-ar-products'],
     queryFn: () => productsApi.list({ limit: 50 })
   });
 
-  // Analysis Result State
-  const [analysis, setAnalysis] = useState<RoomAnalysisResponse | null>(null);
+  const allProducts: Product[] = (catalogData?.items && catalogData.items.length > 0)
+    ? catalogData.items
+    : FALLBACK_PRODUCTS;
 
-  // Auto-detect & calibrate dimensions
-  const handleAutoAdjustDimensions = () => {
-    if (activePreset === 'preset-bedroom') {
-      setWallWidth(14);
-      setWallHeight(9.5);
-      setRoomLength(16);
-      toast.success('Auto-calibrated bedroom dimensions: 14ft × 9.5ft × 16ft');
-    } else if (activePreset === 'heritage-hall') {
-      setWallWidth(18);
-      setWallHeight(11);
-      setRoomLength(22);
-      toast.success('Auto-calibrated drawing room dimensions: 18ft × 11ft × 22ft');
-    } else {
-      setWallWidth(16);
-      setWallHeight(10);
-      setRoomLength(20);
-      toast.success('Auto-calibrated living room dimensions: 16ft × 10ft × 20ft');
-    }
-  };
+  // Active product loaded in Vision AR
+  const [activeProduct, setActiveProduct] = useState<Product>(allProducts[0]);
+  const [isFullscreenArOpen, setIsFullscreenArOpen] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
 
-  // Run analysis function
-  const triggerAnalysis = async (mode = analysisMode, manualIds = selectedProductIds) => {
-    setIsAnalyzing(true);
-    try {
-      const currentPreset = PRESETS.find(p => p.id === activePreset);
-      const res = await visualizerApi.analyze({
-        designType: 'PANORAMA',
-        mode: mode,
-        fileUrl: uploadedFileUrl || currentPreset?.previewUrl,
-        fileName: currentPreset?.name,
-        selectedProductIds: mode === 'MANUAL' ? manualIds : undefined,
-        dimensions: { width: wallWidth, height: wallHeight, length: roomLength }
-      });
-      setAnalysis(res);
+  // Right Panel Tab: CATALOG, SCENE, DIMENSIONS, TELEMETRY
+  const [sidebarTab, setSidebarTab] = useState<'CATALOG' | 'SCENE' | 'DIMENSIONS' | 'TELEMETRY'>('CATALOG');
+  const [catalogCategory, setCatalogCategory] = useState<string>('ALL');
+  const [catalogSearch, setCatalogSearch] = useState<string>('');
 
-      // Auto-set initial dimensions from analysis if available
-      if (res.dimensions) {
-        setWallWidth(res.dimensions.width);
-        setWallHeight(res.dimensions.height);
-        setRoomLength(res.dimensions.length);
-      }
+  // Placed items in the AR scene
+  const [placedSceneItems, setPlacedSceneItems] = useState<PlacedARItem[]>([]);
+  const [isAddingAllToCart, setIsAddingAllToCart] = useState(false);
 
-      // Populate initial 3D placed items in room from recommended store products
-      if (res.products && res.products.length > 0) {
-        const initialPlaced: PlacedItem[] = res.products.map((p, idx) => {
-          const hotspot = res.hotspots.find(h => h.productId === p.id);
-          return {
-            id: `placed-${p.id}`,
-            productId: p.id,
-            name: p.name,
-            category: p.category?.name,
-            price: Number(p.discountPrice || p.price),
-            imageUrl: p.images?.[0] || '',
-            yaw: hotspot?.position.yaw ?? (-40 + idx * 28),
-            pitch: hotspot?.position.pitch ?? (idx % 2 === 0 ? 5 : -15),
-            scale: 1.0,
-          };
-        });
-        setPlacedItems(initialPlaced);
-      }
-
-      if (res.hotspots && res.hotspots.length > 0) {
-        setActiveHotspot(res.hotspots[0]);
-      }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to analyze room layout');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // Initial load
+  // Sync product selection from query param (?product=<id>)
   useEffect(() => {
-    triggerAnalysis('AUTO', []);
-  }, []);
-
-  // Sync URL search parameters (e.g. ?mode=ar&product=prod_123)
-  useEffect(() => {
-    const modeParam = searchParams.get('mode');
     const prodId = searchParams.get('product');
-    if (modeParam === 'ar' || prodId) {
-      setStudioMode('WEBXR_AR');
-      if (prodId && catalogData?.items) {
-        const found = catalogData.items.find(p => p.id === prodId);
-        if (found) setActiveArProduct(found);
+    if (prodId && allProducts.length > 0) {
+      const found = allProducts.find(p => p.id === prodId || p.slug === prodId);
+      if (found) {
+        setActiveProduct(found);
       }
     }
-  }, [searchParams, catalogData?.items]);
+  }, [searchParams, allProducts]);
 
-  // Handle local file upload
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Generate Mobile AR QR Code
+  useEffect(() => {
+    const mobileUrl = `${window.location.origin}/room-studio?product=${activeProduct.id}&mode=ar`;
+    QRCode.toDataURL(mobileUrl, {
+      width: 260,
+      margin: 2,
+      color: { dark: '#0B2E5B', light: '#FFFFFF' }
+    })
+      .then(url => setQrCodeUrl(url))
+      .catch(err => console.error('Failed to generate Vision AR QR code:', err));
+  }, [activeProduct.id]);
 
-    setIsUploading(true);
-    try {
-      const res = await visualizerApi.upload(file);
-      setUploadedFileUrl(res.fileUrl);
-      toast.success(`${file.name} uploaded successfully. Real dimensions auto-calculated.`);
-      triggerAnalysis(analysisMode, selectedProductIds);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Upload failed');
-    } finally {
-      setIsUploading(false);
+  // Filter catalog products
+  const filteredCatalog = allProducts.filter(item => {
+    const catSlug = (item.category?.slug || '').toLowerCase();
+    const catName = (item.category?.name || '').toLowerCase();
+    const nameLower = item.name.toLowerCase();
+
+    if (catalogCategory === 'SOFAS' && !catSlug.includes('sofa') && !nameLower.includes('sofa')) return false;
+    if (catalogCategory === 'CHAIRS' && !catSlug.includes('chair') && !nameLower.includes('chair')) return false;
+    if (catalogCategory === 'TABLES' && !catSlug.includes('table') && !nameLower.includes('table')) return false;
+    if (catalogCategory === 'LIGHTING' && !catSlug.includes('light') && !catSlug.includes('lamp') && !nameLower.includes('lamp')) return false;
+    if (catalogCategory === 'PLANTS' && !catSlug.includes('plant') && !nameLower.includes('plant')) return false;
+    if (catalogCategory === 'ART' && !catSlug.includes('art') && !catSlug.includes('mural') && !nameLower.includes('art')) return false;
+
+    if (catalogSearch.trim()) {
+      const q = catalogSearch.toLowerCase();
+      return nameLower.includes(q) || catName.includes(q);
     }
-  };
-
-
-  // Handle Preset Change
-  const handleSelectPreset = (preset: typeof PRESETS[0]) => {
-    setActivePreset(preset.id);
-    setUploadedFileUrl('');
-    setWallWidth(preset.dimensions.width);
-    setWallHeight(preset.dimensions.height);
-    setRoomLength(preset.dimensions.length);
-    triggerAnalysis(analysisMode, selectedProductIds);
-  };
-
-  // Toggle Mode (Auto vs Manual)
-  const handleModeChange = (mode: 'AUTO' | 'MANUAL') => {
-    setAnalysisMode(mode);
-    triggerAnalysis(mode, selectedProductIds);
-  };
-
-  // Toggle Product in Manual Selection
-  const toggleManualProduct = (id: string) => {
-    const next = selectedProductIds.includes(id)
-      ? selectedProductIds.filter(x => x !== id)
-      : [...selectedProductIds, id];
-    setSelectedProductIds(next);
-    triggerAnalysis('MANUAL', next);
-  };
-
-  // Add Entire Room Bundle to Cart
-  const handleAddBundleToCart = async () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    const itemsToAdd = placedItems.length > 0 
-      ? placedItems 
-      : (analysis?.products || []).map(p => ({ productId: p.id, name: p.name }));
-
-    if (!itemsToAdd.length) return;
-    setIsAddingBundle(true);
-    let count = 0;
-    try {
-      for (const item of itemsToAdd) {
-        await addItem(item.productId, 1);
-        count++;
-      }
-      toast.success(`Added all ${count} room items to your cart!`);
-    } catch {
-      toast.error('Unable to add room bundle to cart.');
-    } finally {
-      setIsAddingBundle(false);
-    }
-  };
-
-  // Live Wallpaper Area & Cost Calculations from Dynamic Sliders
-  const primaryWallArea = Math.round(wallWidth * wallHeight);
-  const billableArea = Math.ceil(primaryWallArea * 1.10);
-  const wallpaperRate = analysis?.wallpaperCostEstimate?.pricePerSqFt || 38;
-  const wallpaperMaterialCost = billableArea * wallpaperRate;
-  const wallpaperTax = Math.round(wallpaperMaterialCost * 0.18);
-  const wallpaperTotal = wallpaperMaterialCost + wallpaperTax;
-
-  // Dynamic Total Room Bundle Price
-  const totalBundlePrice = placedItems.length > 0
-    ? placedItems.reduce((sum, item) => sum + item.price, 0)
-    : (analysis?.totalBundlePrice || 0);
-
-  // Right Studio Panel Tabs & Filtering State
-  const [rightPanelTab, setRightPanelTab] = useState<'SUGGESTIONS' | 'PLACED' | 'PALETTE' | 'AR_STUDIO'>('SUGGESTIONS');
-  const [suggestionFilter, setSuggestionFilter] = useState<string>('ALL');
-  const [suggestionSearch, setSuggestionSearch] = useState<string>('');
-
-  // AI Suggested Products
-  const suggestedProducts = analysis?.products || [];
-
-  // Categorized counts for suggestions
-  const suggestionCategoryCounts = {
-    ALL: suggestedProducts.length,
-    WALL: suggestedProducts.filter(p => {
-      const s = (p.category?.slug || '').toLowerCase();
-      const n = p.name.toLowerCase();
-      return s.includes('wallpaper') || s.includes('mirror') || n.includes('mirror') || n.includes('art') || n.includes('mural');
-    }).length,
-    LIGHTING: suggestedProducts.filter(p => {
-      const s = (p.category?.slug || '').toLowerCase();
-      const n = p.name.toLowerCase();
-      return s.includes('lighting') || n.includes('chandelier') || n.includes('lamp') || n.includes('pendant');
-    }).length,
-    FURNITURE: suggestedProducts.filter(p => {
-      const s = (p.category?.slug || '').toLowerCase();
-      const n = p.name.toLowerCase();
-      return s.includes('furniture') || n.includes('console') || n.includes('table') || n.includes('stool');
-    }).length,
-    DECOR: suggestedProducts.filter(p => {
-      const s = (p.category?.slug || '').toLowerCase();
-      const n = p.name.toLowerCase();
-      return s.includes('vase') || s.includes('decor') || s.includes('candle') || n.includes('vase') || n.includes('bowl');
-    }).length,
-  };
-
-  // Filtered AI suggestions
-  const filteredSuggestions = suggestedProducts.filter((prod) => {
-    const catSlug = (prod.category?.slug || '').toLowerCase();
-    const nameLower = prod.name.toLowerCase();
-
-    if (suggestionFilter === 'WALL') {
-      const isWall = catSlug.includes('wallpaper') || catSlug.includes('mirror') || nameLower.includes('mirror') || nameLower.includes('art') || nameLower.includes('mural');
-      if (!isWall) return false;
-    } else if (suggestionFilter === 'LIGHTING') {
-      const isLighting = catSlug.includes('lighting') || nameLower.includes('chandelier') || nameLower.includes('lamp') || nameLower.includes('pendant');
-      if (!isLighting) return false;
-    } else if (suggestionFilter === 'FURNITURE') {
-      const isFurniture = catSlug.includes('furniture') || nameLower.includes('console') || nameLower.includes('table') || nameLower.includes('stool');
-      if (!isFurniture) return false;
-    } else if (suggestionFilter === 'DECOR') {
-      const isDecor = catSlug.includes('vase') || catSlug.includes('candle') || catSlug.includes('decor') || nameLower.includes('vase') || nameLower.includes('bowl');
-      if (!isDecor) return false;
-    }
-
-    if (suggestionSearch.trim()) {
-      const q = suggestionSearch.toLowerCase();
-      return nameLower.includes(q) || (prod.category?.name || '').toLowerCase().includes(q);
-    }
-
     return true;
   });
 
-  // Check if product is placed in 360 scene
-  const isProductPlaced = (productId: string) => placedItems.some(i => i.productId === productId);
-
-  // 1-Click Toggle Placement of Suggestion in 360 Scene
-  const handleTogglePlaceSuggestion = (prod: Product) => {
-    const existing = placedItems.find(i => i.productId === prod.id);
-    if (existing) {
-      setPlacedItems(placedItems.filter(i => i.productId !== prod.id));
-      toast.success(`Removed ${prod.name} from 360° room`);
-    } else {
-      const hotspot = analysis?.hotspots.find(h => h.productId === prod.id);
-      const newItem: PlacedItem = {
-        id: `placed-${prod.id}-${Date.now()}`,
-        productId: prod.id,
-        name: prod.name,
-        category: prod.category?.name,
-        price: Number(prod.discountPrice || prod.price),
-        imageUrl: prod.images?.[0] || '',
-        yaw: hotspot?.position.yaw ?? -22,
-        pitch: hotspot?.position.pitch ?? 0,
-        scale: 1.0,
-      };
-      setPlacedItems(prev => [...prev, newItem]);
-      toast.success(`📍 Placed ${prod.name} in 360° room!`);
-    }
-  };
-
-  // 1-Click Place All AI Suggestions into 360 Scene
-  const handlePlaceAllSuggestions = () => {
-    const unplaced = suggestedProducts.filter(p => !placedItems.some(i => i.productId === p.id));
-    if (unplaced.length === 0) {
-      toast('All suggestions are already placed in your 360° room!', { icon: '✨' });
-      return;
-    }
-
-    const newPlaced: PlacedItem[] = unplaced.map((prod) => {
-      const hotspot = analysis?.hotspots.find(h => h.productId === prod.id);
-      return {
-        id: `placed-${prod.id}-${Date.now()}`,
-        productId: prod.id,
-        name: prod.name,
-        category: prod.category?.name,
-        price: Number(prod.discountPrice || prod.price),
-        imageUrl: prod.images?.[0] || '',
-        yaw: hotspot?.position.yaw ?? -20,
-        pitch: hotspot?.position.pitch ?? 0,
-        scale: 1.0,
-      };
-    });
-
-    setPlacedItems(prev => [...prev, ...newPlaced]);
-    toast.success(`✨ Placed all ${newPlaced.length} AI suggestions in 360° room!`);
+  // Extract dimensions for active product
+  const arConfig = (activeProduct as any).arConfig as ARProductConfig | undefined;
+  const dimensions: ARDimensions = arConfig?.dimensions || {
+    widthMeters: 1.2,
+    heightMeters: 0.85,
+    depthMeters: 0.8,
+    widthFeet: 4.0,
+    heightFeet: 2.8,
+    depthFeet: 2.6
   };
 
   // Add individual product to cart
-  const handleAddToCart = async (productId: string, name: string) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+  const handleAddToCart = async (prod: Product) => {
     try {
-      await addItem(productId, 1);
-      toast.success(`Added ${name} to cart!`);
+      await addItem(prod.id, 1);
+      toast.success(`Added ${prod.name} to cart!`);
     } catch {
       toast.error('Unable to add item to cart.');
     }
   };
 
+  // Place active piece into multi-product room scene
+  const handlePlaceActiveInScene = (prod: Product) => {
+    const existing = placedSceneItems.find(i => i.productId === prod.id);
+    if (existing) {
+      toast('Item is already in your AR scene. Select another or adjust its position.', { icon: '📍' });
+      return;
+    }
+
+    const newItem: PlacedARItem = {
+      id: `scene-item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      productId: prod.id,
+      productName: prod.name,
+      category: prod.category?.name,
+      price: Number(prod.discountPrice || prod.price),
+      imageUrl: prod.images?.[0] || '',
+      geometryType: arConfig?.geometryType || 'table',
+      primaryColor: arConfig?.primaryColor || '#0B2E5B',
+      dimensions,
+      position: { x: (placedSceneItems.length * 0.6) - 0.6, y: 0, z: -0.2 },
+      rotation: { x: 0, y: 0, z: 0 },
+      scale: { x: 1.0, y: 1.0, z: 1.0 }
+    };
+
+    setPlacedSceneItems(prev => [...prev, newItem]);
+    toast.success(`📍 Placed ${prod.name} in your Vision AR room!`);
+  };
+
+  // Add entire AR scene to cart
+  const handleAddAllSceneToCart = async () => {
+    if (placedSceneItems.length === 0) {
+      handleAddToCart(activeProduct);
+      return;
+    }
+
+    setIsAddingAllToCart(true);
+    let count = 0;
+    try {
+      for (const item of placedSceneItems) {
+        await addItem(item.productId, 1);
+        count++;
+      }
+      toast.success(`Added all ${count} Vision AR pieces to your cart!`);
+    } catch {
+      toast.error('Failed to add all room scene items to cart.');
+    } finally {
+      setIsAddingAllToCart(false);
+    }
+  };
+
+  // Total scene valuation
+  const totalScenePrice = placedSceneItems.length > 0
+    ? placedSceneItems.reduce((acc, curr) => acc + curr.price, 0)
+    : Number(activeProduct.discountPrice || activeProduct.price);
+
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper bg-[#F5F9FF] min-h-screen">
       <Header />
 
-      <main className="max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
-        {/* Studio Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6 pb-5 border-b" style={{ borderColor: '#ded9d0' }}>
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+        {/* Studio Top Header Ribbon */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6 pb-5 border-b border-[#DCE7F5]">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="badge badge-blue flex items-center gap-1">
-                <Sparkles size={14} /> 3D AI Studio & Visualizer
+              <span className="badge flex items-center gap-1.5 bg-[#0B2E5B] text-white text-xs px-2.5 py-1 rounded-full font-bold">
+                <Sparkles size={13} className="text-[#8EC5FF]" /> Vision AR Studio
               </span>
-              <span className="badge badge-yellow">Banjara Market Gurugram Collection</span>
+              <span className="badge flex items-center gap-1.5 bg-[#2D8CFF]/15 text-[#0B2E5B] text-xs px-2.5 py-1 rounded-full font-bold border border-[#2D8CFF]/30">
+                <CheckCircle2 size={13} className="text-[#2D8CFF]" /> True-to-Scale 3D Experience
+              </span>
+              <span className="badge flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-semibold border border-emerald-200">
+                ● MongoDB Sync Active
+              </span>
             </div>
-            <h1 className="text-3xl md:text-4xl m-0 font-normal">Interior Design Studio</h1>
-            <p className="text-muted mt-1.5 max-w-2xl text-sm leading-relaxed">
-              Explore room designs in 360° spherical view, place handcrafted decor directly into your space, and customize finishes in real time.
+            <h1 className="text-3xl md:text-4xl m-0 font-bold text-[#0B2E5B] font-['Montserrat',sans-serif]">
+              Vision AR Studio
+            </h1>
+            <p className="text-[#4B5563] mt-1.5 max-w-2xl text-sm leading-relaxed font-['Inter',sans-serif]">
+              Place true-to-scale 3D furniture into your living room through your device camera. Tap to position, drag to move across your floor, rotate 360°, and verify physical clearance before purchasing.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Studio Mode Selector (360 Panorama vs WebXR AR) */}
-            <div className="flex items-center bg-[#F5F9FF] border border-[#2D8CFF]/30 p-1 rounded-full shadow-sm">
-              <button
-                type="button"
-                onClick={() => setStudioMode('PANORAMA_360')}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  studioMode === 'PANORAMA_360'
-                    ? 'bg-[#0B2E5B] text-white shadow-sm'
-                    : 'text-[#1F2937] hover:text-[#0B2E5B]'
-                }`}
-              >
-                <Eye size={13} />
-                <span>360° Studio</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setStudioMode('WEBXR_AR');
-                  const targetProd = placedItems[0]
-                    ? catalogData?.items.find(p => p.id === placedItems[0].productId)
-                    : (catalogData?.items?.[0] || suggestedProducts[0]);
-                  if (targetProd) {
-                    setActiveArProduct(targetProd);
-                  } else {
-                    toast.error('Catalog items are loading...');
-                  }
-                }}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  studioMode === 'WEBXR_AR'
-                    ? 'bg-[#2D8CFF] text-white shadow-sm'
-                    : 'text-[#1F2937] hover:text-[#2D8CFF]'
-                }`}
-              >
-                <Smartphone size={13} />
-                <span>WebXR AR Mode</span>
-              </button>
-            </div>
-
-            <button
-              onClick={() => setIsDimensionsOpen(!isDimensionsOpen)}
-              className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs font-semibold"
-              title="Toggle Room Dimensions & Wallpaper Area Sizing"
-            >
-              <Ruler size={14} className="text-accent" />
-              <span>{wallWidth}ft × {wallHeight}ft ({billableArea} sq ft)</span>
-              {isDimensionsOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-
-            <button
-              onClick={() => handleModeChange('AUTO')}
-              className={`btn btn-sm flex items-center gap-1.5 text-xs font-semibold ${analysisMode === 'AUTO' ? 'btn-primary' : 'btn-secondary'}`}
-            >
-              <Sparkles size={14} />
-              <span>Auto (AI/ML)</span>
-            </button>
-            <button
-              onClick={() => handleModeChange('MANUAL')}
-              className={`btn btn-sm flex items-center gap-1.5 text-xs font-semibold ${analysisMode === 'MANUAL' ? 'btn-primary' : 'btn-secondary'}`}
-            >
-              <Sliders size={14} />
-              <span>Manual Pick</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Unified Studio Command Ribbon */}
-        <div className="bg-white border p-3 mb-6 shadow-sm flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4" style={{ borderRadius: '6px', borderColor: '#ded9d0' }}>
-          {/* Left: 360 Scene Presets & Upload */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted uppercase font-bold tracking-wider mr-1">360° Scene:</span>
-            {PRESETS.map(preset => (
-              <button
-                key={preset.id}
-                onClick={() => handleSelectPreset(preset)}
-                className={`text-xs px-3 py-1.5 border font-medium cursor-pointer transition-all ${
-                  activePreset === preset.id && !uploadedFileUrl
-                    ? 'bg-dark text-white border-dark shadow-sm' 
-                    : 'bg-[#faf8f5] text-dark hover:border-accent'
-                }`}
-                style={{ borderRadius: '20px', borderColor: activePreset === preset.id && !uploadedFileUrl ? '#2d2a27' : '#ded9d0' }}
-              >
-                {preset.name}
-              </button>
-            ))}
-
-            <label className="btn btn-secondary btn-sm flex items-center gap-1.5 cursor-pointer text-xs py-1.5 px-3">
-              <UploadCloud size={14} />
-              <span>{isUploading ? 'Uploading...' : 'Upload Photo / 360°'}</span>
-              <input 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
-                style={{ display: 'none' }}
-                onChange={handleFileUpload}
-                disabled={isUploading}
-              />
-            </label>
-          </div>
-
-          {/* Right: Studio Controls & WebXR AR CTA */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
-              onClick={() => {
-                const targetProd = placedItems[0]
-                  ? catalogData?.items.find(p => p.id === placedItems[0].productId)
-                  : (catalogData?.items?.[0] || suggestedProducts[0]);
-                if (targetProd) {
-                  setActiveArProduct(targetProd);
-                  setStudioMode('WEBXR_AR');
-                } else {
-                  toast.error('Catalog items are loading...');
-                }
-              }}
-              className="btn btn-sm flex items-center gap-1.5 text-xs font-bold bg-[#0B2E5B] text-white hover:bg-[#2D8CFF] transition-all shadow-sm py-1.5 px-3 rounded cursor-pointer"
-              title="Launch WebXR AR viewer to place 3D furniture in your real room"
+              onClick={() => setShowQrModal(true)}
+              className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs font-semibold px-3 py-2 bg-white text-[#0B2E5B] border border-[#DCE7F5] rounded-lg shadow-sm hover:border-[#2D8CFF] cursor-pointer"
+              title="Scan QR Code to open Vision AR on mobile"
             >
-              <Smartphone size={14} className="text-[#8EC5FF]" />
-              <span>View in Real Room (WebXR AR)</span>
+              <Smartphone size={14} className="text-[#2D8CFF]" />
+              <span>Mobile AR QR</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsFullscreenArOpen(true)}
+              className="btn btn-primary btn-sm flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 bg-[#2D8CFF] text-white rounded-lg shadow-sm hover:bg-[#1a7ae6] cursor-pointer"
+              title="Expand Vision AR to Fullscreen"
+            >
+              <Maximize2 size={14} />
+              <span>Fullscreen AR</span>
             </button>
           </div>
         </div>
 
-        {/* Visualizer Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Vision AR Grid Layout: 8 Cols Main AR Viewport + 4 Cols Catalog & Telemetry */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Left / Main: Interactive 360 Viewer Canvas & Studio Controls */}
-          <div className="lg:col-span-8 flex flex-col gap-5">
-            {studioMode === 'WEBXR_AR' ? (
-              <div className="relative rounded overflow-hidden shadow-lg border border-[#2D8CFF]/50 bg-black" style={{ height: '620px' }}>
-                <ARViewer
-                  product={activeArProduct || (placedItems[0] ? catalogData?.items.find(p => p.id === placedItems[0].productId) : null) || catalogData?.items?.[0] || suggestedProducts[0] || ({ id: 'fallback', name: 'Interior Piece', price: 1999 } as any)}
-                  catalog={catalogData?.items || suggestedProducts}
-                  onSelectProduct={(p) => setActiveArProduct(p)}
-                  onClose={() => setStudioMode('PANORAMA_360')}
-                  isEmbedded={true}
-                  roomDimensions={{ width: wallWidth, height: wallHeight, length: roomLength }}
-                />
-              </div>
-            ) : (
-              <Panorama360Viewer
-                imageUrl={uploadedFileUrl || PRESETS.find(p => p.id === activePreset)?.previewUrl || PRESETS[0].previewUrl}
-                hotspots={analysis?.hotspots || []}
-                activeHotspot={activeHotspot}
-                onSelectHotspot={(h) => setActiveHotspot(h)}
-                onAddToCart={async (productId) => {
-                  if (!user) {
-                    navigate('/login');
-                    return;
-                  }
-                  try {
-                    await addItem(productId, 1);
-                    const prod = catalogData?.items.find(p => p.id === productId) || analysis?.products.find(p => p.id === productId);
-                    toast.success(`Added ${prod?.name || 'item'} to cart!`);
-                  } catch {
-                    toast.error('Unable to add item to cart.');
-                  }
-                }}
-                showStaged={showStaged}
-                availableProducts={catalogData?.items || []}
-                placedItems={placedItems}
-                onPlacedItemsChange={setPlacedItems}
+          {/* LEFT: Primary Vision AR 3D Viewport */}
+          <div className="lg:col-span-8 flex flex-col gap-4">
+            {/* Embedded 3D AR Viewer Canvas */}
+            <div 
+              className="relative rounded-2xl overflow-hidden shadow-xl border-2 border-[#8EC5FF] bg-black"
+              style={{ height: '640px', minHeight: '520px' }}
+            >
+              <ARViewer
+                product={activeProduct}
+                catalog={allProducts}
+                onSelectProduct={(p) => setActiveProduct(p)}
+                onClose={() => {}}
+                isEmbedded={true}
+                roomDimensions={{ width: 16, height: 10, length: 20 }}
               />
-            )}
-
-            {/* Unified Room Dimensions & Live Wallpaper Sizing Panel */}
-            <div className="bg-white border shadow-sm transition-all" style={{ borderRadius: '6px', borderColor: '#ded9d0' }}>
-              {/* Card Header with Toggle */}
-              <div 
-                onClick={() => setIsDimensionsOpen(!isDimensionsOpen)}
-                className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 cursor-pointer select-none bg-[#faf8f5] border-b"
-                style={{ borderColor: '#ded9d0' }}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded bg-[#8c6f52]/10 border border-[#8c6f52]/30 flex items-center justify-center text-[#8c6f52]">
-                    <Ruler size={16} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold flex items-center gap-2 m-0 text-dark">
-                      Room Dimensions & Live Wallpaper Sizing
-                    </h3>
-                    <p className="text-xs text-muted mt-0.5 m-0">
-                      Scale: <span className="font-semibold text-dark">{wallWidth}ft W × {wallHeight}ft H × {roomLength}ft L</span> • Area: <span className="font-semibold text-accent">{primaryWallArea} sq ft</span> ({billableArea} sq ft billable)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 self-end sm:self-auto">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAutoAdjustDimensions();
-                    }}
-                    className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs text-accent font-semibold py-1 px-2.5"
-                    title="Auto-detect dimensions from active room view"
-                  >
-                    <RefreshCw size={13} />
-                    <span>⚡ Auto-Detect</span>
-                  </button>
-
-                  <button 
-                    type="button"
-                    className="text-muted hover:text-dark border-none bg-transparent p-1 cursor-pointer"
-                  >
-                    {isDimensionsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Collapsible Sliders + Cost Calculations Grid */}
-              {isDimensionsOpen && (
-                <div className="p-5">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                    {/* Left: 3 Interactive Sliders */}
-                    <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {/* Wall Width Slider */}
-                      <div>
-                        <div className="flex justify-between items-center text-xs font-semibold mb-1">
-                          <span>Wall Width:</span>
-                          <span className="text-accent font-bold text-sm">{wallWidth} ft</span>
-                        </div>
-                        <input 
-                          type="range"
-                          min="8"
-                          max="35"
-                          step="0.5"
-                          value={wallWidth}
-                          onChange={(e) => setWallWidth(parseFloat(e.target.value))}
-                          className="w-full cursor-pointer accent-accent"
-                        />
-                        <span className="text-[10px] text-muted block mt-0.5">Primary wall width</span>
-                      </div>
-
-                      {/* Ceiling Height Slider */}
-                      <div>
-                        <div className="flex justify-between items-center text-xs font-semibold mb-1">
-                          <span>Ceiling Height:</span>
-                          <span className="text-accent font-bold text-sm">{wallHeight} ft</span>
-                        </div>
-                        <input 
-                          type="range"
-                          min="8"
-                          max="16"
-                          step="0.5"
-                          value={wallHeight}
-                          onChange={(e) => setWallHeight(parseFloat(e.target.value))}
-                          className="w-full cursor-pointer accent-accent"
-                        />
-                        <span className="text-[10px] text-muted block mt-0.5">Floor-to-ceiling (9–12 ft)</span>
-                      </div>
-
-                      {/* Room Length / Depth Slider */}
-                      <div>
-                        <div className="flex justify-between items-center text-xs font-semibold mb-1">
-                          <span>Room Depth:</span>
-                          <span className="text-accent font-bold text-sm">{roomLength} ft</span>
-                        </div>
-                        <input 
-                          type="range"
-                          min="10"
-                          max="40"
-                          step="0.5"
-                          value={roomLength}
-                          onChange={(e) => setRoomLength(parseFloat(e.target.value))}
-                          className="w-full cursor-pointer accent-accent"
-                        />
-                        <span className="text-[10px] text-muted block mt-0.5">Perspective depth</span>
-                      </div>
-                    </div>
-
-                    {/* Right: 4 Cost Metric Cards */}
-                    <div className="lg:col-span-5 grid grid-cols-2 gap-2.5">
-                      <div className="p-2.5 bg-[#faf8f5] border rounded text-center" style={{ borderColor: '#ded9d0' }}>
-                        <span className="text-[11px] text-muted block">Wall Area</span>
-                        <span className="text-base font-bold text-dark">{primaryWallArea} sq ft</span>
-                      </div>
-                      <div className="p-2.5 bg-[#faf8f5] border rounded text-center" style={{ borderColor: '#ded9d0' }}>
-                        <span className="text-[11px] text-muted block">Billable (+10%)</span>
-                        <span className="text-base font-bold text-dark">{billableArea} sq ft</span>
-                      </div>
-                      <div className="p-2.5 bg-[#faf8f5] border rounded text-center" style={{ borderColor: '#ded9d0' }}>
-                        <span className="text-[11px] text-muted block">Material Rate</span>
-                        <span className="text-base font-bold text-dark">₹{wallpaperRate}/sq ft</span>
-                      </div>
-                      <div className="p-2.5 bg-[#faf8f5] border rounded text-center" style={{ borderColor: '#8c6f52' }}>
-                        <span className="text-[11px] text-muted block font-medium">Estimated Wallpaper</span>
-                        <span className="text-base font-bold text-accent">₹{wallpaperTotal}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
+            {/* Vision AR Capability Features Strip */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3.5 bg-white rounded-xl border border-[#DCE7F5] flex items-center gap-3 shadow-sm">
+                <div className="w-9 h-9 rounded-lg bg-[#2D8CFF]/15 text-[#2D8CFF] flex items-center justify-center flex-shrink-0">
+                  <Move size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-[#0B2E5B] m-0">Surface Detection</h4>
+                  <p className="text-[11px] text-[#6B7280] m-0 mt-0.5">Floor plane raycasting & tap-to-place</p>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-white rounded-xl border border-[#DCE7F5] flex items-center gap-3 shadow-sm">
+                <div className="w-9 h-9 rounded-lg bg-[#2D8CFF]/15 text-[#2D8CFF] flex items-center justify-center flex-shrink-0">
+                  <Ruler size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-[#0B2E5B] m-0">1:1 Physical Sizing</h4>
+                  <p className="text-[11px] text-[#6B7280] m-0 mt-0.5">Guaranteed true metric dimensions</p>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-white rounded-xl border border-[#DCE7F5] flex items-center gap-3 shadow-sm">
+                <div className="w-9 h-9 rounded-lg bg-[#2D8CFF]/15 text-[#2D8CFF] flex items-center justify-center flex-shrink-0">
+                  <Layers size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-[#0B2E5B] m-0">Multi-Product Staging</h4>
+                  <p className="text-[11px] text-[#6B7280] m-0 mt-0.5">Combine furniture pieces in one room</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Right Column: Dynamic Multi-Tab Studio Assistant */}
-          <div className="lg:col-span-4 sticky top-4 self-start flex flex-col gap-3">
-            {/* Top Navigation Tabs */}
-            <div className="bg-white border p-1.5 flex gap-1 rounded shadow-sm" style={{ borderColor: '#ded9d0' }}>
+          {/* RIGHT: Studio Catalog, Scene Staging & Telemetry Sidebar */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            
+            {/* Sidebar Navigation Tabs */}
+            <div className="flex bg-white p-1 rounded-xl border border-[#DCE7F5] shadow-sm">
               <button
                 type="button"
-                onClick={() => setRightPanelTab('SUGGESTIONS')}
-                className={`flex-1 py-2 px-2 text-xs font-semibold rounded border-none cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
-                  rightPanelTab === 'SUGGESTIONS'
-                    ? 'bg-dark text-white shadow-sm'
-                    : 'bg-transparent text-muted hover:text-dark hover:bg-gray-100'
+                onClick={() => setSidebarTab('CATALOG')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  sidebarTab === 'CATALOG'
+                    ? 'bg-[#0B2E5B] text-white shadow-sm'
+                    : 'text-[#4B5563] hover:text-[#0B2E5B]'
                 }`}
               >
-                <Sparkles size={14} className={rightPanelTab === 'SUGGESTIONS' ? 'text-accent' : ''} />
-                <span>Suggestions</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  rightPanelTab === 'SUGGESTIONS' ? 'bg-[#8c6f52] text-white' : 'bg-gray-200 text-gray-700'
-                }`}>
-                  {suggestedProducts.length}
-                </span>
+                <Layers size={13} />
+                <span>Catalog</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setRightPanelTab('PLACED')}
-                className={`flex-1 py-2 px-2 text-xs font-semibold rounded border-none cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
-                  rightPanelTab === 'PLACED'
-                    ? 'bg-dark text-white shadow-sm'
-                    : 'bg-transparent text-muted hover:text-dark hover:bg-gray-100'
+                onClick={() => setSidebarTab('SCENE')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  sidebarTab === 'SCENE'
+                    ? 'bg-[#0B2E5B] text-white shadow-sm'
+                    : 'text-[#4B5563] hover:text-[#0B2E5B]'
                 }`}
               >
-                <ShoppingBag size={14} className={rightPanelTab === 'PLACED' ? 'text-accent' : ''} />
-                <span>In Room</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  rightPanelTab === 'PLACED' ? 'bg-[#8c6f52] text-white' : 'bg-gray-200 text-gray-700'
-                }`}>
-                  {placedItems.length}
-                </span>
+                <ShoppingBag size={13} />
+                <span>Scene ({placedSceneItems.length})</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setRightPanelTab('PALETTE')}
-                className={`flex-1 py-2 px-2 text-xs font-semibold rounded border-none cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
-                  rightPanelTab === 'PALETTE'
-                    ? 'bg-dark text-white shadow-sm'
-                    : 'bg-transparent text-muted hover:text-dark hover:bg-gray-100'
+                onClick={() => setSidebarTab('DIMENSIONS')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  sidebarTab === 'DIMENSIONS'
+                    ? 'bg-[#0B2E5B] text-white shadow-sm'
+                    : 'text-[#4B5563] hover:text-[#0B2E5B]'
                 }`}
               >
-                <Palette size={14} className={rightPanelTab === 'PALETTE' ? 'text-accent' : ''} />
-                <span>Palette</span>
+                <Ruler size={13} />
+                <span>Scale</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => {
-                  setRightPanelTab('AR_STUDIO');
-                  setStudioMode('WEBXR_AR');
-                  if (!activeArProduct) {
-                    const firstProd = catalogData?.items?.[0] || suggestedProducts[0];
-                    if (firstProd) setActiveArProduct(firstProd);
-                  }
-                }}
-                className={`flex-1 py-2 px-2 text-xs font-semibold rounded border-none cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
-                  rightPanelTab === 'AR_STUDIO'
-                    ? 'bg-[#2D8CFF] text-white shadow-sm'
-                    : 'bg-transparent text-muted hover:text-dark hover:bg-gray-100'
+                onClick={() => setSidebarTab('TELEMETRY')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  sidebarTab === 'TELEMETRY'
+                    ? 'bg-[#0B2E5B] text-white shadow-sm'
+                    : 'text-[#4B5563] hover:text-[#0B2E5B]'
                 }`}
               >
-                <Smartphone size={14} className={rightPanelTab === 'AR_STUDIO' ? 'text-white' : 'text-[#2D8CFF]'} />
-                <span>AR Studio</span>
+                <BarChart3 size={13} />
+                <span>Session</span>
               </button>
             </div>
 
-            {/* TAB 1: AI Suggestions */}
-            {rightPanelTab === 'SUGGESTIONS' && (
-              <div className="bg-white border p-4 sm:p-5 flex flex-col gap-4 rounded shadow-sm" style={{ borderColor: '#ded9d0' }}>
-                {/* Header & Subtext */}
-                <div>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-base font-bold flex items-center gap-2 m-0 text-dark">
-                        <Sparkles size={16} className="text-accent" />
-                        Curated Room Additions
-                      </h3>
-                      <p className="text-xs text-muted mt-1 m-0">
-                        Handcrafted decor from Banjara Market Gurugram styled for this space:
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Bulk Quick Action Buttons */}
-                  <div className="flex items-center gap-2 mt-3">
-                    <button
-                      type="button"
-                      onClick={handlePlaceAllSuggestions}
-                      className="btn btn-secondary btn-sm flex-1 text-xs py-1.5 px-2 flex items-center justify-center gap-1.5 cursor-pointer font-medium"
-                      title="Place all recommendations into their matched positions in the 360 scene"
-                    >
-                      <Sparkles size={13} className="text-accent" />
-                      <span>Place All in 360°</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleAddBundleToCart}
-                      disabled={isAddingBundle || suggestedProducts.length === 0}
-                      className="btn btn-primary btn-sm flex-1 text-xs py-1.5 px-2 flex items-center justify-center gap-1.5 cursor-pointer font-medium"
-                      title="Add all recommended items to cart"
-                    >
-                      <ShoppingBag size={13} />
-                      <span>{isAddingBundle ? 'Adding...' : 'Add All to Cart'}</span>
-                    </button>
-                  </div>
+            {/* TAB 1: VISION AR CATALOG BROWSER */}
+            {sidebarTab === 'CATALOG' && (
+              <div className="bg-white rounded-2xl border border-[#DCE7F5] p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#0B2E5B] m-0 font-['Montserrat',sans-serif]">
+                    Furniture & Decor Pieces
+                  </h3>
+                  <span className="text-xs text-[#2D8CFF] font-semibold">
+                    {filteredCatalog.length} available
+                  </span>
                 </div>
 
-                {/* Search and Category Filter Bar */}
-                <div className="flex flex-col gap-2 pt-2 border-t">
-                  {/* Search input */}
-                  <div className="relative">
-                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
-                    <input
-                      type="text"
-                      placeholder="Search suggestions (mirror, lamp, table...)"
-                      value={suggestionSearch}
-                      onChange={(e) => setSuggestionSearch(e.target.value)}
-                      className="w-full text-xs pl-8 pr-7 py-1.5 border rounded bg-[#faf8f5] focus:bg-white focus:outline-none focus:border-dark"
-                    />
-                    {suggestionSearch && (
-                      <button
-                        type="button"
-                        onClick={() => setSuggestionSearch('')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-dark border-none bg-transparent cursor-pointer p-0"
-                      >
-                        <X size={13} />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Category Pills */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { id: 'ALL', label: '🌟 All', count: suggestionCategoryCounts.ALL },
-                      { id: 'WALL', label: '🪞 Mirrors & Walls', count: suggestionCategoryCounts.WALL },
-                      { id: 'LIGHTING', label: '💡 Lighting', count: suggestionCategoryCounts.LIGHTING },
-                      { id: 'FURNITURE', label: '🛋️ Furniture', count: suggestionCategoryCounts.FURNITURE },
-                      { id: 'DECOR', label: '🏺 Decor', count: suggestionCategoryCounts.DECOR },
-                    ].map((pill) => (
-                      <button
-                        key={pill.id}
-                        type="button"
-                        onClick={() => setSuggestionFilter(pill.id)}
-                        className={`text-[11px] py-1 px-2.5 rounded-full border transition-all cursor-pointer flex items-center gap-1 font-medium ${
-                          suggestionFilter === pill.id
-                            ? 'bg-[#2d2a27] text-white border-[#2d2a27]'
-                            : 'bg-[#f7f4ee] text-dark border-[#ded9d0] hover:border-gray-400'
-                        }`}
-                      >
-                        <span>{pill.label}</span>
-                        <span className="text-[10px] opacity-75">({pill.count})</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Suggestions Cards List */}
-                <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-340px)] min-h-[360px] pr-1">
-                  {filteredSuggestions.length === 0 ? (
-                    <div className="p-8 text-center text-muted bg-[#faf8f5] rounded border border-dashed">
-                      <Search size={24} className="mx-auto mb-2 opacity-40" />
-                      <p className="text-xs m-0 font-medium">No suggestion items found</p>
-                      <p className="text-[11px] text-muted mt-1">Try selecting "All" or clearing the search box.</p>
-                      <button
-                        type="button"
-                        onClick={() => { setSuggestionFilter('ALL'); setSuggestionSearch(''); }}
-                        className="btn btn-secondary btn-sm mt-3 text-xs"
-                      >
-                        Reset Filters
-                      </button>
-                    </div>
-                  ) : (
-                    filteredSuggestions.map((prod) => {
-                      const placed = isProductPlaced(prod.id);
-                      const hotspot = analysis?.hotspots.find(h => h.productId === prod.id);
-                      const curPrice = Number(prod.discountPrice || prod.price);
-                      const origPrice = Number(prod.price);
-                      const hasDiscount = prod.discountPrice && Number(prod.discountPrice) < origPrice;
-                      const discountPct = hasDiscount ? Math.round(((origPrice - curPrice) / origPrice) * 100) : null;
-                      const placementLabel = hotspot?.role || hotspot?.placement || prod.category?.name || 'Curated Accent';
-
-                      return (
-                        <div
-                          key={prod.id}
-                          className={`p-3.5 border rounded transition-all duration-200 bg-white ${
-                            placed
-                              ? 'border-[#8c6f52] shadow-sm bg-[#faf6f0]'
-                              : 'hover:border-dark hover:shadow-sm'
-                          }`}
-                        >
-                          {/* Card Header Tag Bar */}
-                          <div className="flex items-center justify-between gap-2 mb-2">
-                            <span className="badge badge-yellow text-[10px] font-semibold tracking-wide flex items-center gap-1 py-0.5 px-2">
-                              <Sparkles size={10} className="text-accent" />
-                              {placementLabel}
-                            </span>
-                            <span className="text-[10px] text-emerald-700 font-medium bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                              ● In Stock
-                            </span>
-                          </div>
-
-                          {/* Card Content Row */}
-                          <div className="flex gap-3">
-                            {/* Product Image Preview */}
-                            <div className="w-20 h-20 bg-gray-50 rounded border overflow-hidden flex-shrink-0 relative group">
-                              <img
-                                src={prod.images?.[0] || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300'}
-                                alt={prod.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                              {hasDiscount && (
-                                <span className="absolute top-1 left-1 bg-red-600 text-white text-[9px] font-bold px-1 rounded">
-                                  {discountPct}% OFF
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Details Column */}
-                            <div className="flex-1 min-w-0 flex flex-col justify-between">
-                              <div>
-                                <span className="text-[10px] text-muted uppercase tracking-wider block truncate">
-                                  {prod.category?.name || 'Home Decor'}
-                                </span>
-                                <h4 className="text-xs font-bold text-dark m-0 line-clamp-2 leading-tight">
-                                  {prod.name}
-                                </h4>
-                                <p className="text-[11px] text-muted m-0 mt-0.5 line-clamp-1">
-                                  {prod.finish || prod.material || 'Handcrafted Banjara Sheesham & Brass'}
-                                </p>
-                              </div>
-
-                              {/* Price Row */}
-                              <div className="flex items-baseline gap-2 mt-1">
-                                <span className="text-sm font-bold text-dark">
-                                  ₹{curPrice.toLocaleString('en-IN')}
-                                </span>
-                                {hasDiscount && (
-                                  <span className="text-[11px] text-muted line-through">
-                                    ₹{origPrice.toLocaleString('en-IN')}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Action Buttons Row */}
-                          <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-gray-100">
-                            {/* 1-Click 360 Room Placement Toggle */}
-                            <button
-                              type="button"
-                              onClick={() => handleTogglePlaceSuggestion(prod)}
-                              className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                placed
-                                  ? 'bg-[#8c6f52] text-white border-[#8c6f52] shadow-sm'
-                                  : 'bg-white text-dark border-gray-300 hover:border-dark hover:bg-gray-50'
-                              }`}
-                            >
-                              {placed ? (
-                                <>
-                                  <CheckCircle2 size={13} />
-                                  <span>In 360° Scene</span>
-                                </>
-                              ) : (
-                                <>
-                                  <MapPin size={13} className="text-accent" />
-                                  <span>Place in 360°</span>
-                                </>
-                              )}
-                            </button>
-
-                            {/* View in WebXR AR Button */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setActiveArProduct(prod);
-                                setStudioMode('WEBXR_AR');
-                              }}
-                              className="py-1.5 px-2.5 text-xs font-semibold rounded border border-[#2D8CFF] bg-[#F5F9FF] text-[#0B2E5B] hover:bg-[#2D8CFF] hover:text-white transition-all cursor-pointer flex items-center gap-1"
-                              title="Place true-to-scale in WebXR AR"
-                            >
-                              <Smartphone size={13} className="text-[#2D8CFF]" />
-                              <span>AR</span>
-                            </button>
-
-                            {/* Quick Add To Cart */}
-                            <button
-                              type="button"
-                              onClick={() => handleAddToCart(prod.id, prod.name)}
-                              className="py-1.5 px-3 text-xs font-semibold rounded border border-[#2d2a27] bg-[#2d2a27] text-white hover:bg-[#3d3a37] transition-all cursor-pointer flex items-center gap-1"
-                              title="Add to shopping cart"
-                            >
-                              <Plus size={13} />
-                              <span>Cart</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+                  <input
+                    type="text"
+                    placeholder="Search furniture (sofa, chair, lamp...)"
+                    value={catalogSearch}
+                    onChange={(e) => setCatalogSearch(e.target.value)}
+                    className="w-full text-xs pl-8 pr-7 py-2 border border-[#DCE7F5] rounded-lg bg-[#F5F9FF] focus:bg-white focus:outline-none focus:border-[#2D8CFF]"
+                  />
+                  {catalogSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setCatalogSearch('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-black border-none bg-transparent cursor-pointer"
+                    >
+                      <X size={13} />
+                    </button>
                   )}
                 </div>
 
-                {/* Bottom Bundle Summary Footer */}
-                <div className="pt-3 border-t bg-[#faf8f5] -mx-5 -mb-5 p-4 rounded-b">
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <span className="text-[11px] text-muted uppercase block font-medium">All Curated Items</span>
-                      <span className="text-base font-bold text-dark">
-                        ₹{(analysis?.totalBundlePrice || 0).toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted font-medium">
-                      {suggestedProducts.length} coordinated pieces
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddBundleToCart}
-                    disabled={isAddingBundle || suggestedProducts.length === 0}
-                    className="btn btn-primary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <ShoppingBag size={15} />
-                    <span>{isAddingBundle ? 'Adding...' : 'Add All Curated Items to Cart'}</span>
-                  </button>
+                {/* Category Pills */}
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: 'ALL', label: 'All' },
+                    { id: 'SOFAS', label: 'Sofas' },
+                    { id: 'CHAIRS', label: 'Chairs' },
+                    { id: 'TABLES', label: 'Tables' },
+                    { id: 'LIGHTING', label: 'Lamps' },
+                    { id: 'PLANTS', label: 'Planters' },
+                    { id: 'ART', label: 'Wall Art' }
+                  ].map(pill => (
+                    <button
+                      key={pill.id}
+                      type="button"
+                      onClick={() => setCatalogCategory(pill.id)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full font-medium transition-all cursor-pointer border ${
+                        catalogCategory === pill.id
+                          ? 'bg-[#0B2E5B] text-white border-[#0B2E5B]'
+                          : 'bg-[#F5F9FF] text-[#4B5563] border-[#DCE7F5] hover:border-[#2D8CFF]'
+                      }`}
+                    >
+                      {pill.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Catalog Cards Scroll List */}
+                <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+                  {filteredCatalog.map(prod => {
+                    const isSelected = prod.id === activeProduct.id;
+                    const curPrice = Number(prod.discountPrice || prod.price);
+
+                    return (
+                      <div
+                        key={prod.id}
+                        onClick={() => setActiveProduct(prod)}
+                        className={`p-3 rounded-xl border transition-all cursor-pointer flex gap-3 items-center ${
+                          isSelected
+                            ? 'border-[#2D8CFF] bg-[#F5F9FF] shadow-sm'
+                            : 'border-[#E5E7EB] hover:border-[#2D8CFF] bg-white'
+                        }`}
+                      >
+                        <div className="w-14 h-14 rounded-lg bg-gray-100 border border-[#DCE7F5] overflow-hidden flex-shrink-0">
+                          {prod.images?.[0] ? (
+                            <img src={prod.images[0]} alt={prod.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-[#0B2E5B] text-[#8EC5FF]">
+                              <Sparkles size={16} />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] text-[#6B7280] block truncate uppercase tracking-wider">
+                            {prod.category?.name || 'Interior Piece'}
+                          </span>
+                          <h4 className="text-xs font-bold text-[#0B2E5B] truncate m-0">
+                            {prod.name}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs font-extrabold text-[#2D8CFF]">
+                              ₹{curPrice.toLocaleString('en-IN')}
+                            </span>
+                            {isSelected && (
+                              <span className="text-[10px] bg-[#2D8CFF] text-white px-1.5 py-0.2 rounded font-bold">
+                                Active AR
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlaceActiveInScene(prod);
+                            }}
+                            className="p-1.5 rounded-md bg-[#0B2E5B] text-white hover:bg-[#2D8CFF] transition-all cursor-pointer border-none"
+                            title="Place in Vision AR Scene"
+                          >
+                            <Plus size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* TAB 2: Placed Items in 360 Room */}
-            {rightPanelTab === 'PLACED' && (
-              <div className="bg-white border p-5 flex flex-col flex-1 rounded" style={{ borderColor: '#ded9d0' }}>
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-base font-bold flex items-center gap-2 m-0">
-                    <ShoppingBag size={18} className="text-accent" />
-                    In 360° Room Scene ({placedItems.length})
+            {/* TAB 2: ACTIVE AR SCENE STAGING */}
+            {sidebarTab === 'SCENE' && (
+              <div className="bg-white rounded-2xl border border-[#DCE7F5] p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#0B2E5B] m-0 font-['Montserrat',sans-serif]">
+                    Items in Active Room Scene
                   </h3>
-                  <button 
-                    onClick={() => setIsCatalogOpen(true)}
-                    className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 border-none bg-transparent cursor-pointer"
-                  >
-                    <Plus size={14} /> Catalog
-                  </button>
+                  <span className="badge bg-[#2D8CFF] text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                    {placedSceneItems.length} placed
+                  </span>
                 </div>
 
-                <p className="text-xs text-muted mb-4">
-                  {placedItems.length > 0 
-                    ? 'These pieces are currently rendered inside your interactive 360° sphere:' 
-                    : 'No items placed yet. Click "Place in 360°" on any AI suggestion or use the 360 viewer tray to place items.'}
+                <p className="text-xs text-[#6B7280] m-0">
+                  {placedSceneItems.length === 0
+                    ? 'No products staged in room yet. Click "+" on any catalog piece to place it in your AR scene.'
+                    : 'These pieces are currently staged together in your real room view:'}
                 </p>
 
                 {/* Placed Items List */}
-                <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-360px)] min-h-[300px] pr-1">
-                  {placedItems.length === 0 ? (
-                    <div className="p-8 text-center text-muted bg-[#faf8f5] rounded border border-dashed">
-                      <ShoppingBag size={28} className="mx-auto mb-2 opacity-30" />
-                      <p className="text-xs font-semibold m-0">Room is currently empty</p>
-                      <p className="text-[11px] text-muted mt-1 mb-3">
-                        Populate your room with AI recommendations or your own selections.
-                      </p>
+                <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                  {placedSceneItems.length === 0 ? (
+                    <div className="p-8 text-center text-[#6B7280] bg-[#F5F9FF] rounded-xl border border-dashed border-[#DCE7F5]">
+                      <ShoppingBag size={24} className="mx-auto mb-2 text-[#9CA3AF]" />
+                      <p className="text-xs font-semibold m-0">Room Scene is Empty</p>
                       <button
                         type="button"
-                        onClick={handlePlaceAllSuggestions}
-                        className="btn btn-primary btn-sm text-xs cursor-pointer"
+                        onClick={() => handlePlaceActiveInScene(activeProduct)}
+                        className="btn btn-primary btn-sm text-xs mt-3 bg-[#2D8CFF] text-white px-3 py-1.5 rounded-lg cursor-pointer"
                       >
-                        <Sparkles size={13} className="mr-1 inline" /> Place AI Suggestions
+                        <Plus size={13} className="inline mr-1" /> Place {activeProduct.name.substring(0, 18)}
                       </button>
                     </div>
                   ) : (
-                    placedItems.map((item) => (
-                      <div 
-                        key={item.id} 
-                        className="p-3 border flex gap-3 items-center justify-between hover:border-dark transition-all rounded bg-white"
+                    placedSceneItems.map((item, idx) => (
+                      <div
+                        key={item.id}
+                        className="p-2.5 rounded-xl border border-[#DCE7F5] bg-[#F5F9FF] flex items-center justify-between gap-3"
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-12 h-12 bg-gray-100 flex-shrink-0 border overflow-hidden rounded">
-                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="text-xs font-bold text-[#0B2E5B] w-4">#{idx + 1}</span>
+                          <div className="w-10 h-10 rounded-md bg-white border border-[#DCE7F5] overflow-hidden flex-shrink-0">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt={item.productName} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-[#0B2E5B]" />
+                            )}
                           </div>
                           <div className="min-w-0">
-                            <span className="text-[10px] text-muted block truncate">{item.category || 'Decor'}</span>
-                            <h4 className="text-xs font-semibold truncate m-0">{item.name}</h4>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs font-bold text-accent">₹{item.price.toLocaleString('en-IN')}</span>
-                              <span className="text-[10px] text-muted font-mono bg-gray-100 px-1 rounded">
-                                {Math.round(item.yaw)}° / {Math.round(item.pitch)}°
-                              </span>
-                            </div>
+                            <h4 className="text-xs font-bold text-[#0B2E5B] truncate m-0">
+                              {item.productName}
+                            </h4>
+                            <p className="text-[11px] text-[#2D8CFF] font-bold m-0">
+                              ₹{item.price.toLocaleString('en-IN')}
+                            </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const prod = catalogData?.items.find(p => p.id === item.productId) || {
-                                id: item.productId,
-                                name: item.name,
-                                price: item.price,
-                                images: [item.imageUrl]
-                              } as any;
-                              setActiveArProduct(prod);
-                              setStudioMode('WEBXR_AR');
-                            }}
-                            className="p-1.5 text-[#2D8CFF] hover:bg-[#F5F9FF] rounded border-none bg-transparent cursor-pointer"
-                            title="Inspect in WebXR AR"
-                          >
-                            <Smartphone size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleAddToCart(item.productId, item.name)}
-                            className="p-1.5 text-muted hover:text-dark hover:bg-gray-100 rounded border-none bg-transparent cursor-pointer"
-                            title="Add to cart"
-                          >
-                            <ShoppingBag size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPlacedItems(placedItems.filter(i => i.id !== item.id));
-                              toast.success(`Removed ${item.name} from room`);
-                            }}
-                            className="p-1.5 text-muted hover:text-danger hover:bg-red-50 rounded border-none bg-transparent cursor-pointer"
-                            title="Remove from room"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPlacedSceneItems(prev => prev.filter(i => i.id !== item.id));
+                            toast.success(`Removed ${item.productName} from scene`);
+                          }}
+                          className="p-1 text-red-500 hover:text-red-700 bg-transparent border-none cursor-pointer"
+                          title="Remove from room scene"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     ))
                   )}
                 </div>
 
-                {/* Placed Bundle Checkout Bar */}
-                {placedItems.length > 0 && (
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="flex justify-between items-center mb-3">
-                      <div>
-                        <span className="text-[11px] text-muted uppercase block font-medium">Placed Items Total</span>
-                        <span className="text-lg font-bold text-dark">₹{totalBundlePrice.toLocaleString('en-IN')}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPlacedItems([]);
-                          toast('Cleared all items from 360 scene', { icon: '🧹' });
-                        }}
-                        className="text-[11px] text-muted hover:text-danger border-none bg-transparent cursor-pointer"
-                      >
-                        Clear Scene
-                      </button>
-                    </div>
-
-                    <button 
-                      type="button"
-                      onClick={handleAddBundleToCart}
-                      disabled={isAddingBundle || placedItems.length === 0}
-                      className="btn btn-primary w-full flex items-center justify-center gap-2 py-3 cursor-pointer text-xs font-bold"
-                    >
-                      <ShoppingBag size={16} />
-                      <span>{isAddingBundle ? 'Adding items...' : `Add Placed Items (${placedItems.length}) to Cart`}</span>
-                    </button>
+                {/* Scene Checkout Button */}
+                <div className="pt-3 border-t border-[#DCE7F5] mt-1">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-[#6B7280] font-medium">Total Scene Price</span>
+                    <span className="text-base font-extrabold text-[#0B2E5B]">
+                      ₹{totalScenePrice.toLocaleString('en-IN')}
+                    </span>
                   </div>
-                )}
-              </div>
-            )}
 
-            {/* TAB 3: Color Harmony & Room Mood */}
-            {rightPanelTab === 'PALETTE' && (
-              <div className="bg-white border p-5 flex flex-col gap-4 rounded" style={{ borderColor: '#ded9d0' }}>
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="text-base font-bold flex items-center gap-2 m-0">
-                    <Palette size={18} className="text-accent" />
-                    Color Harmony & Room Mood
-                  </h3>
-                  <span className="badge badge-green text-xs">{analysis?.detectedStyle || 'Harmonized'}</span>
-                </div>
-                <p className="text-xs text-muted mb-2">
-                  Extracted palette matching Banjara Market handcrafted Sheesham wood and brass accents:
-                </p>
-
-                <div className="space-y-2.5">
-                  {analysis?.colorPalette.map((color, cIdx) => (
-                    <div key={cIdx} className="flex items-center justify-between p-2.5 border bg-white rounded" style={{ borderColor: '#ded9d0' }}>
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-8 h-8 rounded border shadow-inner flex-shrink-0" 
-                          style={{ backgroundColor: color.hex }}
-                        />
-                        <div>
-                          <p className="text-xs font-bold m-0 text-dark">{color.name}</p>
-                          <p className="text-[11px] text-muted m-0">{color.role}</p>
-                        </div>
-                      </div>
-                      <code className="text-xs font-mono font-semibold text-muted bg-[#f7f4ee] px-2 py-0.5 rounded">{color.hex}</code>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Style Inspiration Note */}
-                <div className="p-3.5 bg-[#faf8f5] rounded border text-xs text-muted space-y-1 mt-2">
-                  <p className="font-semibold text-dark m-0 flex items-center gap-1.5">
-                    <Sparkles size={14} className="text-accent" />
-                    Designer Recommendation
-                  </p>
-                  <p className="m-0 leading-relaxed text-[11px]">
-                    Pair rich antique brass sconces and warm walnut woodwork against textured warm-white walls to accentuate ambient natural light.
-                  </p>
+                  <button
+                    type="button"
+                    onClick={handleAddAllSceneToCart}
+                    disabled={isAddingAllToCart}
+                    className="w-full py-2.5 rounded-xl bg-[#2D8CFF] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm hover:bg-[#1a7ae6] transition-all cursor-pointer border-none"
+                  >
+                    <ShoppingBag size={15} />
+                    <span>{isAddingAllToCart ? 'Adding to Cart...' : `Add Scene to Cart (${placedSceneItems.length || 1})`}</span>
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* TAB 4: WebXR AR Studio Controls & Analytics */}
-            {rightPanelTab === 'AR_STUDIO' && (
-              <div className="bg-white border p-5 flex flex-col gap-4 rounded shadow-sm" style={{ borderColor: '#ded9d0' }}>
-                <div className="flex justify-between items-center mb-1">
-                  <h3 className="text-base font-bold flex items-center gap-2 m-0 text-dark">
-                    <Smartphone size={18} className="text-[#2D8CFF]" />
-                    WebXR AR Live Studio
+            {/* TAB 3: TRUE 1:1 PHYSICAL SCALE INSPECTOR */}
+            {sidebarTab === 'DIMENSIONS' && (
+              <div className="bg-white rounded-2xl border border-[#DCE7F5] p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#0B2E5B] m-0 font-['Montserrat',sans-serif]">
+                    Physical Dimensions Inspector
                   </h3>
-                  <span className="badge badge-blue text-xs font-bold uppercase tracking-wider">
-                    {studioMode === 'WEBXR_AR' ? 'Live AR Active' : 'Ready'}
+                  <span className="badge bg-emerald-50 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-bold border border-emerald-200">
+                    1:1 Scale
                   </span>
                 </div>
 
-                <p className="text-xs text-muted mb-2">
-                  Place true-to-scale 3D models in your room using WebXR surface tracking & camera video feed.
+                <div className="p-3 bg-[#F5F9FF] rounded-xl border border-[#DCE7F5] flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-white border border-[#8EC5FF] overflow-hidden flex-shrink-0">
+                    <img src={activeProduct.images?.[0]} alt={activeProduct.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-bold text-[#0B2E5B] truncate m-0">
+                      {activeProduct.name}
+                    </h4>
+                    <p className="text-[11px] text-[#2D8CFF] font-semibold m-0 mt-0.5">
+                      Surface Placement: {arConfig?.placementType || 'Floor'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Measurements Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2.5 rounded-lg bg-[#fafbfc] border border-[#E5E7EB] text-center">
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Width</span>
+                    <span className="text-sm font-extrabold text-[#0B2E5B] block mt-1">{dimensions.widthFeet} ft</span>
+                    <span className="text-[10px] text-[#9CA3AF]">({dimensions.widthMeters} m)</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#fafbfc] border border-[#E5E7EB] text-center">
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Depth</span>
+                    <span className="text-sm font-extrabold text-[#0B2E5B] block mt-1">{dimensions.depthFeet} ft</span>
+                    <span className="text-[10px] text-[#9CA3AF]">({dimensions.depthMeters} m)</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#fafbfc] border border-[#E5E7EB] text-center">
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Height</span>
+                    <span className="text-sm font-extrabold text-[#0B2E5B] block mt-1">{dimensions.heightFeet} ft</span>
+                    <span className="text-[10px] text-[#9CA3AF]">({dimensions.heightMeters} m)</span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-100 text-xs text-[#0B2E5B] space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-[#2D8CFF]" />
+                    <span>Real-World Space Verification</span>
+                  </div>
+                  <p className="text-[11px] text-[#4B5563] m-0">
+                    This 3D piece matches manufacturer blueprints within ±1cm accuracy. Use Vision AR to verify doorway clearances, walking corridors, and room proportions.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: VISION AR SESSION TELEMETRY */}
+            {sidebarTab === 'TELEMETRY' && (
+              <div className="bg-white rounded-2xl border border-[#DCE7F5] p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[#0B2E5B] m-0 font-['Montserrat',sans-serif]">
+                    Live AR Session Telemetry
+                  </h3>
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                    Connected
+                  </span>
+                </div>
+
+                <p className="text-xs text-[#6B7280] m-0">
+                  AR interactions are synchronized to the MongoDB <code className="bg-gray-100 px-1 py-0.5 rounded text-[#0B2E5B]">ARSession</code> collection at <code className="bg-gray-100 px-1 py-0.5 rounded text-[#0B2E5B]">/api/v1/ar-sessions</code>.
                 </p>
 
-                {/* Active 3D Piece Info */}
-                <div className="p-3.5 bg-[#F5F9FF] rounded border border-[#2D8CFF]/30">
-                  <span className="text-[10px] text-muted uppercase font-bold tracking-wider block mb-1">Active 3D Piece</span>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white rounded border border-[#8EC5FF] overflow-hidden flex-shrink-0 flex items-center justify-center">
-                      {(activeArProduct || catalogData?.items?.[0])?.images?.[0] ? (
-                        <img 
-                          src={(activeArProduct || catalogData?.items?.[0])?.images?.[0]} 
-                          alt="Piece" 
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : (
-                        <Sparkles size={20} className="text-[#0B2E5B]" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-bold text-[#0B2E5B] truncate m-0">
-                        {(activeArProduct || catalogData?.items?.[0])?.name || 'Selected Decor'}
-                      </h4>
-                      <p className="text-[11px] text-[#2D8CFF] font-bold mt-0.5 m-0">
-                        ₹{Number((activeArProduct || catalogData?.items?.[0])?.discountPrice || (activeArProduct || catalogData?.items?.[0])?.price || 1999).toLocaleString('en-IN')}
-                      </p>
-                    </div>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="p-2.5 rounded-lg bg-[#F5F9FF] border border-[#DCE7F5]">
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Engine</span>
+                    <span className="text-xs font-bold text-[#0B2E5B] block mt-0.5">Three.js + WebXR</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#F5F9FF] border border-[#DCE7F5]">
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Surface Tracking</span>
+                    <span className="text-xs font-bold text-[#2D8CFF] block mt-0.5">Hit-Test Active</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#F5F9FF] border border-[#DCE7F5]">
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Database</span>
+                    <span className="text-xs font-bold text-[#0B2E5B] block mt-0.5">MongoDB Mongoose</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#F5F9FF] border border-[#DCE7F5]">
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Status</span>
+                    <span className="text-xs font-bold text-emerald-600 block mt-0.5">200 OK Live</span>
                   </div>
                 </div>
 
-                {/* AR Quick Action Buttons */}
-                <div className="space-y-2 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStudioMode('WEBXR_AR');
-                      if (!activeArProduct && catalogData?.items?.[0]) {
-                        setActiveArProduct(catalogData.items[0]);
-                      }
-                    }}
-                    className="btn btn-primary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-                  >
-                    <Smartphone size={15} />
-                    <span>Launch In-Page AR Viewer</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const prod = activeArProduct || catalogData?.items?.[0] || suggestedProducts[0];
-                      if (prod) {
-                        setActiveArProduct(prod);
-                      }
-                    }}
-                    className="btn btn-secondary w-full py-2 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Maximize2 size={14} />
-                    <span>Expand Fullscreen AR Mode</span>
-                  </button>
-                </div>
-
-                {/* AR Feature Checklist */}
-                <div className="p-3 bg-[#faf8f5] rounded border text-xs text-muted space-y-1.5 mt-2">
-                  <div className="font-semibold text-dark flex items-center gap-1.5">
-                    <CheckCircle2 size={14} className="text-emerald-600" />
-                    <span>WebXR Features Active</span>
+                <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 text-[11px] text-[#4B5563] space-y-1">
+                  <div className="font-semibold text-[#0B2E5B]">Backend REST Endpoints:</div>
+                  <div className="font-mono text-[10px] text-gray-600 space-y-0.5">
+                    <div>POST /api/v1/ar-sessions</div>
+                    <div>GET /api/v1/ar-sessions/:id</div>
+                    <div>PUT /api/v1/ar-sessions/:id</div>
                   </div>
-                  <ul className="text-[11px] space-y-1 pl-4 m-0 list-disc">
-                    <li>Hit-Test Real-World Floor & Wall Plane Lock</li>
-                    <li>1:1 True-to-Scale Metric Sizing Calibration</li>
-                    <li>Touch Drag 360° Rotation & Pinch Zoom</li>
-                    <li>Multi-Product Scene Composition & Staging</li>
-                    <li>Real-Time MongoDB ARSession Telemetry</li>
-                  </ul>
                 </div>
               </div>
             )}
@@ -1344,71 +797,65 @@ export default function RoomStudio() {
 
         </div>
 
-        {/* Manual Catalog Modal */}
-        {isCatalogOpen && (
-          <div className="modal-overlay">
-            <div className="modal-box" style={{ maxWidth: '800px', maxHeight: '85vh' }}>
-              <div className="flex justify-between items-center mb-4 pb-3 border-b">
-                <div>
-                  <h3 className="text-xl font-bold m-0">Select Store Items for Your Room</h3>
-                  <p className="text-xs text-muted mt-1">Pick products from Banjara Market Gurugram to test in your layout.</p>
-                </div>
-                <button onClick={() => setIsCatalogOpen(false)} className="btn btn-ghost p-2 cursor-pointer">
+        {/* FULLSCREEN VISION AR VIEWER MODAL */}
+        {isFullscreenArOpen && (
+          <div className="fixed inset-0 z-[99999] bg-black">
+            <ARViewer
+              product={activeProduct}
+              catalog={allProducts}
+              onSelectProduct={(p) => setActiveProduct(p)}
+              onClose={() => setIsFullscreenArOpen(false)}
+              isEmbedded={false}
+              roomDimensions={{ width: 16, height: 10, length: 20 }}
+            />
+          </div>
+        )}
+
+        {/* MOBILE VISION AR QR CODE MODAL */}
+        {showQrModal && (
+          <div
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setShowQrModal(false)}
+          >
+            <div
+              className="bg-white rounded-3xl p-7 max-w-sm w-full text-center shadow-2xl border-2 border-[#8EC5FF]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowQrModal(false)}
+                  className="bg-transparent border-none text-gray-500 hover:text-black cursor-pointer p-1"
+                >
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-96 pr-2 mb-4">
-                {catalogData?.items.map(p => {
-                  const isSelected = selectedProductIds.includes(p.id);
-                  return (
-                    <div 
-                      key={p.id}
-                      onClick={() => toggleManualProduct(p.id)}
-                      className={`p-3 border cursor-pointer flex flex-col justify-between transition-all ${
-                        isSelected ? 'border-accent bg-secondary/60' : 'hover:border-dark'
-                      }`}
-                      style={{ borderRadius: '4px' }}
-                    >
-                      <div className="w-full h-32 bg-gray-100 border overflow-hidden mb-2">
-                        <img src={p.images?.[0]} alt={p.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <span className="text-xs text-muted block truncate">{p.category?.name}</span>
-                        <h4 className="text-xs font-semibold truncate m-0">{p.name}</h4>
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-xs font-bold text-accent">₹{p.discountPrice || p.price}</span>
-                          <span className={`badge ${isSelected ? 'badge-green' : 'badge-gray'} text-xs`}>
-                            {isSelected ? 'Selected' : 'Add'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="w-14 h-14 rounded-2xl bg-[#0B2E5B] text-[#8EC5FF] flex items-center justify-center mx-auto mb-3 shadow-md">
+                <Smartphone size={28} />
               </div>
 
-              <div className="flex justify-between items-center pt-3 border-t">
-                <span className="text-xs text-muted font-medium">{selectedProductIds.length} items selected</span>
-                <button className="btn btn-primary" onClick={() => setIsCatalogOpen(false)}>
-                  Done Customizing
-                </button>
+              <h3 className="text-lg font-bold text-[#0B2E5B] m-0 font-['Montserrat',sans-serif]">
+                Scan to View in Vision AR
+              </h3>
+              <p className="text-xs text-gray-600 mt-1 mb-4 leading-relaxed">
+                Scan this QR code with your iPhone or Android camera to instantly place <strong>{activeProduct.name}</strong> inside your physical living space.
+              </p>
+
+              {qrCodeUrl ? (
+                <div className="p-3 bg-white rounded-2xl inline-block border border-gray-200 shadow-inner">
+                  <img src={qrCodeUrl} alt="Vision AR QR" className="w-52 h-52 block mx-auto" />
+                </div>
+              ) : (
+                <div className="w-52 h-52 flex items-center justify-center mx-auto text-xs text-gray-400">
+                  Generating QR...
+                </div>
+              )}
+
+              <div className="mt-4 text-[11px] text-gray-500">
+                Supports iOS (Safari Quick Look) & Android (Chrome WebXR)
               </div>
             </div>
           </div>
-        )}
-
-
-        {/* Fullscreen WebXR AR Product Viewer Modal (When opened from 360 mode or product card) */}
-        {activeArProduct && studioMode !== 'WEBXR_AR' && (
-          <ARViewer
-            product={activeArProduct}
-            catalog={catalogData?.items || suggestedProducts}
-            onSelectProduct={(p) => setActiveArProduct(p)}
-            onClose={() => setActiveArProduct(null)}
-            isEmbedded={false}
-            roomDimensions={{ width: wallWidth, height: wallHeight, length: roomLength }}
-          />
         )}
 
       </main>

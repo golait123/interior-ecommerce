@@ -70,6 +70,9 @@ export function ARViewer({
   const [placedSceneItems, setPlacedSceneItems] = useState<PlacedARItem[]>([]);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
+  // Active interaction mode: Move across floor, Rotate 360°, Scale dimensions
+  const [interactionMode, setInteractionMode] = useState<'MOVE' | 'ROTATE' | 'SCALE'>('MOVE');
+
   // Height offset in meters
   const [elevationMeters, setElevationMeters] = useState<number>(0);
   const [isFlashActive, setIsFlashActive] = useState(false);
@@ -88,6 +91,7 @@ export function ARViewer({
     elapsedSeconds,
     startSession,
     placeModel,
+    moveModel,
     rotateModel,
     scaleModel,
     resetToTrueScale,
@@ -106,9 +110,15 @@ export function ARViewer({
   const xrSessionRef = useRef<any>(null);
   const hitTestSourceRef = useRef<any>(null);
 
-  // Drag interaction tracking
+  // Floor plane raycasting & drag interaction tracking
   const isDraggingRef = useRef(false);
   const previousPointerPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerDownTimeRef = useRef<number>(0);
+  const floorPlaneRef = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const mouseVecRef = useRef(new THREE.Vector2());
+  const intersectPointRef = useRef(new THREE.Vector3());
 
   // Get product AR specs
   const arConfig = (product as any).arConfig as ARProductConfig | undefined;
@@ -161,14 +171,15 @@ export function ARViewer({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // 2. Perspective Camera
+    // 2. Perspective Camera (Looking naturally at the room floor)
     const camera = new THREE.PerspectiveCamera(
-      70,
+      60,
       container.clientWidth / container.clientHeight,
-      0.01,
+      0.1,
       25
     );
-    camera.position.set(0, 1.2, 0);
+    camera.position.set(0, 1.25, 1.8);
+    camera.lookAt(0, 0.4, 0);
     cameraRef.current = camera;
 
     // 3. WebGL Renderer with XR support and alpha transparency
@@ -215,6 +226,19 @@ export function ARViewer({
       dimensions
     );
     modelGroup.add(furnitureMesh);
+
+    // Glowing ground footprint ring indicating 3D object floor footprint
+    const footprintGeo = new THREE.RingGeometry(0.24, 0.28, 32).rotateX(-Math.PI / 2);
+    const footprintMat = new THREE.MeshBasicMaterial({
+      color: 0x2D8CFF,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.65
+    });
+    const footprint = new THREE.Mesh(footprintGeo, footprintMat);
+    footprint.position.y = 0.005;
+    modelGroup.add(footprint);
+
     modelGroup.position.set(transform.position.x, transform.position.y, transform.position.z);
     modelGroup.rotation.y = transform.rotation.y;
     modelGroup.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
@@ -262,12 +286,12 @@ export function ARViewer({
           const pose = hit.getPose(referenceSpace);
           reticle.visible = true;
           reticle.matrix.fromArray(pose.transform.matrix);
+          reticle.matrix.decompose(reticle.position, reticle.quaternion, reticle.scale);
         } else if (reticle) {
           reticle.visible = false;
         }
-      } else if (reticle) {
+      } else if (reticle && modelGroupRef.current) {
         reticle.visible = true;
-        reticle.position.set(0, 0, -1.6);
       }
 
       renderer.render(scene, camera);
@@ -324,20 +348,83 @@ export function ARViewer({
     });
   }, [placedSceneItems]);
 
-  // Handle Touch/Mouse Drag on Canvas for 360 Rotation
+  // Helper to project screen coordinate onto ground floor plane
+  const getFloorIntersection = (clientX: number, clientY: number): THREE.Vector3 | null => {
+    const canvas = canvasRef.current;
+    const camera = cameraRef.current;
+    if (!canvas || !camera) return null;
+    const rect = canvas.getBoundingClientRect();
+    mouseVecRef.current.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouseVecRef.current.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycasterRef.current.setFromCamera(mouseVecRef.current, camera);
+    if (raycasterRef.current.ray.intersectPlane(floorPlaneRef.current, intersectPointRef.current)) {
+      return intersectPointRef.current;
+    }
+    return null;
+  };
+
+  // Handle Touch/Mouse Drag & Tap to Place on Ground Plane
   const handlePointerDown = (e: React.PointerEvent) => {
     isDraggingRef.current = true;
+    pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
+    pointerDownTimeRef.current = Date.now();
     previousPointerPosRef.current = { x: e.clientX, y: e.clientY };
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDraggingRef.current) return;
+    if (!isDraggingRef.current) {
+      // Hover tracking for reticle placement guide
+      const pt = getFloorIntersection(e.clientX, e.clientY);
+      if (pt && reticleRef.current && !xrSessionRef.current) {
+        reticleRef.current.position.set(pt.x, 0.005, pt.z);
+      }
+      return;
+    }
+
     const deltaX = e.clientX - previousPointerPosRef.current.x;
+    const deltaY = e.clientY - previousPointerPosRef.current.y;
     previousPointerPosRef.current = { x: e.clientX, y: e.clientY };
-    rotateModel(deltaX * 0.8);
+
+    if (interactionMode === 'MOVE') {
+      const pt = getFloorIntersection(e.clientX, e.clientY);
+      if (pt) {
+        const clampedX = Math.max(-2.5, Math.min(2.5, pt.x));
+        const clampedZ = Math.max(-3.5, Math.min(0.8, pt.z));
+        moveModel({ x: clampedX, y: 0, z: clampedZ });
+        if (reticleRef.current && !xrSessionRef.current) {
+          reticleRef.current.position.set(clampedX, 0.005, clampedZ);
+        }
+      }
+    } else if (interactionMode === 'ROTATE') {
+      rotateModel(deltaX * 0.75);
+    } else if (interactionMode === 'SCALE') {
+      const factor = 1 - (deltaY * 0.006);
+      scaleModel(factor);
+    }
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDraggingRef.current) return;
+    const dx = Math.abs(e.clientX - pointerDownPosRef.current.x);
+    const dy = Math.abs(e.clientY - pointerDownPosRef.current.y);
+    const duration = Date.now() - pointerDownTimeRef.current;
+
+    // Quick Tap / Click on floor plane: place/relocate 3D product
+    if (dx < 8 && dy < 8 && duration < 380) {
+      const pt = getFloorIntersection(e.clientX, e.clientY);
+      if (pt) {
+        const clampedX = Math.max(-2.5, Math.min(2.5, pt.x));
+        const clampedZ = Math.max(-3.5, Math.min(0.8, pt.z));
+        placeModel({ x: clampedX, y: 0, z: clampedZ });
+        if (reticleRef.current && !xrSessionRef.current) {
+          reticleRef.current.position.set(clampedX, 0.005, clampedZ);
+        }
+        toast.success(`Positioned ${product.name} on room floor!`, { id: 'place-tap' });
+      }
+    } else if (interactionMode === 'MOVE') {
+      placeModel(transform.position);
+    }
+
     isDraggingRef.current = false;
   };
 
@@ -634,7 +721,7 @@ export function ARViewer({
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.02em' }}>
-                WebXR AR Product Studio
+                Vision AR Studio
               </span>
               <span 
                 style={{
@@ -647,7 +734,7 @@ export function ARViewer({
                   letterSpacing: '0.05em'
                 }}
               >
-                {capabilities?.webxrSupported ? 'WebXR' : 'Camera AR'}
+                {capabilities?.webxrSupported ? 'Vision AR • XR' : 'Vision AR'}
               </span>
             </div>
             <div style={{ fontSize: 11, color: '#8EC5FF', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -762,7 +849,7 @@ export function ARViewer({
             }}
           >
             <Smartphone size={13} />
-            Mobile AR
+            Mobile Vision AR
           </button>
         </div>
       </div>
@@ -797,7 +884,7 @@ export function ARViewer({
             }}
           >
             <Move size={14} color="#8EC5FF" />
-            Drag to rotate • Pinch to scale • Tap to place
+            Vision AR: Tap floor to place • Drag to move & rotate
           </div>
         )}
       </div>
@@ -1065,6 +1152,105 @@ export function ARViewer({
             </div>
           </div>
 
+          {/* Interaction Modes Selector: Move & Place / Rotate 360° / Scale Size / 1:1 True Scale */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            <button
+              type="button"
+              onClick={() => setInteractionMode('MOVE')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 20,
+                backgroundColor: interactionMode === 'MOVE' ? '#2D8CFF' : 'rgba(255,255,255,0.12)',
+                border: interactionMode === 'MOVE' ? '1px solid #8EC5FF' : '1px solid rgba(255,255,255,0.2)',
+                color: '#ffffff',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Move size={13} />
+              <span>Move & Place</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setInteractionMode('ROTATE')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 20,
+                backgroundColor: interactionMode === 'ROTATE' ? '#2D8CFF' : 'rgba(255,255,255,0.12)',
+                border: interactionMode === 'ROTATE' ? '1px solid #8EC5FF' : '1px solid rgba(255,255,255,0.2)',
+                color: '#ffffff',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <RotateCw size={13} />
+              <span>Rotate 360°</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setInteractionMode('SCALE')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 20,
+                backgroundColor: interactionMode === 'SCALE' ? '#2D8CFF' : 'rgba(255,255,255,0.12)',
+                border: interactionMode === 'SCALE' ? '1px solid #8EC5FF' : '1px solid rgba(255,255,255,0.2)',
+                color: '#ffffff',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Sliders size={13} />
+              <span>Scale Size</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                resetToTrueScale();
+                toast.success('Snapped to 1:1 True Physical Scale');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '6px 14px',
+                borderRadius: 20,
+                backgroundColor: 'rgba(255,255,255,0.14)',
+                border: '1px solid #8EC5FF',
+                color: '#ffffff',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+              title="Reset to 1:1 True Real-World Scale"
+            >
+              1:1 True Scale
+            </button>
+          </div>
+
           {/* Interactive Transform Adjustment Sliders */}
           <div 
             style={{
@@ -1253,7 +1439,7 @@ export function ARViewer({
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <BarChart3 size={20} color="#8EC5FF" />
                 <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, fontFamily: "'Montserrat', sans-serif" }}>
-                  AR Session Telemetry & Analytics
+                  Vision AR Session Telemetry & Analytics
                 </h3>
               </div>
               <button
@@ -1265,7 +1451,7 @@ export function ARViewer({
             </div>
 
             <p style={{ fontSize: 12, color: '#DCE7F5', margin: '0 0 16px' }}>
-              Real-time WebXR interaction telemetry synchronized with MongoDB database.
+              Real-time Vision AR interaction telemetry synchronized with MongoDB database.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>

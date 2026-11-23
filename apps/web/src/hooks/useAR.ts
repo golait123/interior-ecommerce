@@ -14,6 +14,7 @@ export interface UseARReturn {
   elapsedSeconds: number;
   startSession: (product: Product, customDimensions?: Partial<ARDimensions>) => Promise<ARSessionData | null>;
   placeModel: (position?: { x: number; y: number; z: number }) => void;
+  moveModel: (position: { x: number; y: number; z: number }) => void;
   rotateModel: (deltaDegrees: number) => void;
   scaleModel: (scaleFactor: number) => void;
   resetToTrueScale: () => void;
@@ -30,7 +31,7 @@ export function useAR(initialProduct?: Product | null): UseARReturn {
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
   const [transform, setTransform] = useState<ARTransform>({
-    position: { x: 0, y: 0, z: -1.6 },
+    position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
     scale: { x: 1.0, y: 1.0, z: 1.0 }
   });
@@ -109,7 +110,7 @@ export function useAR(initialProduct?: Product | null): UseARReturn {
 
     const finalDims = { ...defaultDims, ...customDimensions };
 
-    const initialPos = { x: 0, y: 0, z: -1.6 };
+    const initialPos = { x: 0, y: 0, z: 0 };
     const initialRot = { x: 0, y: 0, z: 0 };
     const initialScale = { x: 1.0, y: 1.0, z: 1.0 };
 
@@ -197,6 +198,16 @@ export function useAR(initialProduct?: Product | null): UseARReturn {
       }).catch(() => {});
     }
   }, [activeSession?.sessionId]);
+
+  // Smoothly move model position during drag
+  const moveModel = useCallback((position: { x: number; y: number; z: number }) => {
+    setIsPlaced(true);
+    setTransform(prev => {
+      const next = { ...prev, position };
+      transformRef.current = next;
+      return next;
+    });
+  }, []);
 
   // Rotate model around Y axis
   const rotateModel = useCallback((deltaDegrees: number) => {
@@ -300,6 +311,7 @@ export function useAR(initialProduct?: Product | null): UseARReturn {
     elapsedSeconds,
     startSession,
     placeModel,
+    moveModel,
     rotateModel,
     scaleModel,
     resetToTrueScale,
