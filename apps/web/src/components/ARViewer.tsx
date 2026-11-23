@@ -21,10 +21,14 @@ import {
   RefreshCw,
   Compass,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Share2,
+  BarChart3,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { Product } from '../api/products';
-import { ARProductConfig, ARDimensions } from '../types/ar';
+import { ARProductConfig, ARDimensions, PlacedARItem } from '../types/ar';
 import { useAR } from '../hooks/useAR';
 import { startCameraVideo, stopCameraVideo, createReticle, buildRealisticProceduralModel } from '../services/webxr';
 import { useCart } from '../contexts/CartContext';
@@ -36,6 +40,8 @@ interface ARViewerProps {
   catalog?: Product[];
   onSelectProduct?: (product: Product) => void;
   onClose: () => void;
+  isEmbedded?: boolean;
+  onToggleFullscreen?: () => void;
   roomDimensions?: { width: number; height: number; length: number };
 }
 
@@ -44,6 +50,8 @@ export function ARViewer({
   catalog = [],
   onSelectProduct,
   onClose,
+  isEmbedded = false,
+  onToggleFullscreen,
   roomDimensions
 }: ARViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -54,12 +62,21 @@ export function ARViewer({
   const [isAddingCart, setIsAddingCart] = useState(false);
   const [showCatalogDrawer, setShowCatalogDrawer] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'transform' | 'info' | 'dimensions'>('transform');
+  const [isFullscreen, setIsFullscreen] = useState(!isEmbedded);
+
+  // Multi-Product Scene Placements (Roadmap Feature)
+  const [placedSceneItems, setPlacedSceneItems] = useState<PlacedARItem[]>([]);
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
   // Height offset in meters
   const [elevationMeters, setElevationMeters] = useState<number>(0);
   const [isFlashActive, setIsFlashActive] = useState(false);
+
+  // Pinch-to-scale touch tracking
+  const initialTouchDistanceRef = useRef<number | null>(null);
+  const initialTouchScaleRef = useRef<number>(1.0);
 
   // Hook for AR session lifecycle and telemetry
   const {
@@ -84,8 +101,8 @@ export function ARViewer({
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const modelGroupRef = useRef<THREE.Group | null>(null);
+  const placedMeshesGroupRef = useRef<THREE.Group | null>(null);
   const reticleRef = useRef<THREE.Mesh | null>(null);
-  const animFrameIdRef = useRef<number | null>(null);
   const xrSessionRef = useRef<any>(null);
   const hitTestSourceRef = useRef<any>(null);
 
@@ -190,7 +207,7 @@ export function ARViewer({
     scene.add(reticle);
     reticleRef.current = reticle;
 
-    // 6. Build 3D Furniture Model
+    // 6. Active 3D Furniture Model Group
     const modelGroup = new THREE.Group();
     const furnitureMesh = buildRealisticProceduralModel(
       arConfig?.geometryType || 'table',
@@ -204,7 +221,12 @@ export function ARViewer({
     scene.add(modelGroup);
     modelGroupRef.current = modelGroup;
 
-    // 7. Virtual Shadow Receiver Ground Plane
+    // 7. Group for Multi-Product Placed Items
+    const placedGroup = new THREE.Group();
+    scene.add(placedGroup);
+    placedMeshesGroupRef.current = placedGroup;
+
+    // 8. Virtual Shadow Receiver Ground Plane
     const shadowPlaneGeo = new THREE.PlaneGeometry(8, 8).rotateX(-Math.PI / 2);
     const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.35 });
     const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
@@ -212,7 +234,7 @@ export function ARViewer({
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // 8. Start Camera Stream if not running full WebXR hardware session
+    // 9. Start Camera Stream if not running full WebXR hardware session
     let cameraVideo: HTMLVideoElement | null = null;
     startCameraVideo().then(v => {
       cameraVideo = v;
@@ -221,7 +243,7 @@ export function ARViewer({
       }
     });
 
-    // 9. Resize Handler
+    // 10. Resize Handler
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
       camera.aspect = container.clientWidth / container.clientHeight;
@@ -230,10 +252,8 @@ export function ARViewer({
     };
     window.addEventListener('resize', handleResize);
 
-    // 10. Animation / Render Loop
-    let lastTime = performance.now();
+    // 11. Animation / Render Loop
     const renderLoop = (time: number, frame?: any) => {
-      // If native WebXR session is active with hit-test
       if (frame && hitTestSourceRef.current && xrSessionRef.current) {
         const referenceSpace = renderer.xr.getReferenceSpace();
         const hitTestResults = frame.getHitTestResults(hitTestSourceRef.current);
@@ -246,7 +266,6 @@ export function ARViewer({
           reticle.visible = false;
         }
       } else if (reticle) {
-        // Fallback simulation: reticle hovers smoothly at floor level
         reticle.visible = true;
         reticle.position.set(0, 0, -1.6);
       }
@@ -267,7 +286,7 @@ export function ARViewer({
     };
   }, [product.id, arConfig?.geometryType]);
 
-  // Sync Transform updates to Three.js Model Group
+  // Sync Transform updates to Three.js Active Model Group
   useEffect(() => {
     if (!modelGroupRef.current) return;
     modelGroupRef.current.position.set(
@@ -282,6 +301,28 @@ export function ARViewer({
       transform.scale.z
     );
   }, [transform, elevationMeters]);
+
+  // Re-render multi-product placed items into scene
+  useEffect(() => {
+    const group = placedMeshesGroupRef.current;
+    if (!group) return;
+
+    // Clear existing placed meshes
+    while (group.children.length > 0) {
+      group.remove(group.children[0]);
+    }
+
+    // Add each placed item
+    placedSceneItems.forEach(item => {
+      const itemGroup = new THREE.Group();
+      const mesh = buildRealisticProceduralModel(item.geometryType, item.primaryColor, item.dimensions);
+      itemGroup.add(mesh);
+      itemGroup.position.set(item.position.x, item.position.y, item.position.z);
+      itemGroup.rotation.y = item.rotation.y;
+      itemGroup.scale.set(item.scale.x, item.scale.y, item.scale.z);
+      group.add(itemGroup);
+    });
+  }, [placedSceneItems]);
 
   // Handle Touch/Mouse Drag on Canvas for 360 Rotation
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -298,6 +339,33 @@ export function ARViewer({
 
   const handlePointerUp = () => {
     isDraggingRef.current = false;
+  };
+
+  // Pinch-to-Scale Multi-Touch Support (Advanced AR gesture)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      initialTouchDistanceRef.current = dist;
+      initialTouchScaleRef.current = transform.scale.x;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && initialTouchDistanceRef.current) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const ratio = dist / initialTouchDistanceRef.current;
+      scaleModel(ratio * (initialTouchScaleRef.current / transform.scale.x));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    initialTouchDistanceRef.current = null;
   };
 
   // Launch Native WebXR Immersive Session
@@ -326,7 +394,7 @@ export function ARViewer({
         if (reticleRef.current?.visible) {
           const pos = new THREE.Vector3();
           reticleRef.current.getWorldPosition(pos);
-          placeModel({ x: pos.x, y: pos.y, z: pos.z });
+          handlePlaceItemInScene({ x: pos.x, y: pos.y, z: pos.z });
           toast.success('Product placed in your room!');
         }
       });
@@ -343,7 +411,31 @@ export function ARViewer({
     }
   };
 
-  // Add Item to Cart Directly from AR
+  // Place Item in Multi-Product Scene
+  const handlePlaceItemInScene = (overridePos?: { x: number; y: number; z: number }) => {
+    const finalPos = overridePos || { ...transform.position, y: transform.position.y + elevationMeters };
+    const newItem: PlacedARItem = {
+      id: `ar-item-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      productId: product.id,
+      productName: product.name,
+      category: product.category?.name,
+      price: Number(product.discountPrice || product.price),
+      imageUrl: product.images?.[0] || '',
+      geometryType: arConfig?.geometryType || 'table',
+      primaryColor: arConfig?.primaryColor || '#0B2E5B',
+      dimensions,
+      position: finalPos,
+      rotation: { ...transform.rotation },
+      scale: { ...transform.scale }
+    };
+
+    setPlacedSceneItems(prev => [...prev, newItem]);
+    setActiveItemId(newItem.id);
+    placeModel(finalPos);
+    toast.success(`Placed ${product.name} in your AR room!`);
+  };
+
+  // Add Item or Bundle to Cart Directly from AR
   const handleAddToCart = async () => {
     setIsAddingCart(true);
     try {
@@ -352,6 +444,28 @@ export function ARViewer({
       toast.success(`${product.name} added to cart from AR!`);
     } catch {
       toast.error('Failed to add product to cart');
+    } finally {
+      setIsAddingCart(false);
+    }
+  };
+
+  // Add All Placed AR Scene Items to Cart (Multi-Product Checkout)
+  const handleAddAllSceneToCart = async () => {
+    if (placedSceneItems.length === 0) {
+      handleAddToCart();
+      return;
+    }
+
+    setIsAddingCart(true);
+    let count = 0;
+    try {
+      for (const item of placedSceneItems) {
+        await addItem(item.productId, 1);
+        count++;
+      }
+      toast.success(`Added all ${count} AR scene products to your cart!`);
+    } catch {
+      toast.error('Unable to add all items to cart');
     } finally {
       setIsAddingCart(false);
     }
@@ -367,7 +481,6 @@ export function ARViewer({
 
     captureSnapshot();
 
-    // Export merged image
     try {
       const link = document.createElement('a');
       link.download = `InteriorG-AR-${product.slug || 'product'}-${Date.now()}.png`;
@@ -379,22 +492,51 @@ export function ARViewer({
     }
   };
 
+  // Share AR Scene (Social Media / Web Share API)
+  const handleShareAR = async () => {
+    const shareUrl = `${window.location.origin}/room-studio?mode=ar&product=${product.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `InteriorG — View ${product.name} in AR`,
+          text: `Check out how this ${product.name} looks true-to-scale in AR!`,
+          url: shareUrl
+        });
+        toast.success('AR scene shared successfully!');
+      } catch (err) {
+        // User cancelled share
+      }
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success('AR share link copied to clipboard!');
+    }
+  };
+
+  const isFullView = isFullscreen || !isEmbedded;
+
   return (
     <div 
       ref={containerRef}
-      className="ar-viewer-container"
+      className={`ar-viewer-container ${isFullView ? 'ar-viewer-fullscreen' : 'ar-viewer-embedded'}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
+        position: isFullView ? 'fixed' : 'relative',
+        inset: isFullView ? 0 : 'auto',
+        width: '100%',
+        height: isFullView ? '100%' : '100%',
+        minHeight: isFullView ? '100vh' : 620,
+        zIndex: isFullView ? 9999 : 1,
         backgroundColor: '#000000',
         overflow: 'hidden',
         userSelect: 'none',
-        touchAction: 'none'
+        touchAction: 'none',
+        borderRadius: isFullView ? 0 : '8px'
       }}
     >
       {/* Real Device Video Camera Background Feed */}
@@ -450,8 +592,8 @@ export function ARViewer({
           left: 0,
           right: 0,
           zIndex: 5,
-          padding: '16px 20px',
-          background: 'linear-gradient(180deg, rgba(11,46,91,0.85) 0%, rgba(11,46,91,0) 100%)',
+          padding: '14px 18px',
+          background: 'linear-gradient(180deg, rgba(11,46,91,0.92) 0%, rgba(11,46,91,0) 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -460,18 +602,22 @@ export function ARViewer({
         }}
       >
         {/* Left: Close & Mode Badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             onClick={() => {
-              endSession();
-              onClose();
+              if (isEmbedded && isFullscreen) {
+                setIsFullscreen(false);
+              } else {
+                endSession();
+                onClose();
+              }
             }}
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 40,
-              height: 40,
+              width: 38,
+              height: 38,
               borderRadius: '50%',
               backgroundColor: 'rgba(255,255,255,0.18)',
               border: '1px solid rgba(255,255,255,0.3)',
@@ -480,13 +626,14 @@ export function ARViewer({
               backdropFilter: 'blur(8px)'
             }}
             aria-label="Exit AR"
+            title="Exit / Back to Studio"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.02em' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.02em' }}>
                 WebXR AR Product Studio
               </span>
               <span 
@@ -505,13 +652,76 @@ export function ARViewer({
             </div>
             <div style={{ fontSize: 11, color: '#8EC5FF', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22c55e' }} />
-              Session: {formatTimer(elapsedSeconds)} • True-Scale 1:1 Rendering
+              Session: {formatTimer(elapsedSeconds)} • True 1:1 Scale
+              {placedSceneItems.length > 0 && ` • ${placedSceneItems.length} in Scene`}
             </div>
           </div>
         </div>
 
-        {/* Right: Cross-Device QR Code & Native WebXR Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Right: Actions (Share, Analytics, Fullscreen, Mobile QR) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={handleShareAR}
+            title="Share AR Scene"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.18)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              color: '#ffffff',
+              cursor: 'pointer',
+              backdropFilter: 'blur(8px)'
+            }}
+          >
+            <Share2 size={16} />
+          </button>
+
+          <button
+            onClick={() => setShowAnalyticsModal(true)}
+            title="AR Session Analytics & Telemetry"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.18)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              color: '#ffffff',
+              cursor: 'pointer',
+              backdropFilter: 'blur(8px)'
+            }}
+          >
+            <BarChart3 size={16} />
+          </button>
+
+          {isEmbedded && (
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={isFullscreen ? 'Exit Fullscreen' : 'Expand Fullscreen'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255,255,255,0.18)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#ffffff',
+                cursor: 'pointer',
+                backdropFilter: 'blur(8px)'
+              }}
+            >
+              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            </button>
+          )}
+
           {capabilities?.webxrSupported && (
             <button
               onClick={handleLaunchImmersiveXR}
@@ -523,14 +733,14 @@ export function ARViewer({
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: 20,
-                padding: '8px 14px',
-                fontSize: 12,
+                padding: '6px 12px',
+                fontSize: 11,
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
             >
-              <Sparkles size={14} />
-              Immersive AR
+              <Sparkles size={13} />
+              Immersive XR
             </button>
           )}
 
@@ -539,19 +749,19 @@ export function ARViewer({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 5,
               backgroundColor: 'rgba(255,255,255,0.18)',
               border: '1px solid rgba(255,255,255,0.3)',
               color: '#ffffff',
               borderRadius: 20,
-              padding: '8px 14px',
-              fontSize: 12,
+              padding: '6px 12px',
+              fontSize: 11,
               fontWeight: 600,
               cursor: 'pointer',
               backdropFilter: 'blur(8px)'
             }}
           >
-            <Smartphone size={14} />
+            <Smartphone size={13} />
             Mobile AR
           </button>
         </div>
@@ -587,29 +797,29 @@ export function ARViewer({
             }}
           >
             <Move size={14} color="#8EC5FF" />
-            Drag to rotate • Point camera at floor or table
+            Drag to rotate • Pinch to scale • Tap to place
           </div>
         )}
       </div>
 
-      {/* FLOATING ACTION PILLS (True Scale, Snapshot, Place) */}
+      {/* FLOATING ACTION PILLS (Snapshot, Place Another, 1:1 Scale, Catalog) */}
       <div
         style={{
           position: 'absolute',
-          right: 20,
-          top: 90,
+          right: 16,
+          top: 80,
           zIndex: 6,
           display: 'flex',
           flexDirection: 'column',
-          gap: 12
+          gap: 10
         }}
       >
         <button
           onClick={handleTakeSnapshot}
           title="Take AR Photo"
           style={{
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             borderRadius: '50%',
             backgroundColor: 'rgba(11,46,91,0.85)',
             border: '2px solid #8EC5FF',
@@ -622,42 +832,39 @@ export function ARViewer({
             backdropFilter: 'blur(8px)'
           }}
         >
-          <Camera size={22} color="#8EC5FF" />
+          <Camera size={20} color="#8EC5FF" />
         </button>
 
         <button
-          onClick={() => {
-            placeModel();
-            toast.success('Position locked to current camera view!');
-          }}
-          title="Lock / Place in Room"
+          onClick={() => handlePlaceItemInScene()}
+          title="Place Item in Scene"
           style={{
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             borderRadius: '50%',
-            backgroundColor: isPlaced ? '#22c55e' : 'rgba(11,46,91,0.85)',
+            backgroundColor: '#2D8CFF',
             border: '2px solid #ffffff',
             color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+            boxShadow: '0 4px 16px rgba(45,140,255,0.4)',
             backdropFilter: 'blur(8px)'
           }}
         >
-          <Check size={22} color="#ffffff" />
+          <Plus size={22} color="#ffffff" />
         </button>
 
         <button
           onClick={() => {
             resetToTrueScale();
-            toast.success('Reset to 1:1 true-to-scale physical dimensions');
+            toast.success('Reset to 1:1 true physical dimensions');
           }}
           title="Reset to 1:1 True Scale"
           style={{
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             borderRadius: '50%',
             backgroundColor: 'rgba(11,46,91,0.85)',
             border: '1px solid rgba(255,255,255,0.3)',
@@ -677,10 +884,10 @@ export function ARViewer({
         {catalog.length > 0 && (
           <button
             onClick={() => setShowCatalogDrawer(prev => !prev)}
-            title="Browse Catalog"
+            title="Browse Catalog & Add Pieces"
             style={{
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               borderRadius: '50%',
               backgroundColor: 'rgba(11,46,91,0.85)',
               border: '1px solid rgba(255,255,255,0.3)',
@@ -692,10 +899,63 @@ export function ARViewer({
               backdropFilter: 'blur(8px)'
             }}
           >
-            <Layers size={20} color="#8EC5FF" />
+            <Layers size={18} color="#8EC5FF" />
           </button>
         )}
       </div>
+
+      {/* MULTI-PRODUCT PLACED SCENE STRIP */}
+      {placedSceneItems.length > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 16,
+            top: 80,
+            zIndex: 6,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+            maxHeight: '40vh',
+            overflowY: 'auto'
+          }}
+        >
+          {placedSceneItems.map((item, idx) => (
+            <div
+              key={item.id}
+              onClick={() => setActiveItemId(item.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '6px 10px',
+                borderRadius: 20,
+                backgroundColor: activeItemId === item.id ? 'rgba(45,140,255,0.9)' : 'rgba(11,46,91,0.85)',
+                border: '1px solid #8EC5FF',
+                color: '#ffffff',
+                fontSize: 11,
+                fontWeight: 600,
+                backdropFilter: 'blur(8px)',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+              }}
+            >
+              <span>#{idx + 1} {item.productName.substring(0, 16)}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPlacedSceneItems(prev => prev.filter(i => i.id !== item.id));
+                  toast.success(`Removed ${item.productName} from scene`);
+                }}
+                style={{ background: 'none', border: 'none', color: '#ff8080', cursor: 'pointer', padding: 2 }}
+                title="Remove from AR Scene"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* BOTTOM CONTROL DOCK */}
       <div
@@ -705,8 +965,8 @@ export function ARViewer({
           left: 0,
           right: 0,
           zIndex: 6,
-          padding: '16px 20px',
-          background: 'linear-gradient(0deg, rgba(11,46,91,0.96) 0%, rgba(11,46,91,0.85) 75%, rgba(11,46,91,0) 100%)',
+          padding: '14px 18px',
+          background: 'linear-gradient(0deg, rgba(11,46,91,0.98) 0%, rgba(11,46,91,0.88) 75%, rgba(11,46,91,0) 100%)',
           borderTop: '1px solid rgba(142,197,255,0.2)',
           backdropFilter: 'blur(16px)',
           color: '#ffffff',
@@ -715,13 +975,13 @@ export function ARViewer({
       >
         <div style={{ maxWidth: 840, margin: '0 auto' }}>
           {/* Product Header Row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div 
                 style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 10,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 8,
                   backgroundColor: '#ffffff',
                   overflow: 'hidden',
                   display: 'flex',
@@ -733,50 +993,76 @@ export function ARViewer({
                 {product.images?.[0] ? (
                   <img src={product.images[0]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <Sparkles size={24} color="#0B2E5B" />
+                  <Sparkles size={22} color="#0B2E5B" />
                 )}
               </div>
 
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Montserrat', sans-serif" }}>
+                <div style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Montserrat', sans-serif" }}>
                   {product.name}
                 </div>
-                <div style={{ fontSize: 12, color: '#8EC5FF', display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: '#8EC5FF', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                   <span>₹{Number(product.discountPrice || product.price).toLocaleString('en-IN')}</span>
                   <span>•</span>
                   <span>{product.category?.name || 'Interior Piece'}</span>
                   <span>•</span>
                   <span style={{ color: '#ffffff', fontWeight: 600 }}>
-                    {dimensions.widthFeet}ft × {dimensions.depthFeet}ft × {dimensions.heightFeet}ft
+                    {dimensions.widthFeet}ft × {dimensions.depthFeet}ft × {dimensions.heightFeet}ft ({dimensions.widthMeters}m × {dimensions.heightMeters}m)
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Direct Add To Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={isAddingCart}
-              style={{
-                backgroundColor: '#2D8CFF',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: 24,
-                padding: '12px 22px',
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                boxShadow: '0 4px 16px rgba(45,140,255,0.4)',
-                transition: 'background-color 0.2s',
-                fontFamily: "'Montserrat', sans-serif"
-              }}
-            >
-              <ShoppingBag size={16} />
-              {isAddingCart ? 'Adding...' : 'Add to Cart'}
-            </button>
+            {/* Direct Add To Cart & Bundle Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {placedSceneItems.length > 1 ? (
+                <button
+                  onClick={handleAddAllSceneToCart}
+                  disabled={isAddingCart}
+                  style={{
+                    backgroundColor: '#2D8CFF',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 20,
+                    padding: '10px 18px',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    boxShadow: '0 4px 16px rgba(45,140,255,0.4)',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}
+                >
+                  <ShoppingBag size={15} />
+                  {isAddingCart ? 'Adding...' : `Buy Scene (${placedSceneItems.length})`}
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isAddingCart}
+                  style={{
+                    backgroundColor: '#2D8CFF',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 20,
+                    padding: '10px 18px',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    boxShadow: '0 4px 16px rgba(45,140,255,0.4)',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}
+                >
+                  <ShoppingBag size={15} />
+                  {isAddingCart ? 'Adding...' : 'Add to Cart'}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Interactive Transform Adjustment Sliders */}
@@ -784,11 +1070,11 @@ export function ARViewer({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 16,
-              padding: '10px 14px',
+              gap: 14,
+              padding: '8px 12px',
               backgroundColor: 'rgba(255,255,255,0.08)',
-              borderRadius: 14,
-              fontSize: 12
+              borderRadius: 12,
+              fontSize: 11
             }}
           >
             {/* Rotate Left/Right Quick Buttons */}
@@ -801,13 +1087,13 @@ export function ARViewer({
                   border: 'none',
                   color: '#ffffff',
                   borderRadius: 6,
-                  padding: '6px 10px',
+                  padding: '5px 8px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center'
                 }}
               >
-                <RotateCcw size={14} />
+                <RotateCcw size={13} />
               </button>
               <button
                 onClick={() => rotateModel(45)}
@@ -816,18 +1102,18 @@ export function ARViewer({
                   border: 'none',
                   color: '#ffffff',
                   borderRadius: 6,
-                  padding: '6px 10px',
+                  padding: '5px 8px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center'
                 }}
               >
-                <RotateCw size={14} />
+                <RotateCw size={13} />
               </button>
             </div>
 
             {/* Scale Slider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
               <span style={{ color: '#8EC5FF', fontWeight: 600 }}>Scale:</span>
               <input
                 type="range"
@@ -841,13 +1127,13 @@ export function ARViewer({
                 }}
                 style={{ flex: 1, accentColor: '#2D8CFF', cursor: 'pointer' }}
               />
-              <span style={{ minWidth: 44, textAlign: 'right', fontWeight: 600 }}>
+              <span style={{ minWidth: 40, textAlign: 'right', fontWeight: 600 }}>
                 {Math.round(transform.scale.x * 100)}%
               </span>
             </div>
 
             {/* Height / Elevation */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ color: '#8EC5FF', fontWeight: 600 }}>Elevation:</span>
               <input
                 type="range"
@@ -856,23 +1142,23 @@ export function ARViewer({
                 step="0.05"
                 value={elevationMeters}
                 onChange={e => setElevationMeters(parseFloat(e.target.value))}
-                style={{ width: 90, accentColor: '#2D8CFF', cursor: 'pointer' }}
+                style={{ width: 80, accentColor: '#2D8CFF', cursor: 'pointer' }}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* CATALOG SWITCHER DRAWER (allows switching products in AR) */}
+      {/* CATALOG SWITCHER DRAWER (switch/place products in AR) */}
       {showCatalogDrawer && (
         <div
           style={{
             position: 'absolute',
             top: 70,
-            right: 80,
+            right: 70,
             width: 320,
             maxHeight: '70vh',
-            backgroundColor: 'rgba(11,46,91,0.95)',
+            backgroundColor: 'rgba(11,46,91,0.96)',
             border: '1px solid #8EC5FF',
             borderRadius: 16,
             backdropFilter: 'blur(20px)',
@@ -884,7 +1170,7 @@ export function ARViewer({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>Switch Product in AR</span>
+            <span style={{ fontWeight: 700, fontSize: 13 }}>Catalog Pieces for AR</span>
             <button
               onClick={() => setShowCatalogDrawer(false)}
               style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer' }}
@@ -934,6 +1220,80 @@ export function ARViewer({
         </div>
       )}
 
+      {/* AR SESSION ANALYTICS MODAL (Analytics Roadmap Feature) */}
+      {showAnalyticsModal && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20
+          }}
+          onClick={() => setShowAnalyticsModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#0B2E5B',
+              borderRadius: 20,
+              padding: '24px 22px',
+              maxWidth: 420,
+              width: '100%',
+              color: '#ffffff',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+              border: '2px solid #8EC5FF'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <BarChart3 size={20} color="#8EC5FF" />
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, fontFamily: "'Montserrat', sans-serif" }}>
+                  AR Session Telemetry & Analytics
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowAnalyticsModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ffffff' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: 12, color: '#DCE7F5', margin: '0 0 16px' }}>
+              Real-time WebXR interaction telemetry synchronized with MongoDB database.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+              <div style={{ padding: 10, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: 10, color: '#8EC5FF', textTransform: 'uppercase' }}>Session Duration</div>
+                <div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>{formatTimer(elapsedSeconds)}</div>
+              </div>
+              <div style={{ padding: 10, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: 10, color: '#8EC5FF', textTransform: 'uppercase' }}>Placements</div>
+                <div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>{interactions.placementsCount}</div>
+              </div>
+              <div style={{ padding: 10, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: 10, color: '#8EC5FF', textTransform: 'uppercase' }}>Rotations</div>
+                <div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>{interactions.rotationsCount}</div>
+              </div>
+              <div style={{ padding: 10, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: 10, color: '#8EC5FF', textTransform: 'uppercase' }}>Snapshots</div>
+                <div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>{interactions.snapshotsCount}</div>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 11, color: '#8EC5FF', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 10 }}>
+              Session ID: <code style={{ color: '#ffffff' }}>{activeSession?.sessionId || 'active-local-ar'}</code>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* CROSS-DEVICE QR CODE MODAL (SCAN WITH PHONE TO VIEW IN AR) */}
       {showQrModal && (
         <div
@@ -975,24 +1335,24 @@ export function ARViewer({
 
             <div 
               style={{
-                width: 56,
-                height: 56,
+                width: 54,
+                height: 54,
                 borderRadius: '50%',
                 backgroundColor: '#0B2E5B',
                 color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '0 auto 16px'
+                margin: '0 auto 14px'
               }}
             >
-              <Smartphone size={28} color="#8EC5FF" />
+              <Smartphone size={26} color="#8EC5FF" />
             </div>
 
-            <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 6px', fontFamily: "'Montserrat', sans-serif", color: '#0B2E5B' }}>
+            <h3 style={{ fontSize: 17, fontWeight: 700, margin: '0 0 6px', fontFamily: "'Montserrat', sans-serif", color: '#0B2E5B' }}>
               Scan to View in Your Room
             </h3>
-            <p style={{ fontSize: 13, color: '#4B5563', margin: '0 0 20px' }}>
+            <p style={{ fontSize: 12, color: '#4B5563', margin: '0 0 16px' }}>
               Point your smartphone camera at this QR code to place <strong>{product.name}</strong> true-to-scale in your living space.
             </p>
 
@@ -1007,15 +1367,15 @@ export function ARViewer({
                   boxShadow: '0 4px 16px rgba(0,0,0,0.06)'
                 }}
               >
-                <img src={qrCodeDataUrl} alt="AR QR Code" style={{ width: 220, height: 220, display: 'block' }} />
+                <img src={qrCodeDataUrl} alt="AR QR Code" style={{ width: 200, height: 200, display: 'block' }} />
               </div>
             ) : (
-              <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <RefreshCw className="animate-spin" size={24} color="#0B2E5B" />
               </div>
             )}
 
-            <div style={{ marginTop: 20, fontSize: 11, color: '#6B7280' }}>
+            <div style={{ marginTop: 16, fontSize: 11, color: '#6B7280' }}>
               Compatible with iOS (Safari Quick Look) & Android (Chrome WebXR / Scene Viewer)
             </div>
           </div>

@@ -286,7 +286,7 @@ export default function RoomStudio() {
     : (analysis?.totalBundlePrice || 0);
 
   // Right Studio Panel Tabs & Filtering State
-  const [rightPanelTab, setRightPanelTab] = useState<'SUGGESTIONS' | 'PLACED' | 'PALETTE'>('SUGGESTIONS');
+  const [rightPanelTab, setRightPanelTab] = useState<'SUGGESTIONS' | 'PLACED' | 'PALETTE' | 'AR_STUDIO'>('SUGGESTIONS');
   const [suggestionFilter, setSuggestionFilter] = useState<string>('ALL');
   const [suggestionSearch, setSuggestionSearch] = useState<string>('');
 
@@ -563,29 +563,42 @@ export default function RoomStudio() {
           
           {/* Left / Main: Interactive 360 Viewer Canvas & Studio Controls */}
           <div className="lg:col-span-8 flex flex-col gap-5">
-            <Panorama360Viewer
-              imageUrl={uploadedFileUrl || PRESETS.find(p => p.id === activePreset)?.previewUrl || PRESETS[0].previewUrl}
-              hotspots={analysis?.hotspots || []}
-              activeHotspot={activeHotspot}
-              onSelectHotspot={(h) => setActiveHotspot(h)}
-              onAddToCart={async (productId) => {
-                if (!user) {
-                  navigate('/login');
-                  return;
-                }
-                try {
-                  await addItem(productId, 1);
-                  const prod = catalogData?.items.find(p => p.id === productId) || analysis?.products.find(p => p.id === productId);
-                  toast.success(`Added ${prod?.name || 'item'} to cart!`);
-                } catch {
-                  toast.error('Unable to add item to cart.');
-                }
-              }}
-              showStaged={showStaged}
-              availableProducts={catalogData?.items || []}
-              placedItems={placedItems}
-              onPlacedItemsChange={setPlacedItems}
-            />
+            {studioMode === 'WEBXR_AR' ? (
+              <div className="relative rounded overflow-hidden shadow-lg border border-[#2D8CFF]/50 bg-black" style={{ height: '620px' }}>
+                <ARViewer
+                  product={activeArProduct || (placedItems[0] ? catalogData?.items.find(p => p.id === placedItems[0].productId) : null) || catalogData?.items?.[0] || suggestedProducts[0] || ({ id: 'fallback', name: 'Interior Piece', price: 1999 } as any)}
+                  catalog={catalogData?.items || suggestedProducts}
+                  onSelectProduct={(p) => setActiveArProduct(p)}
+                  onClose={() => setStudioMode('PANORAMA_360')}
+                  isEmbedded={true}
+                  roomDimensions={{ width: wallWidth, height: wallHeight, length: roomLength }}
+                />
+              </div>
+            ) : (
+              <Panorama360Viewer
+                imageUrl={uploadedFileUrl || PRESETS.find(p => p.id === activePreset)?.previewUrl || PRESETS[0].previewUrl}
+                hotspots={analysis?.hotspots || []}
+                activeHotspot={activeHotspot}
+                onSelectHotspot={(h) => setActiveHotspot(h)}
+                onAddToCart={async (productId) => {
+                  if (!user) {
+                    navigate('/login');
+                    return;
+                  }
+                  try {
+                    await addItem(productId, 1);
+                    const prod = catalogData?.items.find(p => p.id === productId) || analysis?.products.find(p => p.id === productId);
+                    toast.success(`Added ${prod?.name || 'item'} to cart!`);
+                  } catch {
+                    toast.error('Unable to add item to cart.');
+                  }
+                }}
+                showStaged={showStaged}
+                availableProducts={catalogData?.items || []}
+                placedItems={placedItems}
+                onPlacedItemsChange={setPlacedItems}
+              />
+            )}
 
             {/* Unified Room Dimensions & Live Wallpaper Sizing Panel */}
             <div className="bg-white border shadow-sm transition-all" style={{ borderRadius: '6px', borderColor: '#ded9d0' }}>
@@ -770,6 +783,26 @@ export default function RoomStudio() {
               >
                 <Palette size={14} className={rightPanelTab === 'PALETTE' ? 'text-accent' : ''} />
                 <span>Palette</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setRightPanelTab('AR_STUDIO');
+                  setStudioMode('WEBXR_AR');
+                  if (!activeArProduct) {
+                    const firstProd = catalogData?.items?.[0] || suggestedProducts[0];
+                    if (firstProd) setActiveArProduct(firstProd);
+                  }
+                }}
+                className={`flex-1 py-2 px-2 text-xs font-semibold rounded border-none cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                  rightPanelTab === 'AR_STUDIO'
+                    ? 'bg-[#2D8CFF] text-white shadow-sm'
+                    : 'bg-transparent text-muted hover:text-dark hover:bg-gray-100'
+                }`}
+              >
+                <Smartphone size={14} className={rightPanelTab === 'AR_STUDIO' ? 'text-white' : 'text-[#2D8CFF]'} />
+                <span>AR Studio</span>
               </button>
             </div>
 
@@ -1216,6 +1249,97 @@ export default function RoomStudio() {
                 </div>
               </div>
             )}
+
+            {/* TAB 4: WebXR AR Studio Controls & Analytics */}
+            {rightPanelTab === 'AR_STUDIO' && (
+              <div className="bg-white border p-5 flex flex-col gap-4 rounded shadow-sm" style={{ borderColor: '#ded9d0' }}>
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="text-base font-bold flex items-center gap-2 m-0 text-dark">
+                    <Smartphone size={18} className="text-[#2D8CFF]" />
+                    WebXR AR Live Studio
+                  </h3>
+                  <span className="badge badge-blue text-xs font-bold uppercase tracking-wider">
+                    {studioMode === 'WEBXR_AR' ? 'Live AR Active' : 'Ready'}
+                  </span>
+                </div>
+
+                <p className="text-xs text-muted mb-2">
+                  Place true-to-scale 3D models in your room using WebXR surface tracking & camera video feed.
+                </p>
+
+                {/* Active 3D Piece Info */}
+                <div className="p-3.5 bg-[#F5F9FF] rounded border border-[#2D8CFF]/30">
+                  <span className="text-[10px] text-muted uppercase font-bold tracking-wider block mb-1">Active 3D Piece</span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white rounded border border-[#8EC5FF] overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      {(activeArProduct || catalogData?.items?.[0])?.images?.[0] ? (
+                        <img 
+                          src={(activeArProduct || catalogData?.items?.[0])?.images?.[0]} 
+                          alt="Piece" 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <Sparkles size={20} className="text-[#0B2E5B]" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-bold text-[#0B2E5B] truncate m-0">
+                        {(activeArProduct || catalogData?.items?.[0])?.name || 'Selected Decor'}
+                      </h4>
+                      <p className="text-[11px] text-[#2D8CFF] font-bold mt-0.5 m-0">
+                        ₹{Number((activeArProduct || catalogData?.items?.[0])?.discountPrice || (activeArProduct || catalogData?.items?.[0])?.price || 1999).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AR Quick Action Buttons */}
+                <div className="space-y-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStudioMode('WEBXR_AR');
+                      if (!activeArProduct && catalogData?.items?.[0]) {
+                        setActiveArProduct(catalogData.items[0]);
+                      }
+                    }}
+                    className="btn btn-primary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <Smartphone size={15} />
+                    <span>Launch In-Page AR Viewer</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prod = activeArProduct || catalogData?.items?.[0] || suggestedProducts[0];
+                      if (prod) {
+                        setActiveArProduct(prod);
+                      }
+                    }}
+                    className="btn btn-secondary w-full py-2 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Maximize2 size={14} />
+                    <span>Expand Fullscreen AR Mode</span>
+                  </button>
+                </div>
+
+                {/* AR Feature Checklist */}
+                <div className="p-3 bg-[#faf8f5] rounded border text-xs text-muted space-y-1.5 mt-2">
+                  <div className="font-semibold text-dark flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-emerald-600" />
+                    <span>WebXR Features Active</span>
+                  </div>
+                  <ul className="text-[11px] space-y-1 pl-4 m-0 list-disc">
+                    <li>Hit-Test Real-World Floor & Wall Plane Lock</li>
+                    <li>1:1 True-to-Scale Metric Sizing Calibration</li>
+                    <li>Touch Drag 360° Rotation & Pinch Zoom</li>
+                    <li>Multi-Product Scene Composition & Staging</li>
+                    <li>Real-Time MongoDB ARSession Telemetry</li>
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
@@ -1275,16 +1399,14 @@ export default function RoomStudio() {
         )}
 
 
-        {/* WebXR AR Product Viewer Modal / Full-Screen Overlay */}
-        {activeArProduct && (
+        {/* Fullscreen WebXR AR Product Viewer Modal (When opened from 360 mode or product card) */}
+        {activeArProduct && studioMode !== 'WEBXR_AR' && (
           <ARViewer
             product={activeArProduct}
             catalog={catalogData?.items || suggestedProducts}
             onSelectProduct={(p) => setActiveArProduct(p)}
-            onClose={() => {
-              setActiveArProduct(null);
-              if (studioMode === 'WEBXR_AR') setStudioMode('PANORAMA_360');
-            }}
+            onClose={() => setActiveArProduct(null)}
+            isEmbedded={false}
             roomDimensions={{ width: wallWidth, height: wallHeight, length: roomLength }}
           />
         )}
